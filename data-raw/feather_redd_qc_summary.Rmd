@@ -18,6 +18,25 @@ Goal of this document is to revisit Feather River redd data and understand the f
 - what is the quality of the data?
 - what are the data limitations?
 
+# Relevant Science Plan hypotheses
+
+1. Spawning habitat acreage
+
+From Science Plan: "The metric for this hypothesis will be the acreage of spawning habitat with suitable water depths and velocities, and sizes of spawning gravel. Spawning habitat criteria, including depth, velocity, and target spawning substrate size will be defined in the specific VA action science and monitoring plan and associated design documents. The suitable gravel size for spawning habitat will be a range and distribution of spawning substrate sizes specific to the spawning population and hydrogeomorphic conditions in each tributary."
+
+This hypothesis was set up to use depth and velocity criteria to map spawning habitat acreage and compare to existing habitat. We could map spawning habitat based on redd locations over time. We would need latitude and longitude of all redds observed.
+
+2. Salmon redd density (this is the most relevant hypothesis)
+
+From Science Plan: "The metric for this hypothesis will be the number of Chinook salmon redds per unit area in habitat enhancement project areas, while also accounting for the potential for redd superimposition.  The baseline for this hypothesis will be the redd density and superimposition rate at habitat enhancement locations compared to adjacent areas within the same reach, measured concurrently along with water quality criteria. In systems where redd mapping has been conducted consistently at both project locations and adjacent, non-enhanced locations, historical data can also be leveraged to examine trends and changes in redd density after the enhancement action."
+
+This is the number of redds per unit area. We would need a count of redds and some sort of delineation of the area where redds are occurring (this could be latitude/longitude of redd or river mile/reach surveyed, assuming whole area is surveyed)
+
+3. Natural origin adult Chinook salmon population estimates by tributary, and trend in abundance (harvest plus escapement)  
+
+From Science Plan: "The metric for this hypothesis will be annual natural-origin adult Chinook salmon cohort replacement rates and trends over multiple years (e.g., > 3 years) over the period of VA implementation.   The baseline for this hypothesis will be the annual natural-origin adult Chinook salmon cohort replacement rate trends during the period associated with the Anadromous Fish Restoration Program Doubling Goal (years 1967-1991). A secondary baseline, to reflect recent conditions and population numbers, will be annual adult Chinook salmon cohort replacement rates and trends for natural-origin fall run Chinook salmon since 2010."
+
+We would need high quality redd data in order to estimate an adult
 
 ```{r, include = F}
 # get standard data from cloud
@@ -33,6 +52,16 @@ feather_redd_raw <- read_csv("data-raw/feather-redd.csv")
 ```
 
 # What data are collected
+
+*Contact*
+
+These data were originally acquired from Chris Cook
+
+*Timeframe*
+
+- 2009-2020 (we will need to update through 2024)
+- Longitude and latitude data: not available for 2009-2012, 2018-2020. NA values will be filled in for these data sets in final cleaned data set. Latitude and longitude are in NAD 1983 UTM Zone 10N 2.
+- Substrate: The substrate is observed visually and an estimate of the percentage of 5 size classes is recorded: fine <1cm, small 1-5cm, medium 6-15cm, large 16-30cm, boulder >30cm
 
 ```{r}
 feather_redd_raw |> glimpse()
@@ -53,6 +82,29 @@ feather_redd_raw |> glimpse()
 
 * Pull from JPE Rmd to summarize NAs, synthesize questions/concerns about data
 * Create a map of latitude/longitude to QC
+
+
+The data consistently collected include: date, location, survey_type, redd_count, salmon_count. 
+
+* All other fields have greater than 65% NA. In 2010 only 38% of redd length and width were NA and in all other years these fields are about 80% NA.
+
+```{r, include = F}
+# determine the years where there are data for the fields that have missing data
+years_na <- feather_redd_raw |> 
+  mutate(year = year(date)) |> 
+  pivot_longer(cols = 4:17, names_to = "data_field", values_to = "value") |>  
+  group_by(year, data_field) |> 
+  summarize(percent_na = sum(is.na(value))/length(value))
+
+knitr::kable(years_na |> 
+        group_by(data_field) |> 
+        summarize(mean = round(mean(percent_na), 2),
+                  median = round(median(percent_na), 2),
+                  min = round(min(percent_na), 2),
+                  max = round(max(percent_na), 2)))
+
+```
+
 
 # Data limitations
 
