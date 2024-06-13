@@ -1,0 +1,59 @@
+---
+title: "feather river redd data exploration"
+output: html_document
+date: "2024-06-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(googleCloudStorageR)
+```
+
+Goal of this document is to revisit Feather River redd data and understand the following:
+
+- what data are collected?
+- what is the quality of the data?
+- what are the data limitations?
+
+
+```{r, include = F}
+# get standard data from cloud
+gcs_auth(json_file = Sys.getenv("GCS_AUTH_FILE"))
+gcs_global_bucket(bucket = Sys.getenv("GCS_DEFAULT_BUCKET"))
+
+gcs_get_object(object_name = "adult-holding-redd-and-carcass-surveys/feather-river/data/feather_redd.csv",
+               bucket = gcs_get_global_bucket(),
+               saveToDisk = here::here("data-raw", "feather-redd.csv"),
+               overwrite = TRUE)
+
+feather_redd_raw <- read_csv("data-raw/feather-redd.csv")
+```
+
+# What data are collected
+
+```{r}
+feather_redd_raw |> glimpse()
+```
+
+## Questions
+
+- Need to better understand `type` field. Do "area" measurements have a shapefile associated with them? Is "point" meant to communicate that a specific point measurement was taken for a redd?
+- We need to QC the latitude/longitude - looks like there is a decimal place missing.
+- Why is the `redd_count` not always 1? If greater than 1 does that mean that redd specific measurements like depth are not collected?
+- Does salmon count mean that salmon were observed on redd? No species or run differentiation?
+- Where are depth measurements taken (just depth, not pot depth)?
+- Does `pot_depth` refer to the depth of the pit?
+- How are velocity measurements taken? Collected right above redd?
+- Where is width measured?
+
+# Data quality
+
+* Pull from JPE Rmd to summarize NAs, synthesize questions/concerns about data
+* Create a map of latitude/longitude to QC
+
+# Data limitations
+
+Summary of how we may be able to use the data and limitations for different uses
