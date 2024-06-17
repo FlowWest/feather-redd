@@ -10,6 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(lubridate)
 library(googleCloudStorageR)
+library(ggplot2)
+library(scales)
+library(dplyr)
 ```
 
 Goal of this document is to revisit Feather River redd data and understand the following:
@@ -104,6 +107,108 @@ knitr::kable(years_na |>
                   max = round(max(percent_na), 2)))
 
 ```
+exploring fields that have data consistently
+
+Explore `date`
+ 
+```{r}
+#date range
+range(feather_redd_raw$date)
+```
+
+
+Explore `location`
+
+  * There are some names that appear less than 5 times. We could check if they correspond to another location name, and it is spelled differently
+
+```{r}
+#locations
+table(feather_redd_raw$location) #there are 121 unique location names
+
+#plotting those locations that appear less than 5 times
+feather_redd_raw |> 
+  group_by(location) |> 
+  filter(n() < 5) |> 
+  ungroup() |> 
+  count(location) |> 
+  ggplot(aes(x = location, y = n)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Explore `type`
+
+```{r}
+#type
+unique(feather_redd_raw$type)
+
+ggplot(feather_redd_raw, aes(x = date, y = type)) +
+  geom_point()
+
+feather_redd_raw |> 
+  group_by(type) |> 
+  summarise(n = n()) |> 
+  ggplot(aes(x = type, y = n)) + 
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Explore `redd_count`
+
+```{r}
+range(feather_redd_raw$redd_count)
+
+ggplot(feather_redd_raw, aes(x = date, y = redd_count)) +
+  geom_col()
+
+feather_redd_raw |> 
+  filter(is.na(date)==FALSE) |>  
+  ggplot(aes(x = date, y = redd_count)) + 
+  geom_col() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month")
+```
+
+Explore `salmon_count`
+
+```{r, warning=FALSE}
+range(feather_redd_raw$salmon_count, na.rm = TRUE)
+
+ggplot(feather_redd_raw, aes(x = date, y = salmon_count)) +
+  geom_col()
+
+feather_redd_raw |> 
+  filter(is.na(date)==FALSE) |>  
+  ggplot(aes(x = date, y = salmon_count)) + 
+  geom_col() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month")
+```
+
+Explore `type`
+
+```{r}
+ggplot(feather_redd_raw, aes(x = type)) +
+  geom_bar()
+```
+
+Troubleshooting `latitude` and `longitude`
+
+```{r}
+lat_long_test <- feather_redd_raw |> 
+  filter(!is.na(longitude) | !is.na(latitude)) |> 
+  mutate(latitude = as.numeric(substring(latitude, 1, 2)) + 
+                      as.numeric(substring(latitude, 3, nchar(latitude))) / 1e5) |> 
+  mutate(longitude = as.numeric(substring(longitude, 1, 3)) + 
+                     as.numeric(substring(longitude, 4, nchar(longitude))) / 1e4) |> 
+  glimpse()
+```
+
+
+
+look at the data that does have information
+are the locations names  messy? are they standardize (same for survey type)
+troubleshoot latitude and longitude issue 
 
 
 # Data limitations
