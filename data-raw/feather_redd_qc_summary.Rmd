@@ -202,17 +202,20 @@ lat_long_test <- feather_redd_raw |>
   filter(!is.na(longitude) | !is.na(latitude)) |>
   mutate(latitude = as.numeric(substring(latitude, 1, 2)) +
                       as.numeric(substring(latitude, 3, nchar(latitude))) / 1e5) |>
-  mutate(longitude = as.numeric(substring(longitude, 1, 3)) +
-                     as.numeric(substring(longitude, 4, nchar(longitude))) / 1e4) |>
+  mutate(longitude = - (as.numeric(substring(longitude, 1, 3)) +
+                     as.numeric(substring(longitude, 4, nchar(longitude))) / 1e4)) |>
+  filter(longitude > -125 | latitude < 40) |> #filtering those that seem off, for now
   glimpse()
+
+#TODO still review coordinates, they look off
 ```
 
 map with latitude and longitude coordinates
 
 ```{r}
-# Create a leaflet map
-# leaflet(lat_long_test) |> 
-#   addTiles() |> 
+# # Create a leaflet map
+# leaflet(lat_long_test) |>
+#   addTiles() |>
 #   addCircleMarkers(
 #     ~longitude, ~latitude,
 #     popup =  ~paste0("<br>Location: ", location),
