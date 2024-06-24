@@ -83,6 +83,9 @@ feather_redd_raw |> glimpse()
 - Does `pot_depth` refer to the depth of the pit?
 - How are velocity measurements taken? Collected right above redd?
 - Where is width measured?
+- Latitude/Longitude unit system is inconsistent. Up until 2013, coordinate system is UTM, years following are shown as "latitude mn / longitude me" (probably zone 10). [This is some information we have found about that coordinate system](https://gis.stackexchange.com/questions/111847/what-kind-of-coordinate-system-has-values-like-48569-800me-706602-032mn). Why were the coordinate systems different and how can we convert mn/me to UTM?
+- "area" `type` does not appear after year 2015. Did any methodology change, is there a reason why it was only "point"?  
+- are each of the location sampled multiple times a year, or does locations change overtime?
 
 # Data quality
 
@@ -139,8 +142,35 @@ feather_redd_raw |>
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+```{r}
+location_frequent <- feather_redd_raw |> 
+  mutate(year = year(date)) |> 
+  select(location, year) |> 
+  group_by(location, year) |> 
+  distinct() |> 
+  ungroup() |> 
+  group_by(location) |> 
+  tally() |> 
+  filter(n > 5)
+
+feather_redd_raw |> 
+  mutate(year = year(date)) |> 
+  select(location, year) |> 
+  group_by(location, year) |> 
+  distinct() |> 
+  filter(location %in% location_frequent$location) |> 
+  ggplot(aes(x = year, y = location)) +
+  geom_point()
+  
+```
+
+
 Explore `type`
 
+Questions: 
+
+  *What happened after 2015 that there isn't any point methods anymore
+  
 ```{r}
 #type
 unique(feather_redd_raw$type)
