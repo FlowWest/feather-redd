@@ -1,7 +1,7 @@
 ---
 title: "feather river redd data exploration"
 output: html_document
-date: "2024-06-11"
+date: "2024-06-28"
 ---
 
 ```{r setup, include=FALSE}
@@ -92,6 +92,8 @@ feather_redd_raw |> glimpse()
   * The data consistently collected include: date, location, survey_type, redd_count, salmon_count. 
 
   * All other fields have greater than 65% NA. In 2010 only 38% of redd length and width were NA and in all other years these fields are about 80% NA.
+  
+  * Location coordinates have more than 50% NA values, and those with data available have inconsistent coordinate system
 
 ```{r, include = F}
 # determine the years where there are data for the fields that have missing data
@@ -127,7 +129,11 @@ Explore `location`
 ```{r}
 #locations
 table(feather_redd_raw$location) #there are 121 unique location names
+```
 
+For locations that are being surveyed less than five times, we might want to verify if they belong to other location area names. Otherwise, these sites might not have enough data to reliably analyze over time.
+
+```{r}
 #plotting those locations that appear less than 5 times
 feather_redd_raw |> 
   group_by(location) |> 
@@ -162,11 +168,13 @@ feather_redd_raw |>
   group_by(location, year) |> 
   distinct() |> 
   filter(location %in% location_frequent$location) |> 
-  ggplot(aes(x = year, y = location)) +
-  geom_point(size = 2, alpha = 0.7, color = "blue") +
+  ggplot(aes(x = year, y = location, color = location)) +
+  geom_point(size = 2, alpha = 0.7) +
   labs(title = "Distinct Locations by Year",
        x = "Year",
-       y = "Location") +
+       y = "Location",
+       color = "Location") +  
+  scale_color_viridis_d() +  
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5, size = 14),
         axis.title.x = element_text(size = 12),
@@ -185,17 +193,20 @@ Note that after 2015 that there isn't any point methods anymore
 #type
 unique(feather_redd_raw$type)
 
-ggplot(feather_redd_raw, aes(x = date, y = type)) +
-  geom_point(size = 2, alpha = 0.7, color = "blue") +
+ggplot(feather_redd_raw, aes(x = date, y = type, color = type)) +
+  geom_point(size = 2, alpha = 0.7) +
   labs(title = "Types Over Time",
        x = "Date",
-       y = "Type") +
+       y = "Type",
+       color = "Type") +
+   scale_color_viridis_d(na.value = "grey50") +  
+  theme_minimal() +
+# Use Viridis color scale
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5, size = 14),
         axis.title.x = element_text(size = 12),
         axis.title.y = element_text(size = 12),
-        axis.text = element_text(size = 10),
-        legend.position = "none")
+        axis.text = element_text(size = 10))
   
 feather_redd_raw |> 
   group_by(type) |> 
@@ -228,9 +239,14 @@ feather_redd_raw |>
   ggplot(aes(x = date, y = redd_count)) + 
   geom_col() +
   facet_wrap(~year(date), scales = "free") +
-  scale_x_date(labels = date_format("%b"), date_breaks = "1 month")+
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Redd Counts Over Time") +  
   theme_minimal() +
-  theme(strip.background = element_rect(fill = "lightgrey", color = "grey50"))
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5) 
+  )
+
 ```
 
 Explore `salmon_count`
@@ -251,8 +267,12 @@ feather_redd_raw |>
   geom_col() +
   facet_wrap(~year(date), scales = "free") +
   scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Salmon Counts Over Time") +  
   theme_minimal() +
-  theme(strip.background = element_rect(fill = "lightgrey", color = "grey50"))
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5) 
+  )
 ```
 
 
@@ -272,7 +292,6 @@ lat_long_test <- feather_redd_raw |>
 
 # Data limitations
 
-The lack of precision and availability on latitude and longitude coordinates limits the accuracy of spatial analyses. We might be able to analyze data at a broader geographic scale, for example by area names, rather than specific locations. It might be challenging to precisely define spawning habitat criteria with the absence of substrate data completeness.
+The lack of precision and availability of latitude and longitude coordinates limits the accuracy of spatial analyses. Without precise coordinates, we might be able to analyze data only at a broader geographic scale, for example by area names, rather than specific location points. This limitation affects our ability to pinpoint exact spawning sites and accurately map spawning habitat. It might be challenging to precisely define spawning habitat criteria in the absence of complete substrate data, which is critical for understanding the suitability of spawning environments. Furthermore, we will have limited ability to directly correlate redd density with specific environmental factors such as substrate type, depth, and velocity due to the missing data on these parameters. This gap makes it difficult to fully understand the habitat of Chinook salmon.
 
-We might be able to use the data to calculate redd density as the redds per unit area
-Summary of how we may be able to use the data and limitations for different uses
+However, despite these limitations, we might be able to use the available data to calculate redd density as the number of redds per unit area. By delineating surveyed areas based on available location names or river reaches, we can estimate redd density and assess patterns over time. Additionally, we can analyze trends in abundance (harvest plus escapement) over multiple years (> 3 years), comparing current data with historical baselines from periods and recent years. These analyses can provide insights into changes in population dynamics and the effectiveness of habitat enhancement projects, even though the precision of habitat characterization may be limited.
