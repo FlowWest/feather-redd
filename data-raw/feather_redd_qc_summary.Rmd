@@ -217,7 +217,11 @@ Explore `redd_count`
 range(feather_redd_raw$redd_count)
 
 ggplot(feather_redd_raw, aes(x = date, y = redd_count)) +
-  geom_col()
+  geom_col() +
+  labs(title = "Redd Count by Date",
+       x = "Date",
+       y = "Redd Count") +
+  theme_minimal() 
 
 feather_redd_raw |> 
   filter(is.na(date)==FALSE) |>  
@@ -235,7 +239,11 @@ Explore `salmon_count`
 range(feather_redd_raw$salmon_count, na.rm = TRUE)
 
 ggplot(feather_redd_raw, aes(x = date, y = salmon_count)) +
-  geom_col()
+  geom_col() +
+  labs(title = "Salmon Count by Date",
+       x = "Date",
+       y = "Salmon Count") +
+  theme_minimal() 
 
 feather_redd_raw |> 
   filter(is.na(date)==FALSE) |>  
@@ -260,26 +268,11 @@ lat_long_test <- feather_redd_raw |>
   filter(longitude > -125 | latitude < 40) |> #filtering those that seem off, for now
   glimpse()
 
-#TODO still review coordinates, they look off
 ```
-
-map with latitude and longitude coordinates
-
-```{r, include=FALSE}
-# # Create a leaflet map
-# leaflet(lat_long_test) |>
-#   addTiles() |>
-#   addCircleMarkers(
-#     ~longitude, ~latitude,
-#     popup =  ~paste0("<br>Location: ", location),
-#     radius = 2,
-#     label = ~as.character(location),
-#     labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
-#   )
-```
-
-
 
 # Data limitations
 
+The lack of precision and availability on latitude and longitude coordinates limits the accuracy of spatial analyses. We might be able to analyze data at a broader geographic scale, for example by area names, rather than specific locations. It might be challenging to precisely define spawning habitat criteria with the absence of substrate data completeness.
+
+We might be able to use the data to calculate redd density as the redds per unit area
 Summary of how we may be able to use the data and limitations for different uses
