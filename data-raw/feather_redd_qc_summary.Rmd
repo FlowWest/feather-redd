@@ -1,11 +1,13 @@
 ---
 title: "feather river redd data exploration"
-output: html_document
 date: "2024-06-28"
+output: 
+  html_document:
+    theme: flatly
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 
 library(tidyverse)
 library(lubridate)
@@ -18,31 +20,32 @@ library(RColorBrewer)
 library(viridis)
 ```
 
-Goal of this document is to revisit Feather River redd data and understand the following:
+Goal of this document is to review the Feather River redd data and understand the following:
 
 - what data are collected?
 - what is the quality of the data?
 - what are the data limitations?
+- how are these data useful to Science Plan hypotheses?
 
-# Relevant Science Plan hypotheses
+## Relevant Science Plan hypotheses
 
 1. Spawning habitat acreage
 
-From Science Plan: "The metric for this hypothesis will be the acreage of spawning habitat with suitable water depths and velocities, and sizes of spawning gravel. Spawning habitat criteria, including depth, velocity, and target spawning substrate size will be defined in the specific VA action science and monitoring plan and associated design documents. The suitable gravel size for spawning habitat will be a range and distribution of spawning substrate sizes specific to the spawning population and hydrogeomorphic conditions in each tributary."
+- **From Science Plan:** "The metric for this hypothesis will be the acreage of spawning habitat with suitable water depths and velocities, and sizes of spawning gravel. Spawning habitat criteria, including depth, velocity, and target spawning substrate size will be defined in the specific VA action science and monitoring plan and associated design documents. The suitable gravel size for spawning habitat will be a range and distribution of spawning substrate sizes specific to the spawning population and hydrogeomorphic conditions in each tributary."
 
-This hypothesis was set up to use depth and velocity criteria to map spawning habitat acreage and compare to existing habitat. We could map spawning habitat based on redd locations over time. We would need latitude and longitude of all redds observed.
+- **Ideas:** This hypothesis was set up to use depth and velocity criteria to map spawning habitat acreage and compare to existing habitat. We could map spawning habitat based on redd locations over time. We would need latitude and longitude of all redds observed.
 
 2. Salmon redd density (this is the most relevant hypothesis)
 
-From Science Plan: "The metric for this hypothesis will be the number of Chinook salmon redds per unit area in habitat enhancement project areas, while also accounting for the potential for redd superimposition.  The baseline for this hypothesis will be the redd density and superimposition rate at habitat enhancement locations compared to adjacent areas within the same reach, measured concurrently along with water quality criteria. In systems where redd mapping has been conducted consistently at both project locations and adjacent, non-enhanced locations, historical data can also be leveraged to examine trends and changes in redd density after the enhancement action."
+- **From Science Plan:** "The metric for this hypothesis will be the number of Chinook salmon redds per unit area in habitat enhancement project areas, while also accounting for the potential for redd superimposition.  The baseline for this hypothesis will be the redd density and superimposition rate at habitat enhancement locations compared to adjacent areas within the same reach, measured concurrently along with water quality criteria. In systems where redd mapping has been conducted consistently at both project locations and adjacent, non-enhanced locations, historical data can also be leveraged to examine trends and changes in redd density after the enhancement action."
 
-This is the number of redds per unit area. We would need a count of redds and some sort of delineation of the area where redds are occurring (this could be latitude/longitude of redd or river mile/reach surveyed, assuming whole area is surveyed)
+- **Ideas:** This is the number of redds per unit area. We would need a count of redds and some sort of delineation of the area where redds are occurring (this could be latitude/longitude of redd or river mile/reach surveyed, assuming whole area is surveyed)
 
 3. Natural origin adult Chinook salmon population estimates by tributary, and trend in abundance (harvest plus escapement)  
 
-From Science Plan: "The metric for this hypothesis will be annual natural-origin adult Chinook salmon cohort replacement rates and trends over multiple years (e.g., > 3 years) over the period of VA implementation.   The baseline for this hypothesis will be the annual natural-origin adult Chinook salmon cohort replacement rate trends during the period associated with the Anadromous Fish Restoration Program Doubling Goal (years 1967-1991). A secondary baseline, to reflect recent conditions and population numbers, will be annual adult Chinook salmon cohort replacement rates and trends for natural-origin fall run Chinook salmon since 2010."
+- **From Science Plan:** "The metric for this hypothesis will be annual natural-origin adult Chinook salmon cohort replacement rates and trends over multiple years (e.g., > 3 years) over the period of VA implementation.   The baseline for this hypothesis will be the annual natural-origin adult Chinook salmon cohort replacement rate trends during the period associated with the Anadromous Fish Restoration Program Doubling Goal (years 1967-1991). A secondary baseline, to reflect recent conditions and population numbers, will be annual adult Chinook salmon cohort replacement rates and trends for natural-origin fall run Chinook salmon since 2010."
 
-We would need high quality redd data in order to estimate an adult
+- **Ideas:** We would need high quality redd data in order to estimate adult population
 
 ```{r, include = F}
 # get standard data from cloud
@@ -57,7 +60,7 @@ gcs_get_object(object_name = "adult-holding-redd-and-carcass-surveys/feather-riv
 feather_redd_raw <- read_csv("data-raw/feather-redd.csv")
 ```
 
-# What data are collected
+## What data are collected?
 
 *Contact*
 
@@ -73,7 +76,7 @@ These data were originally acquired from Chris Cook
 feather_redd_raw |> glimpse()
 ```
 
-## Questions
+### Data questions
 
 - Need to better understand `type` field. Do "area" measurements have a shapefile associated with them? Is "point" meant to communicate that a specific point measurement was taken for a redd?
 - Why is the `redd_count` not always 1? If greater than 1 does that mean that redd specific measurements like depth are not collected?
@@ -87,7 +90,7 @@ feather_redd_raw |> glimpse()
 - are each of the location sampled multiple times a year, or does locations changed overtime?
 
 
-# Data quality
+### Data quality
 
   * The data consistently collected include: date, location, survey_type, redd_count, salmon_count. 
 
@@ -112,9 +115,11 @@ knitr::kable(years_na |>
 
 ```
 
+### Data exploration {.tabset}
+
 Exploring fields that have data consistently
 
-Explore `date`
+#### date
  
 ```{r}
 #date range
@@ -122,14 +127,16 @@ range(feather_redd_raw$date)
 ```
 
 
-Explore `location`
+#### location
 
-  * There are some names that appear less than 5 times. We could check if they correspond to another location name, and it is spelled differently
+  * Location clean up is needed. There are some names that appear less than 5 times. We could check if they correspond to another location name, and it is spelled differently
 
 ```{r}
 #locations
 table(feather_redd_raw$location) #there are 121 unique location names
 ```
+
+**Locations surveyed less than 5 times**
 
 For locations that are being surveyed less than five times, we might want to verify if they belong to other location area names. Otherwise, these sites might not have enough data to reliably analyze over time.
 
@@ -151,6 +158,8 @@ feather_redd_raw |>
 
 ```
 
+**Frequent locations and years surveyed**
+
 ```{r}
 location_frequent <- feather_redd_raw |> 
   mutate(year = year(date)) |> 
@@ -163,16 +172,16 @@ location_frequent <- feather_redd_raw |>
   filter(n > 5)
 
 feather_redd_raw |> 
-  mutate(year = year(date)) |> 
+  mutate(year = as.factor(year(date))) |> 
   select(location, year) |> 
   group_by(location, year) |> 
   distinct() |> 
   filter(location %in% location_frequent$location) |> 
-  ggplot(aes(x = year, y = location, color = location)) +
+  ggplot(aes(x = year, y = location, color = year)) +
   geom_point(size = 2, alpha = 0.7) +
   labs(title = "Distinct Locations by Year",
        x = "Year",
-       y = "Location",
+       y = "Year",
        color = "Location") +  
   scale_color_viridis_d() +  
   theme_minimal() +
@@ -185,10 +194,12 @@ feather_redd_raw |>
 ```
 
 
-Explore `type`
+#### type
 
-Note that after 2015 that there isn't any point methods anymore
-  
+- Note that after 2015 that there are not area methods anymore
+
+**Observations by type and date**
+
 ```{r}
 #type
 unique(feather_redd_raw$type)
@@ -207,7 +218,11 @@ ggplot(feather_redd_raw, aes(x = date, y = type, color = type)) +
         axis.title.x = element_text(size = 12),
         axis.title.y = element_text(size = 12),
         axis.text = element_text(size = 10))
-  
+```
+
+**Count of observations by type**
+
+```{r}
 feather_redd_raw |> 
   group_by(type) |> 
   summarise(n = n()) |> 
@@ -219,20 +234,14 @@ feather_redd_raw |>
        x = "Type",
        y = "Count") +
   theme_minimal() 
-
 ```
 
-Explore `redd_count`
+#### redd_count
+
+**Redd counts by year**
 
 ```{r}
 range(feather_redd_raw$redd_count)
-
-ggplot(feather_redd_raw, aes(x = date, y = redd_count)) +
-  geom_col() +
-  labs(title = "Redd Count by Date",
-       x = "Date",
-       y = "Redd Count") +
-  theme_minimal() 
 
 feather_redd_raw |> 
   filter(is.na(date)==FALSE) |>  
@@ -249,17 +258,12 @@ feather_redd_raw |>
 
 ```
 
-Explore `salmon_count`
+#### salmon_count
+
+**Salmon counts by year**
 
 ```{r, warning=FALSE}
 range(feather_redd_raw$salmon_count, na.rm = TRUE)
-
-ggplot(feather_redd_raw, aes(x = date, y = salmon_count)) +
-  geom_col() +
-  labs(title = "Salmon Count by Date",
-       x = "Date",
-       y = "Salmon Count") +
-  theme_minimal() 
 
 feather_redd_raw |> 
   filter(is.na(date)==FALSE) |>  
@@ -276,9 +280,7 @@ feather_redd_raw |>
 ```
 
 
-Troubleshooting `latitude` and `longitude`
-
-```{r}
+```{r, include = F}
 lat_long_test <- feather_redd_raw |>
   filter(!is.na(longitude) | !is.na(latitude)) |>
   mutate(latitude = as.numeric(substring(latitude, 1, 2)) +
@@ -287,11 +289,12 @@ lat_long_test <- feather_redd_raw |>
                      as.numeric(substring(longitude, 4, nchar(longitude))) / 1e4)) |>
   filter(longitude > -125 | latitude < 40) |> #filtering those that seem off, for now
   glimpse()
-
 ```
 
-# Data limitations
+## Data limitations
 
-The lack of precision and availability of latitude and longitude coordinates limits the accuracy of spatial analyses. Without precise coordinates, we might be able to analyze data only at a broader geographic scale, for example by area names, rather than specific location points. This limitation affects our ability to pinpoint exact spawning sites and accurately map spawning habitat. It might be challenging to precisely define spawning habitat criteria in the absence of complete substrate data, which is critical for understanding the suitability of spawning environments. Furthermore, we will have limited ability to directly correlate redd density with specific environmental factors such as substrate type, depth, and velocity due to the missing data on these parameters. This gap makes it difficult to fully understand the habitat of Chinook salmon.
+- **Spatial data:** The lack of precision and availability of latitude and longitude coordinates limits the accuracy of spatial analyses. Without precise coordinates, we could analyze data only at a broader geographic scale, for example by area names, rather than specific location points. This limitation affects our ability to pinpoint exact spawning sites and accurately map spawning habitat. 
+- **Defining habitat:** It may be challenging to precisely define spawning habitat in the absence of complete substrate data, which is critical for understanding the suitability of spawning environments. We may also be limited by data gaps s for depth, and velocity. This gap makes it difficult to fully understand the habitat of Chinook salmon.
+- **Abundance:** These data may be challenging to use to estimate the spawning population because of the lack of information on measurement bias (e.g. how many redds are missed, what is the uncertainty). We may also want to make sure redds are not being double counted.
 
-However, despite these limitations, we might be able to use the available data to calculate redd density as the number of redds per unit area. By delineating surveyed areas based on available location names or river reaches, we can estimate redd density and assess patterns over time. Additionally, we can analyze trends in abundance (harvest plus escapement) over multiple years (> 3 years), comparing current data with historical baselines from periods and recent years. These analyses can provide insights into changes in population dynamics and the effectiveness of habitat enhancement projects, even though the precision of habitat characterization may be limited.
+Despite these limitations, we could use the available data to calculate redd density as the number of redds per unit area. By delineating surveyed areas based on available location names or river reaches, we can estimate redd density and assess patterns over time. 
