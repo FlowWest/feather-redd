@@ -18,6 +18,8 @@ library(dplyr)
 library(leaflet)
 library(RColorBrewer)
 library(viridis)
+library(readxl)
+library(janitor)
 ```
 
 Goal of this document is to review the Feather River redd data and understand the following:
@@ -27,3 +29,199 @@ Goal of this document is to review the Feather River redd data and understand th
 - what are the data limitations?
 - how are these data useful to Science Plan hypotheses?
 
+```{r, include=FALSE, warning=FALSE}
+
+redd_2014 <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd Survey Data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  mutate(date = convertToDate(date)) |> 
+  glimpse()
+
+
+# Read the data
+
+  # mutate(Date = as.Date.POSIXct(as.numeric(Date))) |> 
+  # glimpse()
+
+redd_2015 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2015_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2016 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2016_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2017 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2017_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2018 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2018_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2019 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2019_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2020 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2020_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2021 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2021_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2022_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+
+#this year's fields look different
+redd_2023 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()
+```
+
+Combining all years into one object
+
+```{r}
+combined_redd <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018, redd_2019, redd_2020, redd_2021, redd_2022) |> 
+  glimpse()
+```
+
+```{r}
+str(combined_redd)
+```
+
+#### location
+
+  * Location clean up is needed. There are some names that appear less than 5 times. We could check if they correspond to another location name, and it is spelled differently
+
+```{r}
+#locations
+table(combined_redd$location) #there are 121 unique location names
+```
+
+**Locations surveyed less than 5 times**
+
+For locations that are being surveyed less than five times, we might want to verify if they belong to other location area names. Otherwise, these sites might not have enough data to reliably analyze over time.
+
+```{r}
+#plotting those locations that appear less than 5 times
+combined_redd |> 
+  group_by(location) |> 
+  filter(n() < 5) |> 
+  ungroup() |> 
+  count(location) |> 
+  ggplot(aes(x = reorder(location, n), y = n)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  geom_text(aes(label = n), hjust = -0.3, size = 3.5) +
+  labs(title = "Count of Locations with Less Than 5 Observations",
+       x = "Location",
+       y = "Number of Data Records") +
+  theme_minimal()
+
+```
+
+**Frequent locations and years surveyed**
+
+```{r}
+location_frequent <- combined_redd |> 
+  mutate(year = year(date)) |> 
+  select(location, year) |> 
+  group_by(location, year) |> 
+  distinct() |> 
+  ungroup() |> 
+  group_by(location) |> 
+  tally() |> 
+  filter(n > 5)
+
+combined_redd |> 
+  mutate(year = as.factor(year(date))) |> 
+  select(location, year) |> 
+  group_by(location, year) |> 
+  distinct() |> 
+  filter(location %in% location_frequent$location) |> 
+  ggplot(aes(x = year, y = location, color = year)) +
+  geom_point(size = 2, alpha = 0.7) +
+  labs(title = "Distinct Locations by Year",
+       x = "Year",
+       y = "Year",
+       color = "Location") +  
+  scale_color_viridis_d() +  
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        axis.text = element_text(size = 8),
+        legend.position = "none")
+  
+```
+
+
+#### type
+
+- note that there is one type record that is 3761, with no date associated, is this an error?
+
+**Observations by type and date**
+
+```{r}
+#type
+unique(combined_redd$type)
+
+ggplot(combined_redd, aes(x = date, y = type, color = type)) +
+  geom_point(size = 2, alpha = 0.7) +
+  labs(title = "Types Over Time",
+       x = "Date",
+       y = "Type",
+       color = "Type") +
+   scale_color_viridis_d(na.value = "grey50") +  
+  theme_minimal() +
+# Use Viridis color scale
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        axis.text = element_text(size = 10))
+```
+
+
+**Count of observations by type**
+
+```{r}
+combined_redd |> 
+  group_by(type) |> 
+  summarise(n = n()) |> 
+  ggplot(aes(x = type, y = n, fill = type)) +
+  geom_bar(stat = "identity", color = "black") +
+  geom_text(aes(label = n), vjust = -0.5, size = 3.5) +
+  scale_fill_viridis_d() +  
+  labs(title = "Count of Observations by Type",
+       x = "Type",
+       y = "Count") +
+  theme_minimal() 
+```
+
+#### redd_count
+
+**Redd counts by year**
+
+```{r}
+range(combined_redd$number_of_redds, na.rm = TRUE)
+
+combined_redd <- combined_redd %>%
+  mutate(date = as.Date(date)) 
+
+#TODO clean up this plot 
+
+# ggplot(combined_redd, aes(x = date, y = number_of_redds)) + 
+#   geom_col() +
+#   facet_wrap(~year(date), scales = "free") +
+#   scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+#   labs(title = "Redd Counts Over Time") +  
+#   theme_minimal() +
+#   theme(
+#     strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+#     plot.title = element_text(hjust = 0.5) 
+#   )
+
+```
