@@ -1,0 +1,29 @@
+---
+title: "feather river redd data exploration"
+date: "2024-08-27"
+output: 
+  html_document:
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+library(tidyverse)
+library(lubridate)
+library(googleCloudStorageR)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(leaflet)
+library(RColorBrewer)
+library(viridis)
+```
+
+Goal of this document is to review the Feather River redd data and understand the following:
+
+- what data are collected?
+- what is the quality of the data?
+- what are the data limitations?
+- how are these data useful to Science Plan hypotheses?
+
