@@ -36,6 +36,7 @@ Goal of this document is to review the Feather River redd data and understand th
 redd_2014 <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd Survey Data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
   clean_names() |> 
   mutate(date = convertToDate(date)) |> 
+  slice(-1912) |>  #removing the totals column
   glimpse()
 
 
@@ -44,42 +45,42 @@ redd_2014 <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd S
   # mutate(Date = as.Date.POSIXct(as.numeric(Date))) |> 
   # glimpse()
 
-redd_2015 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2015_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2015 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2015_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2353)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2016 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2016_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2016 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2016_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:1571)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2017 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2017_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2017 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2017_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2718)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2018 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2018_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2018 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2018_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:4170)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2019 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2019_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2019 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2019_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5049)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2020 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2020_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2020 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2020_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5432)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2021 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2021_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2021 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2021_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2595)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2022_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2022_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:3762)) |> 
   clean_names() |> 
   glimpse()
 
 #this year's fields look different
-redd_2023 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |> 
-  clean_names() |> 
-  glimpse()
+# redd_2023 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |> 
+#   clean_names() |> 
+#   glimpse()
 ```
 
 Combining all years into one object
