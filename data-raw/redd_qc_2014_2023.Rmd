@@ -22,6 +22,7 @@ library(readxl)
 library(janitor)
 library(sf)
 library(openxlsx)
+library(readxl)
 ```
 
 Goal of this document is to review the Feather River redd data and understand the following:
@@ -32,7 +33,6 @@ Goal of this document is to review the Feather River redd data and understand th
 - how are these data useful to Science Plan hypotheses?
 
 ```{r, include=FALSE, warning=FALSE}
-
 redd_2014 <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd Survey Data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
   clean_names() |> 
   mutate(date = convertToDate(date)) |> 
@@ -76,12 +76,70 @@ redd_2021 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Sur
 redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2022_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:3762)) |> 
   clean_names() |> 
   glimpse()
-
-#this year's fields look different
-# redd_2023 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |> 
-#   clean_names() |> 
-#   glimpse()
 ```
+
+
+```{r, include=FALSE, warning=FALSE}
+# this year's fields look different
+redd_2023 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |>
+  clean_names() |>
+  glimpse()
+
+#testing with just the first tab of excel book
+redd_2023_clean <- redd_2023 |> 
+  mutate(date =  mdy_hm(date_time),
+         survey_wk = str_extract(x2, "\\d+-\\d+"),
+         location = riffle_name,
+         file_number = NA,
+         type = NA,
+         number_redds = number_of_fish_on_redd,
+         number_salmon = NA,
+         latitude_m_n = latitude_wgs_84,
+         longitude_m_e = longitude_wgs_84,
+         depth_m  = water_depth_m,
+         pot_depth_m = NA,
+         velocity_m_s = velocity_m_sec,
+         percent_fines = percent_sand_0_0625_2mm, #should we also include % Silt <0.062mm
+         percent_small = percent_gravel_2_64mm,
+         percent_med = percent_pebble_64_128,
+         percent_large = percent_cobble_128_256mm,
+         percent_boulder = percent_boulder_256mm,
+         longitude_n_e = NA) |> 
+  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m, longitude_n_e) |> 
+  glimpse()
+
+```
+field relationship 2023 to data from other years 
+
+date - date/time 
+survey_wk - col B (no name)
+location - Riffle name
+file_number - NA
+type - NA
+number_redds - Number of fish on Redd
+number_salmon - NA
+latitude_m_n - Latitude (WGS 84)
+longitude_m_e - Longitude (WGS 84)
+depth_m  - water depth (m)
+pot_depth_m - ?
+velocity_m_s - Velocity (m/sec.)
+percent_fines - % Sand 0.0625-2mm #should we also include % Silt <0.062mm
+percent_small - % Gravel 2-64mm
+percent_med - % Pebble 64-128
+percent_large - % Cobble 128-256mm
+percent_boulder - % Boulder >256mm
+redd_width_m - Redd Width (m)
+redd_length_m - Redd Length (m)
+
+Unmatched fields:
+redd #
+Elevation (ft)
+Accuracy (ft)
+Subsample
+Boat Point 
+Comment 
+User
+
 
 Combining all years into one object
 
