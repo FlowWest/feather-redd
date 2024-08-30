@@ -32,19 +32,51 @@ Goal of this document is to review the Feather River redd data and understand th
 - what are the data limitations?
 - how are these data useful to Science Plan hypotheses?
 
+## Relevant Science Plan hypotheses
+
+1. Spawning habitat acreage
+
+- **From Science Plan:** "The metric for this hypothesis will be the acreage of spawning habitat with suitable water depths and velocities, and sizes of spawning gravel. Spawning habitat criteria, including depth, velocity, and target spawning substrate size will be defined in the specific VA action science and monitoring plan and associated design documents. The suitable gravel size for spawning habitat will be a range and distribution of spawning substrate sizes specific to the spawning population and hydrogeomorphic conditions in each tributary."
+
+- **Ideas:** This hypothesis was set up to use depth and velocity criteria to map spawning habitat acreage and compare to existing habitat. We could map spawning habitat based on redd locations over time. We would need latitude and longitude of all redds observed.
+
+2. Salmon redd density (this is the most relevant hypothesis)
+
+- **From Science Plan:** "The metric for this hypothesis will be the number of Chinook salmon redds per unit area in habitat enhancement project areas, while also accounting for the potential for redd superimposition.  The baseline for this hypothesis will be the redd density and superimposition rate at habitat enhancement locations compared to adjacent areas within the same reach, measured concurrently along with water quality criteria. In systems where redd mapping has been conducted consistently at both project locations and adjacent, non-enhanced locations, historical data can also be leveraged to examine trends and changes in redd density after the enhancement action."
+
+- **Ideas:** This is the number of redds per unit area. We would need a count of redds and some sort of delineation of the area where redds are occurring (this could be latitude/longitude of redd or river mile/reach surveyed, assuming whole area is surveyed)
+
+3. Natural origin adult Chinook salmon population estimates by tributary, and trend in abundance (harvest plus escapement)  
+
+- **From Science Plan:** "The metric for this hypothesis will be annual natural-origin adult Chinook salmon cohort replacement rates and trends over multiple years (e.g., > 3 years) over the period of VA implementation.   The baseline for this hypothesis will be the annual natural-origin adult Chinook salmon cohort replacement rate trends during the period associated with the Anadromous Fish Restoration Program Doubling Goal (years 1967-1991). A secondary baseline, to reflect recent conditions and population numbers, will be annual adult Chinook salmon cohort replacement rates and trends for natural-origin fall run Chinook salmon since 2010."
+
+- **Ideas:** We would need high quality redd data in order to estimate adult population
+
+*Contact*
+
+These data were originally acquired from Chris Cook
+
+*Timeframe*
+
+- 2017-2023 
+- Longitude and latitude data: #TODO add info
+
+### Data quality
+
+#TODO add info
+
 ```{r, include=FALSE, warning=FALSE}
-redd_2014 <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd Survey Data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2014_raw <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd Survey Data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
   clean_names() |> 
-  mutate(date = convertToDate(date)) |> 
-  rename(number_redds = number_of_redds) |> 
   slice(-1912) |>  #removing the totals column
   glimpse()
 
 
-# Read the data
+redd_2014 <- redd_2014_raw |> 
+  mutate(date = if_else(date == "10/1/2014", as.Date(date, format = "%m/%d/%Y"), convertToDate(date))) |> 
+  rename(number_redds = number_of_redds) |> 
+  glimpse()
 
-  # mutate(Date = as.Date.POSIXct(as.numeric(Date))) |> 
-  # glimpse()
 
 redd_2015 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2015_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2353)) |> 
   clean_names() |> 
@@ -315,37 +347,16 @@ redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook R
 redd_2023 <- bind_rows(redd_2023_week1, redd_2023_week2, redd_2023_week3, redd_2023_week4, redd_2023_week5, redd_2023_week6, redd_2023_week7, redd_2023_week8, redd_2023_week9, redd_2023_week11) |> 
   glimpse()
 ```
+### Data questions
 
-field relationship 2023 to data from other years 
+- 2023 data has a lot of missing number_redds
+- Latitude/Longitude unit system is inconsistent. Up until 2013, coordinate system is UTM, years following are shown as "latitude mn / longitude me" (probably zone 10). [This is some information we have found about that coordinate system](https://gis.stackexchange.com/questions/111847/what-kind-of-coordinate-system-has-values-like-48569-800me-706602-032mn). Why were the coordinate systems different, and how can we convert from mn/me to UTM?
+- 2023 data has some fields that arent on previous years: redd #, Elevation (ft), Accuracy (ft), Subsample,
+Boat Point, Comment, User. Should we include those in the combined data?
+- On 2023 data, there is some data that was not collected, that was previously included in past years;
+file_number (unless it is the same than redd_number?), type, number_salmon, pot_depth_m, 
+- 2023 data has 6 fields for types of soil (boulder, cobble, pebble, gravel, sand and silt), other years have 5 (fines, small, med, large). They were matched by size but % silt was left out for now. Should we include that column in combined data?  
 
-date - date/time 
-survey_wk - col B (no name)
-location - Riffle name
-file_number - NA
-type - NA
-number_redds - Number of fish on Redd
-number_salmon - NA
-latitude_m_n - Latitude (WGS 84)
-longitude_m_e - Longitude (WGS 84)
-depth_m  - water depth (m)
-pot_depth_m - ?
-velocity_m_s - Velocity (m/sec.)
-percent_fines - % Sand 0.0625-2mm #should we also include % Silt <0.062mm
-percent_small - % Gravel 2-64mm
-percent_med - % Pebble 64-128
-percent_large - % Cobble 128-256mm
-percent_boulder - % Boulder >256mm
-redd_width_m - Redd Width (m)
-redd_length_m - Redd Length (m)
-
-Unmatched fields:
-redd #
-Elevation (ft)
-Accuracy (ft)
-Subsample
-Boat Point 
-Comment 
-User
 
 
 Combining all years into one object
@@ -377,7 +388,9 @@ range(combined_redd$date, na.rm = TRUE)
 
 ```{r}
 #locations
-table(combined_redd$location) #there are 121 unique location names
+table(combined_redd$location) #there are 88 unique location names
+
+unique(combined_redd$location)
 ```
 
 **Locations surveyed less than 5 times**
@@ -440,8 +453,6 @@ combined_redd |>
 
 #### type
 
-- note that there is one type record that is 3761, with no date associated, is this an error?
-
 **Observations by type and date**
 
 ```{r, warning=FALSE}
@@ -486,24 +497,55 @@ combined_redd |>
 **Redd counts by year**
 
 ```{r}
-range(combined_redd$number_of_redds, na.rm = TRUE)
+range(combined_redd$number_redds, na.rm = TRUE)
 
 combined_redd <- combined_redd %>%
-  mutate(date = as.Date(date)) 
+  mutate(date = as.Date(date))
+```
 
-#TODO clean up this plot 
+```{r, warning=FALSE}
+ggplot(combined_redd, aes(x = date, y = number_redds)) +
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Redd Counts Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+```
 
-# ggplot(combined_redd, aes(x = date, y = number_of_redds)) + 
-#   geom_col() +
-#   facet_wrap(~year(date), scales = "free") +
-#   scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
-#   labs(title = "Redd Counts Over Time") +  
-#   theme_minimal() +
-#   theme(
-#     strip.background = element_rect(fill = "lightgrey", color = "grey50"),
-#     plot.title = element_text(hjust = 0.5) 
-#   )
+Same plot than above but with date values aggregated - using geom_col()
 
+```{r}
+ggplot(combined_redd, aes(x = date, y = number_redds)) +
+  geom_col() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Redd Counts Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+```
+
+
+```{r, include=FALSE}
+#checking for the number_redds NA values 
+sum(is.na(redd_2023$number_redds))
+
+sum(is.na(redd_2023_wee11$number_redds))
+
+sum(is.na(redd_2023_week1$number_redds))
+
+sum(is.na(redd_2023_week2$number_redds))
+
+sum(is.na(redd_2023_week9$number_redds))
+
+#2023 data has a lot of missing number_redds
 ```
 
 
@@ -547,3 +589,4 @@ Latitude and longitude needs to be transformed to UTM
 # combined_redd_utm <- st_transform(combined_redd_sf, crs = 32611)
 
 ```
+
