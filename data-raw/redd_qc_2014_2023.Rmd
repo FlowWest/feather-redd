@@ -107,6 +107,7 @@ redd_2020 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Sur
 
 redd_2021 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2021_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2595)) |> 
   clean_names() |> 
+  mutate(type = ifelse(type == "P", "p", type)) |> 
   glimpse()
 
 redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2022_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:3762)) |> 
@@ -116,13 +117,11 @@ redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Sur
 
 
 ```{r, include=FALSE, warning=FALSE}
-# this year's fields look different
-redd_2023_raw <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |>
-  clean_names() |>
-  glimpse()
+# 2023 data is formatted a bit different. Cleaning format here
 
-#testing with just the first tab of excel book
-redd_2023_week1 <- redd_2023 |> 
+
+redd_2023_week1 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |>
+  clean_names() |> 
   mutate(date =  mdy_hm(date_time),
          survey_wk = str_extract(x2, "\\d+-\\d+"),
          location = riffle_name,
@@ -326,7 +325,7 @@ redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook R
          survey_wk = str_extract(x2, "\\d+-\\d+"),
          location = riffle_name,
          file_number = NA,
-         type = NA,
+         type = as.character(NA),
          number_redds = number_of_fish_on_redd,
          number_salmon = NA,
          latitude_m_n = latitude_wgs_84,
@@ -343,10 +342,12 @@ redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook R
   glimpse()
 ```
 
+
 ```{r}
 redd_2023 <- bind_rows(redd_2023_week1, redd_2023_week2, redd_2023_week3, redd_2023_week4, redd_2023_week5, redd_2023_week6, redd_2023_week7, redd_2023_week8, redd_2023_week9, redd_2023_week11) |> 
   glimpse()
 ```
+
 ### Data questions
 
 - 2023 data has a lot of missing number_redds
@@ -357,6 +358,34 @@ Boat Point, Comment, User. Should we include those in the combined data?
 file_number (unless it is the same than redd_number?), type, number_salmon, pot_depth_m, 
 - 2023 data has 6 fields for types of soil (boulder, cobble, pebble, gravel, sand and silt), other years have 5 (fines, small, med, large). They were matched by size but % silt was left out for now. Should we include that column in combined data?  
 
+
+All coordinates, except 2023, are on  mn me format, transforming to UTM here
+#TODO continue to look into the lat/long that did not tranform
+```{r}
+combined_14_22 <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018, redd_2019, redd_2020, redd_2021, redd_2022) |> 
+  glimpse()
+
+redd_sf <- combined_14_22 |> 
+  mutate(
+    longitude_m_e = ifelse(is.na(longitude_m_e), 0, longitude_m_e),
+    latitude_m_n = ifelse(is.na(latitude_m_n), 0, latitude_m_n)
+  )
+  
+# Create an sf object with the correct UTM zone
+sf_points <- st_as_sf(redd_sf, coords = c("longitude_m_e", "latitude_m_n"), crs = 32610)
+
+# Transform to geographic coordinates (latitude/longitude)
+geo_points <- st_transform(sf_points, crs = 4326)
+
+# View the transformed coordinates
+print(geo_points)
+
+combined_14_22$longitude <- st_coordinates(geo_points)[, "X"]
+combined_14_22$latitude <- st_coordinates(geo_points)[, "Y"]
+
+# View the updated dataframe
+head(combined_14_22)
+```
 
 
 Combining all years into one object
@@ -478,6 +507,8 @@ ggplot(combined_redd, aes(x = date, y = type, color = type)) +
 
 **Count of observations by type**
 
+- note that all 2023 data does not have a `type` field
+
 ```{r}
 combined_redd |> 
   group_by(type) |> 
@@ -537,7 +568,7 @@ ggplot(combined_redd, aes(x = date, y = number_redds)) +
 #checking for the number_redds NA values 
 sum(is.na(redd_2023$number_redds))
 
-sum(is.na(redd_2023_wee11$number_redds))
+sum(is.na(redd_2023_week11$number_redds))
 
 sum(is.na(redd_2023_week1$number_redds))
 
