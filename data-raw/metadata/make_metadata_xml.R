@@ -9,20 +9,18 @@ datatable_metadata <-
                 attribute_info = c("data-raw/metadata/feather_redd_metadata.xlsx"),
                 datatable_description = c("Survey metadata from Feather River redd survey data"),
                 datatable_url = paste0("https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/",
-                                       c("survey_characteristics.csv", #TODO update these csv name
-                                         "locations_lookup.csv",
-                                         "fish_observations.csv")))
+                                       c("all_redd_data.csv")))
 
-other_entity_metadata_1 <- list("file_name" = "unit_spatial_data.zip",
-                                "file_description" = "Kmz and GIS files for survey units",
-                                "file_type" = "zip",
-                                "physical" = create_physical("data-raw/metadata/unit_spatial_data.zip",
-                                                             data_url = "https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/unit_spatial_data.zip"))
-
-other_entity_metadata_1$physical$dataFormat <- list("externallyDefinedFormat" = list("formatName" = "zip"))
+# other_entity_metadata_1 <- list("file_name" = "unit_spatial_data.zip",
+#                                 "file_description" = "Kmz and GIS files for survey units",
+#                                 "file_type" = "zip",
+#                                 "physical" = create_physical("data-raw/metadata/unit_spatial_data.zip",
+#                                                              data_url = "https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/unit_spatial_data.zip"))
+# 
+# other_entity_metadata_1$physical$dataFormat <- list("externallyDefinedFormat" = list("formatName" = "zip"))
 
 # save cleaned data to `data/`
-excel_path <- "data-raw/metadata/feather_redd_project_metadata.xlsx" #TODO check this excel path/name
+excel_path <- "data-raw/metadata/feather_redd_project_metadata.xlsx" 
 sheets <- readxl::excel_sheets(excel_path)
 metadata <- lapply(sheets, function(x) readxl::read_excel(excel_path, sheet = x))
 names(metadata) <- sheets
@@ -48,10 +46,10 @@ dataset <- list() %>%
   add_other_entity(other_entity_metadata_1)
 
 # GO through and check on all units
-custom_units <- data.frame(id = c("parr marks", "decimal degrees", "decimal degrees", "count of fish", "NTU", "square meters"), #todo update custom units
-                           unitType = c("dimensionless", "dimensionless", "dimensionless", "dimensionless", "dimensionless", "dimensionless"),
-                           parentSI = c(NA, NA, NA, NA, NA,NA),
-                           multiplierToSI = c(NA, NA, NA, NA,NA,NA),
+custom_units <- data.frame(id = c("redds", "salmon ", "decimal degrees", "decimal degrees"), #todo update custom units
+                           unitType = c("dimensionless", "dimensionless", "dimensionless", "dimensionless"),
+                           parentSI = c(NA, NA, NA, NA),
+                           multiplierToSI = c(NA, NA, NA, NA),
                            description = c("parr marks", "decimal degrees", "decimal degrees","number of fish counted", "NTU", "square meters"))
 
 
