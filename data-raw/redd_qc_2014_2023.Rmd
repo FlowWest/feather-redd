@@ -621,3 +621,8 @@ Latitude and longitude needs to be transformed to UTM
 
 ```
 
+```{r}
+#save clean data to data/
+write_csv(combined_redd, "data/all_redd_data.csv")
+```
+
