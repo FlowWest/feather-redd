@@ -621,6 +621,13 @@ Latitude and longitude needs to be transformed to UTM
 
 ```
 
+	
+
+```{r}
+#TODO note to check velocity for the following record:
+# 2020-11-18 9-3 Upper Hatchery Riffle 49 velocity is negative 
+```
+
 ```{r}
 #save clean data to data/
 write_csv(combined_redd, "data/all_redd_data.csv")
