@@ -236,6 +236,11 @@ combined_redd <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018
          type = tolower(type)) |> 
   glimpse()
 ```
+```{r}
+combined_redd <- combined_redd |> 
+  mutate(date = as.Date(date)) |> 
+  glimpse()
+```
 
 ### Data exploration {.tabset}
 
@@ -419,6 +424,50 @@ combined_redd |>
     plot.title = element_text(hjust = 0.5) 
   )
 ```
+#### depth
+
+```{r, warning = F, message=F}
+range(combined_redd$depth_m, na.rm = TRUE)
+```
+
+```{r, warning = F, message=F}
+ggplot(combined_redd, aes(x = date, y = depth_m)) +
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Depth Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
+#### velocity
+
+```{r, warning = F, message=F}
+range(combined_redd$velocity_m_s, na.rm = TRUE)
+```
+```{r, include=FALSE}
+#checking where the negative values are coming from
+combined_redd |> 
+  filter(velocity_m_s <= 0) |> 
+  glimpse()
+```
+
+```{r, warning = F, message=F}
+ggplot(combined_redd, aes(x = date, y = velocity_m_s)) +
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Velocity Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
 
 Latitude and longitude needs to be transformed to UTM
 
