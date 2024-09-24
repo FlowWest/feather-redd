@@ -472,20 +472,55 @@ ggplot(combined_redd, aes(x = date, y = velocity_m_s)) +
 Latitude and longitude needs to be transformed to UTM
 
 #TODO
+```{r}
+combined_redd_filtered <- combined_redd |> 
+  filter(longitude_m_e <= 0 | latitude_m_n <= 40) |> 
+  glimpse()
+  
+
+redd_coords <- combined_redd |> 
+   filter(!is.na(longitude_m_e) & !is.na(latitude_m_n)) |>  #filtered out those that are NA for lat/long
+  view()
+
+redd_coords_issue <- redd_coords |> 
+  filter(longitude_m_e >= 0 | latitude_m_n >= 40) |> #filter out those that seem to off UTM format
+  glimpse()
+
+utm_crs <- 32610  # EPSG code for UTM zone 10N (WGS84)
+
+# Create an sf object
+sf_data <- st_as_sf(redd_coords_issue, coords = c("longitude_m_e", "latitude_m_n"), crs = utm_crs)
+latlong_crs <- 4326  # EPSG code for WGS84
+latlong_data <- st_transform(sf_data, crs = latlong_crs)
+
+coords <- st_coordinates(latlong_data)
+
+# Add the longitude and latitude as separate cols
+latlong_data$longitude <- coords[, 1]  
+latlong_data$latitude <- coords[, 2]   
+
+# ---- second troubleshoot
+
+# fix <- latlong_data |> 
+#   filter(longitude >= -120 |
+#          latitude <= 38) |> #filter out those that seem to off UTM format
+#   glimpse()
+
+```
 
 ```{r, include = F}
 # # Filter out rows with NA in either latitude or longitude
-# combined_redd_clean <- combined_redd |> 
+# combined_redd_clean <- combined_redd |>
 #   filter(!is.na(longitude_m_e) & !is.na(latitude_m_n))
 # 
-# # Create an sf object from your data
-# combined_redd_sf <- combined_redd_clean |> 
+# # # Create an sf object from your data
+# combined_redd_sf <- combined_redd_clean |>
 #   mutate(
 #     longitude_m_e = ifelse(is.na(longitude_m_e), NA, longitude_m_e),
-#     latitude_m_n = ifelse(is.na(latitude_m_n), NA, latitude_m_n)) |> 
+#     latitude_m_n = ifelse(is.na(latitude_m_n), NA, latitude_m_n)) |>
 #   st_as_sf(coords = c("longitude_m_e", "latitude_m_n"), crs = 4326)
-# 
-# # Transform to UTM (replace "32633" with the appropriate UTM EPSG code for your zone)
+# # 
+# # # Transform to UTM (replace "32633" with the appropriate UTM EPSG code for your zone)
 # combined_redd_utm <- st_transform(combined_redd_sf, crs = 32611)
 
 ```
