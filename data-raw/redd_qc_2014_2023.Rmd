@@ -23,6 +23,7 @@ library(janitor)
 library(sf)
 library(openxlsx)
 library(readxl)
+library(leaflet)
 ```
 
 Goal of this document is to review the Feather River redd data and understand the following:
@@ -473,17 +474,14 @@ Latitude and longitude needs to be transformed to UTM
 
 #TODO
 ```{r}
-combined_redd_filtered <- combined_redd |> 
-  filter(longitude_m_e <= 0 | latitude_m_n <= 40) |> 
-  glimpse()
-  
-
+#filtered out those that are NA for lat/long
 redd_coords <- combined_redd |> 
-   filter(!is.na(longitude_m_e) & !is.na(latitude_m_n)) |>  #filtered out those that are NA for lat/long
+   filter(!is.na(longitude_m_e) & !is.na(latitude_m_n)) |>  
   view()
 
+#filter out those that seem to off UTM format
 redd_coords_issue <- redd_coords |> 
-  filter(longitude_m_e >= 0 | latitude_m_n >= 40) |> #filter out those that seem to off UTM format
+  filter(longitude_m_e >= 0 | latitude_m_n >= 40) |>
   glimpse()
 
 utm_crs <- 32610  # EPSG code for UTM zone 10N (WGS84)
@@ -499,6 +497,10 @@ coords <- st_coordinates(latlong_data)
 latlong_data$longitude <- coords[, 1]  
 latlong_data$latitude <- coords[, 2]   
 
+latlong_data <- st_drop_geometry(latlong_data) |> 
+  mutate(longitude = ifelse(longitude >= -120, NA, longitude),
+         latitude = ifelse(latitude <= 39, NA, latitude)) |>
+  glimpse()
 # ---- second troubleshoot
 
 # fix <- latlong_data |> 
@@ -506,6 +508,46 @@ latlong_data$latitude <- coords[, 2]
 #          latitude <= 38) |> #filter out those that seem to off UTM format
 #   glimpse()
 
+#filtering data with UTM coordinates
+redd_UTM <- combined_redd |> 
+  filter(longitude_m_e <= 0 | latitude_m_n <= 40) |> 
+  mutate(longitude = longitude_m_e,
+         latitude = latitude_m_n) |> 
+  select(-c(latitude_m_n, longitude_m_e)) |> 
+  glimpse()
+
+#binding data transformed to UTM and original UTM data
+combined_redd_UTM <- bind_rows(latlong_data) |> 
+  glimpse()
+
+#todo add data that had lat long as NA
+
+```
+
+```{r}
+#plot points 
+palette <- viridis(n = nlevels(factor(combined_redd_UTM$location))) 
+
+# leaflet(combined_redd_UTM) |> 
+#   addTiles() |> 
+#   addCircleMarkers(
+#     ~longitude, ~latitude,
+#     popup =  ~paste0("ID: ", location, "<br>Location: ", location),
+#     radius = 2,
+#     color = ~palette[as.numeric(factor(location))],
+#     label = ~as.character(location),
+#     labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
+#   )
+leaflet(combined_redd_UTM) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    ~longitude, ~latitude,
+    # popup = ~paste0("ID: ", location, "<br>Location: ", location),
+    radius = 2,  # Adjust radius as needed
+    color = ~palette[as.numeric(factor(location))],
+    # label = ~as.character(location),
+    # labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
+  )
 ```
 
 ```{r, include = F}
