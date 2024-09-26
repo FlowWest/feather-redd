@@ -1,6 +1,6 @@
 ---
 title: "feather river redd data exploration"
-date: "2024-08-27"
+date: "2024-09-26"
 output: 
   html_document:
     theme: flatly
@@ -59,12 +59,11 @@ These data were originally acquired from Chris Cook
 
 *Timeframe*
 
-- 2017-2023 
-- Longitude and latitude data: #TODO add info
+- 2014-2023 
+
 
 ### Data quality
 
-#TODO add info
 
 ```{r, include=FALSE, warning=FALSE}
 redd_2014_raw <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd Survey Data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
@@ -182,26 +181,24 @@ redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook R
 ```
 
 
-```{r}
+```{r, include=FALSE}
 redd_2023 <- bind_rows(redd_2023_week1, redd_2023_week2, redd_2023_week3, redd_2023_week4, redd_2023_week5, redd_2023_week6, redd_2023_week7, redd_2023_week8, redd_2023_week9, redd_2023_week11) |> 
   glimpse()
 ```
 
 ### Data questions
 
-- Latitude/Longitude unit system is inconsistent. Up until 2013, coordinate system is UTM, years following are shown as "latitude mn / longitude me" (probably zone 10). [This is some information we have found about that coordinate system](https://gis.stackexchange.com/questions/111847/what-kind-of-coordinate-system-has-values-like-48569-800me-706602-032mn). Why were the coordinate systems different, and how can we convert from mn/me to UTM?
-- 2023 data has some fields that arent on previous years: redd #, Elevation (ft), Accuracy (ft), Subsample,
-Boat Point, Comment, User. Should we include those in the combined data?
-- On 2023 data, there is some data that was not collected, that was previously included in past years;
-file_number (unless it is the same than redd_number?), type, number_salmon, pot_depth_m, 
+- Latitude/Longitude unit system is inconsistent. Only 2023 has UTM coordinate system, other years following are shown as "latitude mn / longitude me" (probably zone 10). [This is some information we have found about that coordinate system](https://gis.stackexchange.com/questions/111847/what-kind-of-coordinate-system-has-values-like-48569-800me-706602-032mn). Why were the coordinate systems different?
 - 2023 data has 6 fields for types of soil (boulder, cobble, pebble, gravel, sand and silt), other years have 5 (fines, small, med, large). They were matched by size but % silt was left out for now. Should we include that column in combined data?  
-- 2014-10-20 has 6 records with high numer_salmon numbers (over 15, check if these are not errors)
+- 2014-10-20 has 6 records with high number_salmon numbers (over 15, check if these are not errors)
+- Velocity on 2020-11–18 is negative, is it safe to assume this is a mistake, we turn these into NA
+- There are some pretty high pot_depth_m over 40, is it safe to assume this is a mistake, we turn these into NA
+- There are five record values for number of salmon that are over 20 (2014-10-20), can we confirm these are accurate? 
 
-
-All coordinates, except 2023, are on  mn me format, transforming to UTM here
 
 
 ```{r, include = F}
+# All coordinates, except 2023, are on  mn me format, transforming to UTM here
 combined_14_22 <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018, redd_2019, redd_2020, redd_2021, redd_2022) |> 
   glimpse()
 
@@ -265,20 +262,40 @@ combined_redd <- bind_rows(data_14_22, redd_2023) |>
 Exploring fields that have data consistently
 
 #### date
+
+  - Surveys are conducted September to December
  
 ```{r, warning = F, message=F}
 #date range
 range(combined_redd$date, na.rm = TRUE)
 ```
 
-```{r}
-# ggplot(combined_redd, aes(date, location)) +
-#   geom_point() +
-#   theme_minimal() +
-#   theme(plot.title = element_text(hjust = 0.5, size = 14),
-#         axis.title.x = element_text(size = 12),
-#         axis.title.y = element_text(size = 2))
+Looking at temporal coverage 
+
+```{r, warning=FALSE}
+ggplot(combined_redd, aes(month(date), number_salmon)) +
+  geom_point() +
+  facet_wrap(~year(date)) +
+  labs(title = "Count of salmon per month",
+       x = "Month",
+       y = "Number of Salmon") +
+  theme_minimal()
 ```
+
+Since there are outliers, will remove and plot again
+
+```{r}
+combined_redd |> 
+  filter(number_salmon <10) |> 
+  ggplot(aes(month(date), number_salmon)) +
+  geom_point() +
+  facet_wrap(~year(date)) +
+  labs(title = "Count of salmon per month",
+       x = "Month",
+       y = "Number of Salmon") +
+  theme_minimal()
+```
+
 
 
 #### location
@@ -435,6 +452,8 @@ ggplot(combined_redd, aes(x = date, y = number_redds)) +
 
 **Salmon counts by year**
 
+  - Noticed some outliers. Plotting below again removing values over 20
+  
 ```{r, warning = F, message=F}
 range(combined_redd$number_salmon, na.rm = TRUE)
 
@@ -442,18 +461,29 @@ combined_redd |>
   ggplot(aes(date, number_salmon)) + 
   geom_point() +
   labs(title = "Salmon Counts Over Time") +  # TODO check if values over 20 are not outliers
-  theme_minimal() 
+  theme_minimal()
+```
 
+```{r}
+combined_redd |> 
+  filter(number_salmon < 20) |> 
+  ggplot(aes(date, number_salmon)) + 
+  geom_point() +
+  labs(title = "Salmon Counts Over Time (values over 20 removed)") +  # TODO check if values over 20 are not outliers
+  theme_minimal() 
+```
+
+```{r, warning = F, message=F}
 # plotting values lower that 30  
 
 combined_redd |> 
   filter(is.na(date)==FALSE,
-         number_salmon < 30) |>  
+         number_salmon < 20) |>  
   ggplot(aes(x = date, y = number_salmon)) + 
   geom_point() +
   facet_wrap(~year(date), scales = "free") +
   scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
-  labs(title = "Salmon Counts Over Time") +  
+  labs(title = "Salmon Counts Over Time by Year (values over 20 removed)") +  
   theme_minimal() +
   theme(
     strip.background = element_rect(fill = "lightgrey", color = "grey50"),
@@ -493,15 +523,23 @@ summary(combined_redd$depth_m)
 
 ```{r, warning = F, message=F}
 range(combined_redd$velocity_m_s, na.rm = TRUE)
+summary(combined_redd$velocity_m_s)
 ```
 ```{r, include=FALSE}
 #checking where the negative values are coming from
 combined_redd |> 
-  filter(velocity_m_s <= 0) |> 
+  filter(velocity_m_s <= 0) |> #it is only one day 
   glimpse()
+
+#note apply this to the actual data
 ```
 
+Turning that negative velocity to NA and plotting
+
 ```{r, warning = F, message=F}
+combined_redd <- combined_redd |> 
+  mutate(velocity_m_s = ifelse(velocity_m_s < 0, NA, velocity_m_s))
+
 ggplot(combined_redd, aes(x = date, y = velocity_m_s)) +
   geom_point() +
   facet_wrap(~year(date), scales = "free") +
@@ -530,10 +568,19 @@ combined_redd |>
   geom_point()
 ```
 
+Turning values over 40 to NA
+
+```{r}
+combined_redd <- combined_redd |> 
+  mutate(pot_depth_m = ifelse(pot_depth_m >= 40, NA, pot_depth_m)) 
+```
+
+
+#### latitude/ longitude plot
 
 Cleaning lat/long to plot on a map
 
-```{r}
+```{r, include=FALSE}
 summary(combined_redd$latitude)
 summary(combined_redd$longitude)
 
@@ -546,27 +593,35 @@ map_test <- combined_redd |>
 
 # plotting on map
 
-palette <- viridis(n = nlevels(factor(map_test$location))) 
+palette <- viridis(n = nlevels(factor(map_test$location)))
+```
 
+```{r}
 leaflet(map_test) |> 
   addTiles() |> 
   addCircleMarkers(
     ~longitude, ~latitude,
     popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
     radius = 2,  # Adjust radius as needed
-    # color = ~palette[as.numeric(factor(location))],
+    color = ~palette[as.numeric(factor(location))],
     # label = ~as.character(location),
     # labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
   )
 ```
 
+summary of depth
 
 ```{r}
-#TODO note to check velocity for the following record:
-# 2020-11-18 9-3 Upper Hatchery Riffle 49 velocity is negative 
 summary(combined_redd$depth_m)
+```
+
+summary of pot_depth after modifications
+```{r}
 summary(combined_redd$pot_depth_m)
-filter(combined_redd, pot_depth_m > 10)
+```
+
+summary of velocity_m_s after modifications
+```{r}
 summary(combined_redd$velocity_m_s)
 ```
 
@@ -575,7 +630,8 @@ summary(combined_redd$velocity_m_s)
 combined_redd_final <- combined_redd |> 
   filter(type == "p" | is.na(type)) |> 
   mutate(date = as.Date(date),
-         number_redds = ifelse(number_redds == 0, 1, number_redds))
+         number_redds = ifelse(number_redds == 0, 1, number_redds)) |> 
+  select(-type) # removing based on Feather River team instructions
 ```
 
 ```{r}
