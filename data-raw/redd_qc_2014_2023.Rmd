@@ -229,12 +229,12 @@ combined_14_22_utm <- st_drop_geometry(combined_14_22_utm)
 
 # check those that dont make sense for UTM
 sum(combined_14_22_utm$latitude < 38)
-sum(combined_14_22_utm$longitude > -100)
+sum(combined_14_22_utm$longitude > -119)
 
 #setting those to 0 - TODO check if this is a fair assumption 
 data_14_22 <- combined_14_22_utm |> 
   mutate(latitude = ifelse(latitude < 38, 0, latitude),
-         longitude = ifelse(longitude > -100, 0, longitude))
+         longitude = ifelse(longitude > -119, 0, longitude))
 
 #up until this point coordinates data from 2014 to 2022 is the cleanest 
 ```
@@ -255,12 +255,8 @@ Combining all years into one object
 ```{r}
 combined_redd <- bind_rows(data_14_22, redd_2023) |> 
   mutate(location = tolower(location),
-         type = tolower(type)) |> 
-  glimpse()
-```
-```{r, include=FALSE}
-combined_redd <- combined_redd |> 
-  mutate(date = as.Date(date)) |> 
+         type = tolower(type),
+         date = as.Date(date)) |> 
   glimpse()
 ```
 
@@ -535,104 +531,35 @@ combined_redd |>
 ```
 
 
-Latitude and longitude needs to be transformed to UTM
-
-#TODO
-```{r}
-#filtered out those that are NA for lat/long
-redd_coords <- combined_redd |> 
-   filter(!is.na(longitude_m_e) & !is.na(latitude_m_n)) |>  
-  view()
-
-#filter out those that seem to off UTM format
-redd_coords_issue <- redd_coords |> 
-  filter(longitude_m_e >= 0 | latitude_m_n >= 40) |>
-  glimpse()
-
-utm_crs <- 32610  # EPSG code for UTM zone 10N (WGS84)
-
-# Create an sf object
-sf_data <- st_as_sf(redd_coords_issue, coords = c("longitude_m_e", "latitude_m_n"), crs = utm_crs)
-latlong_crs <- 4326  # EPSG code for WGS84
-latlong_data <- st_transform(sf_data, crs = latlong_crs)
-
-coords <- st_coordinates(latlong_data)
-
-# Add the longitude and latitude as separate cols
-latlong_data$longitude <- coords[, 1]  
-latlong_data$latitude <- coords[, 2]   
-
-latlong_data <- st_drop_geometry(latlong_data) |> 
-  mutate(longitude = ifelse(longitude >= -120, NA, longitude),
-         latitude = ifelse(latitude <= 39, NA, latitude)) |>
-  glimpse()
-# ---- second troubleshoot
-
-# fix <- latlong_data |> 
-#   filter(longitude >= -120 |
-#          latitude <= 38) |> #filter out those that seem to off UTM format
-#   glimpse()
-
-#filtering data with UTM coordinates
-redd_UTM <- combined_redd |> 
-  filter(longitude_m_e <= 0 | latitude_m_n <= 40) |> 
-  mutate(longitude = longitude_m_e,
-         latitude = latitude_m_n) |> 
-  select(-c(latitude_m_n, longitude_m_e)) |> 
-  glimpse()
-
-#binding data transformed to UTM and original UTM data
-combined_redd_UTM <- bind_rows(latlong_data) |> 
-  glimpse()
-
-#todo add data that had lat long as NA
-
-```
+Cleaning lat/long to plot on a map
 
 ```{r}
-#plot points 
-palette <- viridis(n = nlevels(factor(combined_redd$location))) 
+summary(combined_redd$latitude)
+summary(combined_redd$longitude)
 
-# leaflet(combined_redd_UTM) |> 
-#   addTiles() |> 
-#   addCircleMarkers(
-#     ~longitude, ~latitude,
-#     popup =  ~paste0("ID: ", location, "<br>Location: ", location),
-#     radius = 2,
-#     color = ~palette[as.numeric(factor(location))],
-#     label = ~as.character(location),
-#     labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
-#   )
-leaflet(combined_redd) |> 
+# modifying so that if either one of these is 0, then both should be 0
+map_test <- combined_redd |> 
+  mutate(latitude = ifelse(longitude == 0, 0, latitude),
+         longitude = ifelse(latitude == 0, 0, longitude)) |> 
+  filter(latitude != 0,
+         longitude != 0) # filtering out those that are 0 for plotting purposes
+
+# plotting on map
+
+palette <- viridis(n = nlevels(factor(map_test$location))) 
+
+leaflet(map_test) |> 
   addTiles() |> 
   addCircleMarkers(
     ~longitude, ~latitude,
-    # popup = ~paste0("ID: ", location, "<br>Location: ", location),
+    popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
     radius = 2,  # Adjust radius as needed
-    color = ~palette[as.numeric(factor(location))],
+    # color = ~palette[as.numeric(factor(location))],
     # label = ~as.character(location),
     # labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
   )
 ```
 
-```{r, include = F}
-# # Filter out rows with NA in either latitude or longitude
-# combined_redd_clean <- combined_redd |>
-#   filter(!is.na(longitude_m_e) & !is.na(latitude_m_n))
-# 
-# # # Create an sf object from your data
-# combined_redd_sf <- combined_redd_clean |>
-#   mutate(
-#     longitude_m_e = ifelse(is.na(longitude_m_e), NA, longitude_m_e),
-#     latitude_m_n = ifelse(is.na(latitude_m_n), NA, latitude_m_n)) |>
-#   st_as_sf(coords = c("longitude_m_e", "latitude_m_n"), crs = 4326)
-# # 
-# # # Transform to UTM (replace "32633" with the appropriate UTM EPSG code for your zone)
-# combined_redd_utm <- st_transform(combined_redd_sf, crs = 32611)
-
-```
-
-	
 
 ```{r}
 #TODO note to check velocity for the following record:
