@@ -511,9 +511,12 @@ ggplot(combined_redd, aes(x = date, y = depth_m)) +
     plot.title = element_text(hjust = 0.5)
   )
 
-ggplot(combined_redd, aes(x = month(date), y = depth_m)) +
+
+ggplot(combined_redd, aes(x = factor(month(date, label = TRUE), levels = month.abb), y = depth_m)) +
   geom_boxplot() +
-  facet_wrap(~year(date))
+  facet_wrap(~year(date)) +
+  labs(x = "Month", y = "Depth (m)") +
+  theme_minimal()
 
 summary(combined_redd$depth_m)
 
@@ -550,6 +553,11 @@ ggplot(combined_redd, aes(x = date, y = velocity_m_s)) +
     strip.background = element_rect(fill = "lightgrey", color = "grey50"),
     plot.title = element_text(hjust = 0.5)
   )
+
+ggplot(combined_redd, aes(velocity_m_s, depth_m)) +
+  geom_point() +
+  labs(title = "Depth vs Velocity") +
+  theme_minimal()
 ```
 
 #### pot_depth
@@ -575,6 +583,16 @@ combined_redd <- combined_redd |>
   mutate(pot_depth_m = ifelse(pot_depth_m >= 40, NA, pot_depth_m)) 
 ```
 
+```{r, warning=FALSE}
+
+ggplot(combined_redd, aes(x = factor(month(date, label = TRUE), levels = month.abb), y = pot_depth_m)) +
+  geom_boxplot() +
+  facet_wrap(~year(date)) +
+  labs(title = "Pot Depth per month (values over 40 removed)") +
+  labs(x = "Month", y = "Pot Depth (m)") +
+  theme_minimal()
+
+```
 
 #### latitude/ longitude plot
 
