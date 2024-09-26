@@ -195,49 +195,70 @@ Boat Point, Comment, User. Should we include those in the combined data?
 - On 2023 data, there is some data that was not collected, that was previously included in past years;
 file_number (unless it is the same than redd_number?), type, number_salmon, pot_depth_m, 
 - 2023 data has 6 fields for types of soil (boulder, cobble, pebble, gravel, sand and silt), other years have 5 (fines, small, med, large). They were matched by size but % silt was left out for now. Should we include that column in combined data?  
+- 2014-10-20 has 6 records with high numer_salmon numbers (over 15, check if these are not errors)
 
 
 All coordinates, except 2023, are on  mn me format, transforming to UTM here
-
-#TODO continue to look into the lat/long that did not transform
 
 
 ```{r, include = F}
 combined_14_22 <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018, redd_2019, redd_2020, redd_2021, redd_2022) |> 
   glimpse()
 
-redd_sf <- combined_14_22 |> 
+#check # of NA values
+# sum(redd_sf$latitude_m_n == 0)
+
+combined_14_22 <- combined_14_22 |> 
   mutate(
     longitude_m_e = ifelse(is.na(longitude_m_e), 0, longitude_m_e),
     latitude_m_n = ifelse(is.na(latitude_m_n), 0, latitude_m_n)
-  )
-  
-# Create an sf object with the correct UTM zone
-sf_points <- st_as_sf(redd_sf, coords = c("longitude_m_e", "latitude_m_n"), crs = 32610)
+  ) 
+#check # of 0  values
+sum(combined_14_22$latitude_m_n == 0)
+sum(combined_14_22$longitude_m_e == 0)
 
-# Transform to geographic coordinates (latitude/longitude)
-geo_points <- st_transform(sf_points, crs = 4326)
+combined_14_22_utm <- combined_14_22 |> 
+    st_as_sf(coords = c("longitude_m_e", "latitude_m_n"), crs = 32610) |> 
+  st_transform(crs = 4326)
 
-# View the transformed coordinates
-print(geo_points)
+# Extract coordinates and add them as separate columns
+coords <- st_coordinates(combined_14_22_utm)
+combined_14_22_utm$longitude <- coords[, "X"]
+combined_14_22_utm$latitude <- coords[, "Y"]
+combined_14_22_utm <- st_drop_geometry(combined_14_22_utm)
 
-combined_14_22$longitude <- st_coordinates(geo_points)[, "X"]
-combined_14_22$latitude <- st_coordinates(geo_points)[, "Y"]
+# check those that dont make sense for UTM
+sum(combined_14_22_utm$latitude < 38)
+sum(combined_14_22_utm$longitude > -100)
 
-# View the updated dataframe
-head(combined_14_22)
+#setting those to 0 - TODO check if this is a fair assumption 
+data_14_22 <- combined_14_22_utm |> 
+  mutate(latitude = ifelse(latitude < 38, 0, latitude),
+         longitude = ifelse(longitude > -100, 0, longitude))
+
+#up until this point coordinates data from 2014 to 2022 is the cleanest 
+```
+
+```{r, include=FALSE}
+#looking into coordinates of 2023 
+summary(redd_2023$latitude_m_n) # these seems reasonable for UTM
+summary(redd_2023$longitude_m_e)
+
+redd_2023 <- redd_2023 |> # using consitent name
+  rename(latitude = latitude_m_n,
+         longitude = longitude_m_e) 
 ```
 
 
 Combining all years into one object
 
 ```{r}
-combined_redd <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018, redd_2019, redd_2020, redd_2021, redd_2022, redd_2023) |> 
+combined_redd <- bind_rows(data_14_22, redd_2023) |> 
   mutate(location = tolower(location),
          type = tolower(type)) |> 
   glimpse()
 ```
-```{r}
+```{r, include=FALSE}
 combined_redd <- combined_redd |> 
   mutate(date = as.Date(date)) |> 
   glimpse()
@@ -252,6 +273,15 @@ Exploring fields that have data consistently
 ```{r, warning = F, message=F}
 #date range
 range(combined_redd$date, na.rm = TRUE)
+```
+
+```{r}
+# ggplot(combined_redd, aes(date, location)) +
+#   geom_point() +
+#   theme_minimal() +
+#   theme(plot.title = element_text(hjust = 0.5, size = 14),
+#         axis.title.x = element_text(size = 12),
+#         axis.title.y = element_text(size = 2))
 ```
 
 
@@ -413,9 +443,18 @@ ggplot(combined_redd, aes(x = date, y = number_redds)) +
 range(combined_redd$number_salmon, na.rm = TRUE)
 
 combined_redd |> 
-  filter(is.na(date)==FALSE) |>  
+  ggplot(aes(date, number_salmon)) + 
+  geom_point() +
+  labs(title = "Salmon Counts Over Time") +  # TODO check if values over 20 are not outliers
+  theme_minimal() 
+
+# plotting values lower that 30  
+
+combined_redd |> 
+  filter(is.na(date)==FALSE,
+         number_salmon < 30) |>  
   ggplot(aes(x = date, y = number_salmon)) + 
-  geom_col() +
+  geom_point() +
   facet_wrap(~year(date), scales = "free") +
   scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
   labs(title = "Salmon Counts Over Time") +  
@@ -425,6 +464,9 @@ combined_redd |>
     plot.title = element_text(hjust = 0.5) 
   )
 ```
+
+
+
 #### depth
 
 ```{r, warning = F, message=F}
@@ -442,6 +484,13 @@ ggplot(combined_redd, aes(x = date, y = depth_m)) +
     strip.background = element_rect(fill = "lightgrey", color = "grey50"),
     plot.title = element_text(hjust = 0.5)
   )
+
+ggplot(combined_redd, aes(x = month(date), y = depth_m)) +
+  geom_boxplot() +
+  facet_wrap(~year(date))
+
+summary(combined_redd$depth_m)
+
 ```
 
 #### velocity
@@ -467,6 +516,22 @@ ggplot(combined_redd, aes(x = date, y = velocity_m_s)) +
     strip.background = element_rect(fill = "lightgrey", color = "grey50"),
     plot.title = element_text(hjust = 0.5)
   )
+```
+
+#### pot_depth
+
+```{r, warning=FALSE}
+ggplot(combined_redd, aes(x = date, y = pot_depth_m)) + # two outliers
+  geom_point()
+```
+
+Same plot as above but outliers removed
+
+```{r}
+combined_redd |> 
+  filter(pot_depth_m < 40) |> 
+  ggplot(aes(x = date, y = pot_depth_m)) + 
+  geom_point()
 ```
 
 
@@ -526,7 +591,7 @@ combined_redd_UTM <- bind_rows(latlong_data) |>
 
 ```{r}
 #plot points 
-palette <- viridis(n = nlevels(factor(combined_redd_UTM$location))) 
+palette <- viridis(n = nlevels(factor(combined_redd$location))) 
 
 # leaflet(combined_redd_UTM) |> 
 #   addTiles() |> 
@@ -538,7 +603,7 @@ palette <- viridis(n = nlevels(factor(combined_redd_UTM$location)))
 #     label = ~as.character(location),
 #     labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
 #   )
-leaflet(combined_redd_UTM) |> 
+leaflet(combined_redd) |> 
   addTiles() |> 
   addCircleMarkers(
     ~longitude, ~latitude,
