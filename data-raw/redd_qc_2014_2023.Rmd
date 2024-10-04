@@ -417,6 +417,7 @@ combined_redd |>
 
 ```{r, warning = F, message=F}
 range(combined_redd$number_redds, na.rm = TRUE)
+summary(combined_redd$number_redds)
 ```
 
 ```{r, warning = F, message=F}
@@ -456,6 +457,7 @@ ggplot(combined_redd, aes(x = date, y = number_redds)) +
   
 ```{r, warning = F, message=F}
 range(combined_redd$number_salmon, na.rm = TRUE)
+summary(combined_redd$number_salmon)
 
 combined_redd |> 
   ggplot(aes(date, number_salmon)) + 
@@ -497,6 +499,7 @@ combined_redd |>
 
 ```{r, warning = F, message=F}
 range(combined_redd$depth_m, na.rm = TRUE)
+summary(combined_redd$depth_m)
 ```
 
 ```{r, warning = F, message=F}
@@ -560,7 +563,12 @@ ggplot(combined_redd, aes(velocity_m_s, depth_m)) +
   theme_minimal()
 ```
 
-#### pot_depth
+#### pot_depth_m
+
+```{r, echo=FALSE}
+range(combined_redd$pot_depth_m)
+summary(combined_redd$pot_depth_m)
+```
 
 ```{r, warning=FALSE}
 ggplot(combined_redd, aes(x = date, y = pot_depth_m)) + # two outliers
@@ -656,4 +664,37 @@ combined_redd_final <- combined_redd |>
 #save clean data to data/
 write_csv(combined_redd_final, "data/all_redd_data.csv")
 ```
+
+```{r}
+#Testing if we can pull polygons from Chris' map to categorize redd data
+
+gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
+layer_name <- "UpperHatchery"
+shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+
+# Transform to WGS84 (EPSG:4326)
+shapefile <- st_transform(shapefile, crs = 4326)
+
+# Remove the Z dimension (convert from 3D to 2D geometry)
+shapefile <- st_zm(shapefile, drop = TRUE, what = "ZM")
+
+# Check if the transformation worked and the geometries are valid
+if (any(!st_is_valid(shapefile))) {
+  shapefile <- st_make_valid(shapefile)
+}
+
+# Plot the polygon using leaflet
+leaflet(data = shapefile) |> 
+  addTiles() |> 
+  addPolygons(
+    fillColor = "lightblue",  # Customize the fill color
+    color = "darkblue",       # Border color of polygons
+    weight = 2,               # Border thickness
+    opacity = 1.0,            # Border opacity
+    fillOpacity = 0.5         # Polygon fill opacity
+  ) |> 
+  setView(lng = -119.4179, lat = 36.7783, zoom = 6)  
+ 
+```
+
 
