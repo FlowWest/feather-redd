@@ -668,8 +668,52 @@ write_csv(combined_redd_final, "data/all_redd_data.csv")
 ```{r}
 #Testing if we can pull polygons from Chris' map to categorize redd data
 
+# gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
+# 
+# st_layers(gdb_path)
+# 
+# layer_name <- "UpperHatchery"
+# shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+# 
+# 
+# # Transform to WGS84 (EPSG:4326)
+# shapefile <- st_transform(shapefile, crs = 4326)
+# 
+# # Remove the Z dimension (convert from 3D to 2D geometry)
+# shapefile <- st_zm(shapefile, drop = TRUE, what = "ZM")
+# 
+# 
+# # Plot the polygon using leaflet
+# leaflet(data = shapefile) |> 
+#   addTiles() |> 
+#   addPolygons(
+#     fillColor = "lightblue",  # Customize the fill color
+#     color = "darkblue",       # Border color of polygons
+#     weight = 2,               # Border thickness
+#     opacity = 1.0,            # Border opacity
+#     fillOpacity = 0.5         # Polygon fill opacity
+#   ) |> 
+#   setView(lng = -119.4179, lat = 36.7783, zoom = 6)  
+ 
+```
+
+### Plotting survey locations from Chris' map
+
+```{r}
+
 gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
-layer_name <- "UpperHatchery"
+
+layers <- st_layers(gdb_path)$name
+print(layers)  
+
+# Initialize a leaflet map
+survey_locations_map <- leaflet() |> 
+  addTiles() |> 
+  setView(lng = -119.4179, lat = 36.7783, zoom = 6)  # Center the map on California
+
+# Loop through each layer name and add it to the map
+for (layer_name in layers) {
+# Read the layer
 shapefile <- st_read(dsn = gdb_path, layer = layer_name)
 
 # Transform to WGS84 (EPSG:4326)
@@ -678,23 +722,21 @@ shapefile <- st_transform(shapefile, crs = 4326)
 # Remove the Z dimension (convert from 3D to 2D geometry)
 shapefile <- st_zm(shapefile, drop = TRUE, what = "ZM")
 
-# Check if the transformation worked and the geometries are valid
-if (any(!st_is_valid(shapefile))) {
-  shapefile <- st_make_valid(shapefile)
+# Add the polygons to the map
+survey_locations_map <- map |> 
+    addPolygons(
+      data = shapefile,
+      fillColor = "lightblue",  
+      color = "darkblue",
+      weight = 2,               
+      opacity = 1.0,            
+      fillOpacity = 0.5,        
+      group = layer_name)
 }
 
-# Plot the polygon using leaflet
-leaflet(data = shapefile) |> 
-  addTiles() |> 
-  addPolygons(
-    fillColor = "lightblue",  # Customize the fill color
-    color = "darkblue",       # Border color of polygons
-    weight = 2,               # Border thickness
-    opacity = 1.0,            # Border opacity
-    fillOpacity = 0.5         # Polygon fill opacity
-  ) |> 
-  setView(lng = -119.4179, lat = 36.7783, zoom = 6)  
- 
+# Display the map with all layers
+map
+
 ```
 
 
