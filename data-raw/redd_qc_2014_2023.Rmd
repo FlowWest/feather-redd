@@ -699,31 +699,31 @@ write_csv(combined_redd_final, "data/all_redd_data.csv")
 
 ### Plotting survey locations from Chris' map
 
-```{r}
 
+```{r}
+# Specify the path to the geodatabase
 gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
 
+# List all layers in the geodatabase
 layers <- st_layers(gdb_path)$name
 print(layers)  
 
-# Initialize a leaflet map
+# Initialize a leaflet map centered on Feather River, California
 survey_locations_map <- leaflet() |> 
   addTiles() |> 
-  setView(lng = -119.4179, lat = 36.7783, zoom = 6)  # Center the map on California
+  setView(lng = -121.5695, lat = 39.3665, zoom = 10)  # Coordinates centered on Feather River
 
 # Loop through each layer name and add it to the map
 for (layer_name in layers) {
-# Read the layer
-shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+  # Read the layer
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name)
 
-# Transform to WGS84 (EPSG:4326)
-shapefile <- st_transform(shapefile, crs = 4326)
+  # Transform to WGS84 (EPSG:4326) and remove the Z dimension
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
 
-# Remove the Z dimension (convert from 3D to 2D geometry)
-shapefile <- st_zm(shapefile, drop = TRUE, what = "ZM")
-
-# Add the polygons to the map
-survey_locations_map <- map |> 
+  # Add the polygons to the map
+  survey_locations_map <- survey_locations_map |> 
     addPolygons(
       data = shapefile,
       fillColor = "lightblue",  
@@ -731,12 +731,37 @@ survey_locations_map <- map |>
       weight = 2,               
       opacity = 1.0,            
       fillOpacity = 0.5,        
-      group = layer_name)
+      group = layer_name,
+      popup = paste("Layer Name: ", layer_name)
+    )
 }
 
-# Display the map with all layers
-map
+# Add layer control
+survey_locations_map <- survey_locations_map |> 
+  addLayersControl(
+    overlayGroups = layers,
+    options = layersControlOptions(collapsed = FALSE)
+  )
 
+# Display the map
+survey_locations_map
 ```
 
+### Adding the points where redds are found
+
+```{r}
+survey_locations_map_combined <- survey_locations_map |> 
+  addCircleMarkers(
+    data = map_test,
+    lng = ~longitude, 
+    lat = ~latitude,
+    popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
+    radius = 3,  # Adjust radius as needed
+    color = "red",  # Change the color of the points
+    stroke = FALSE,  # Remove border
+    fillOpacity = 0.7  # Adjust fill opacity
+  )
+
+survey_locations_map_combined
+```
 
