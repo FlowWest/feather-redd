@@ -611,7 +611,7 @@ summary(combined_redd$latitude)
 summary(combined_redd$longitude)
 
 # modifying so that if either one of these is 0, then both should be 0
-map_test <- combined_redd |> 
+map_redd <- combined_redd |> 
   mutate(latitude = ifelse(longitude == 0, 0, latitude),
          longitude = ifelse(latitude == 0, 0, longitude)) |> 
   filter(latitude != 0,
@@ -619,11 +619,11 @@ map_test <- combined_redd |>
 
 # plotting on map
 
-palette <- viridis(n = nlevels(factor(map_test$location)))
+palette <- viridis(n = nlevels(factor(map_redd$location)))
 ```
 
-```{r}
-leaflet(map_test) |> 
+```{r, echo=FALSE}
+leaflet(map_redd) |> 
   addTiles() |> 
   addCircleMarkers(
     ~longitude, ~latitude,
@@ -665,7 +665,7 @@ combined_redd_final <- combined_redd |>
 write_csv(combined_redd_final, "data/all_redd_data.csv")
 ```
 
-```{r}
+```{r, include=FALSE}
 #Testing if we can pull polygons from Chris' map to categorize redd data
 
 # gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
@@ -700,7 +700,7 @@ write_csv(combined_redd_final, "data/all_redd_data.csv")
 ### Plotting survey locations from Chris' map
 
 
-```{r}
+```{r, echo=FALSE}
 # Specify the path to the geodatabase
 gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
 
@@ -747,12 +747,12 @@ survey_locations_map <- survey_locations_map |>
 survey_locations_map
 ```
 
-### Adding the points where redds are found
+### Adding the points where redds are found to the survey locations
 
-```{r}
+```{r, echo=FALSE}
 survey_locations_map_combined <- survey_locations_map |> 
   addCircleMarkers(
-    data = map_test,
+    data = map_redd,
     lng = ~longitude, 
     lat = ~latitude,
     popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
@@ -762,6 +762,6 @@ survey_locations_map_combined <- survey_locations_map |>
     fillOpacity = 0.7  # Adjust fill opacity
   )
 
-survey_locations_map_combined
+survey_locations_map_combined #TODO look into lower auditorium points. There are two that seem off locations 
 ```
 
