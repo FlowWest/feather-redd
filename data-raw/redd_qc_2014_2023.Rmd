@@ -765,3 +765,6 @@ survey_locations_map_combined <- survey_locations_map |>
 survey_locations_map_combined #TODO look into lower auditorium points. There are two that seem off locations 
 ```
 
+#TODO
+(1) redd points that are off survey locations
+(2) locations per year that did not have redds
