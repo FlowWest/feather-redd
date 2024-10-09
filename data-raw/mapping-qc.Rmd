@@ -1,0 +1,32 @@
+---
+title: "feather river redd survey locations qc"
+date: "2024-10-09"
+output: 
+  html_document:
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+library(tidyverse)
+library(lubridate)
+library(googleCloudStorageR)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(leaflet)
+library(RColorBrewer)
+library(viridis)
+library(readxl)
+library(janitor)
+library(sf)
+library(openxlsx)
+library(readxl)
+library(leaflet)
+```
+
+Goal of this document is to review the Feather River redd survey locations and the locations where redds were observed. Main goals:
+
+(1) Identify redd points that are off survey locations
+(2) Identify locations per year that did not have redds recorded
