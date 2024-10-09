@@ -44,22 +44,20 @@ layers <- st_layers(gdb_path)$name
 
 ```{r, include=FALSE}
 # prep to plot map of survey locations
-
-# Initialize a leaflet map centered on Feather River, California
 survey_locations_map <- leaflet() |> 
   addTiles() |> 
-  setView(lng = -121.5695, lat = 39.3665, zoom = 10)  # Coordinates centered on Feather River
+  setView(lng = -121.5695, lat = 39.3665, zoom = 10) 
 
 # Loop through each layer name and add it to the map
 for (layer_name in layers) {
-  # Read the layer
-  shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+# Read the layer
+shapefile <- st_read(dsn = gdb_path, layer = layer_name)
 
-  # Transform to WGS84 (EPSG:4326) and remove the Z dimension
-  shapefile <- st_transform(shapefile, crs = 4326) |> 
+# Transform to WGS84 (EPSG:4326) and remove the Z dimension
+shapefile <- st_transform(shapefile, crs = 4326) |> 
                st_zm(drop = TRUE, what = "ZM")
-   # Add the polygons to the map
-  survey_locations_map <- survey_locations_map |> 
+# Add the polygons to the map
+survey_locations_map <- survey_locations_map |> 
     addPolygons(
       data = shapefile,
       fillColor = "lightblue",  
@@ -145,7 +143,7 @@ for (year in redd_years) {
       data = map_redd_byyear %>% filter(year == !!year),  # Filter data by year
       lng = ~longitude, 
       lat = ~latitude,
-      popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
+      label = ~paste0("Number of Redds: ", number_redds, "<br> Location: ", location),
       radius = 3,  
       color = "red",  
       stroke = FALSE, 
@@ -166,5 +164,49 @@ Map with survey locations and redd data by year
 ```{r, echo=FALSE}
 # Display the map
 survey_locations_map_combined
+```
+
+Looking at redds per year. Listing those years when there were not redds in all locations.
+
+## Survey locations that do no have Redds - by year {.tabset} 
+
+### 2014
+
+    - LowerBig
+    - Goose
+    - G95EastSideChannelTop
+    - G95WestSideChannel
+    - BigHoleWest
+    - VanceWest
+    - Aleck
+    - Gateway
+    - EyeSideChannel
+    - Eye
+    - Bedrock
+    - TrailerPark
+    - UpperMathews
+    - Mathews
+    - UpperRobinson
+    - LowerRobinson
+    - Steep
+    - SteepSideChannel
+    - Weir
+    - HatcheryPipe
+    - LowerTableMountain
+    - TableMountain
+    
+
+### 2015
+
+
+Note: there is a redd on "g95 main" but survey location names are:  G95WestSideChannel, G95EastSideChannelTop and G95EastSideChannelBottom. Question: where does that point belong to?
+
+```{r}
+# TODO looking into inconsistency of names between redds location and survey locations
+
+unique(redd_data$location) # 83 unique names
+
+print(layers) # 45 unique names
+
 ```
 
