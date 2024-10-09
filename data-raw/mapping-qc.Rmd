@@ -82,7 +82,7 @@ survey_locations_map <- survey_locations_map |>
 
 Survey locations map
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 # Display the map
 survey_locations_map
 ```
@@ -90,7 +90,7 @@ survey_locations_map
 
 Redds map
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 map_redd <- redd_data |> 
   mutate(latitude = ifelse(longitude == 0, 0, latitude), # modifying so that if either one of these is 0, then both should be 0
          longitude = ifelse(latitude == 0, 0, longitude)) |> 
@@ -109,5 +109,62 @@ leaflet(map_redd) |>
     # label = ~as.character(location),
     # labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
   )
+```
+
+```{r}
+map_redd_byyear <- map_redd |> 
+  mutate(year = year(date))
+
+redd_years <- unique(map_redd_byyear$year)  # Get all unique years in the dataset
+```
+
+```{r, include=FALSE}
+for (layer_name in layers) {
+  # Read the layer from the GeoDatabase
+shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+
+survey_locations_map <- survey_locations_map |> 
+    addPolygons(
+      data = shapefile,
+      fillColor = "lightblue",  
+      color = "darkblue",
+      weight = 2,               
+      opacity = 1.0,            
+      fillOpacity = 0.5,        
+      group = layer_name,       
+      popup = paste("Layer Name: ", layer_name)
+    )
+}
+redd_years <- unique(map_redd_byyear$year)  # Get all unique years from redd data
+
+for (year in redd_years) {
+  survey_locations_map <- survey_locations_map |> 
+    addCircleMarkers(
+      data = map_redd_byyear %>% filter(year == !!year),  # Filter data by year
+      lng = ~longitude, 
+      lat = ~latitude,
+      popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
+      radius = 3,  
+      color = "red",  
+      stroke = FALSE, 
+      fillOpacity = 0.7,  
+      group = as.character(year)  
+    )
+}
+
+survey_locations_map_combined <- survey_locations_map |> 
+  addLayersControl(
+    overlayGroups = c(layers, as.character(redd_years)),  
+    options = layersControlOptions(collapsed = FALSE)  
+  )
+```
+
+Map with survey locations and redd data by year
+
+```{r, echo=FALSE}
+# Display the map
+survey_locations_map_combined
 ```
 
