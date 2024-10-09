@@ -30,3 +30,84 @@ Goal of this document is to review the Feather River redd survey locations and t
 
 (1) Identify redd points that are off survey locations
 (2) Identify locations per year that did not have redds recorded
+
+```{r, include=FALSE}
+# redd survey points
+redd_data <- read.csv("data/all_redd_data.csv")
+
+# surveying sites from gis data map
+gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
+
+layers <- st_layers(gdb_path)$name
+```
+
+
+```{r, include=FALSE}
+# prep to plot map of survey locations
+
+# Initialize a leaflet map centered on Feather River, California
+survey_locations_map <- leaflet() |> 
+  addTiles() |> 
+  setView(lng = -121.5695, lat = 39.3665, zoom = 10)  # Coordinates centered on Feather River
+
+# Loop through each layer name and add it to the map
+for (layer_name in layers) {
+  # Read the layer
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+
+  # Transform to WGS84 (EPSG:4326) and remove the Z dimension
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+   # Add the polygons to the map
+  survey_locations_map <- survey_locations_map |> 
+    addPolygons(
+      data = shapefile,
+      fillColor = "lightblue",  
+      color = "darkblue",
+      weight = 2,               
+      opacity = 1.0,            
+      fillOpacity = 0.5,        
+      group = layer_name,
+      popup = paste("Layer Name: ", layer_name)
+    )
+}
+
+# Add layer control
+survey_locations_map <- survey_locations_map |> 
+  addLayersControl(
+    overlayGroups = layers,
+    options = layersControlOptions(collapsed = FALSE)
+  )
+```
+
+Survey locations map
+
+```{r, echo=FALSE}
+# Display the map
+survey_locations_map
+```
+
+
+Redds map
+
+```{r, echo=FALSE}
+map_redd <- redd_data |> 
+  mutate(latitude = ifelse(longitude == 0, 0, latitude), # modifying so that if either one of these is 0, then both should be 0
+         longitude = ifelse(latitude == 0, 0, longitude)) |> 
+  filter(latitude != 0,
+         longitude != 0) # filtering out those that are 0 for plotting purposes
+
+palette <- viridis(n = nlevels(factor(map_redd$location)))
+
+leaflet(map_redd) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    ~longitude, ~latitude,
+    popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
+    radius = 2,  # Adjust radius as needed
+    color = ~palette[as.numeric(factor(location))],
+    # label = ~as.character(location),
+    # labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
+  )
+```
+
