@@ -699,6 +699,7 @@ write_csv(combined_redd_final, "data/all_redd_data.csv")
 
 ### Plotting survey locations from Chris' map
 
+The following layers are included on map:
 
 ```{r, echo=FALSE}
 # Specify the path to the geodatabase
@@ -706,8 +707,11 @@ gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
 
 # List all layers in the geodatabase
 layers <- st_layers(gdb_path)$name
-print(layers)  
+print(layers)
+```
 
+
+```{r, include=FALSE}
 # Initialize a leaflet map centered on Feather River, California
 survey_locations_map <- leaflet() |> 
   addTiles() |> 
@@ -742,7 +746,10 @@ survey_locations_map <- survey_locations_map |>
     overlayGroups = layers,
     options = layersControlOptions(collapsed = FALSE)
   )
+```
 
+
+```{r, echo=FALSE}
 # Display the map
 survey_locations_map
 ```
