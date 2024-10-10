@@ -89,12 +89,26 @@ survey_locations_map
 Redds map
 
 ```{r, include=FALSE}
+# note that in order to plot lat long, map_redd is not including the 47 data points that do not have lat/long.
 map_redd <- redd_data |> 
   mutate(latitude = ifelse(longitude == 0, 0, latitude), # modifying so that if either one of these is 0, then both should be 0
          longitude = ifelse(latitude == 0, 0, longitude)) |> 
   filter(latitude != 0,
          longitude != 0) # filtering out those that are 0 for plotting purposes
+```
 
+```{r, include=FALSE}
+# filtering out those records that do not have lat long info to identify location names
+unmapped_redd <- redd_data |> 
+  mutate(latitude = ifelse(longitude == 0, 0, latitude), # modifying so that if either one of these is 0, then both should be 0
+         longitude = ifelse(latitude == 0, 0, longitude)) |> 
+  filter(latitude == 0,
+         longitude == 0) |> 
+  select(date, location, number_redds) |> 
+  glimpse()
+```
+
+```{r, include=FALSE}
 palette <- viridis(n = nlevels(factor(map_redd$location)))
 
 leaflet(map_redd) |> 
@@ -166,11 +180,22 @@ Map with survey locations and redd data by year
 survey_locations_map_combined
 ```
 
+```{r, include=FALSE}
+# TODO looking into inconsistency of names between redds location and survey locations
+
+unique(redd_data$location) # 83 unique names
+
+print(layers) # 45 unique names
+
+```
+
 Looking at redds per year. Listing those years when there were not redds in all locations.
 
 ## Survey locations that do no have Redds - by year {.tabset} 
 
 ### 2014
+
+List based on observations on map (this means redd points might no be exactly inside the survey location polygon, but close to it, and location name matches). Is it worth doing this check for all of them right now?
 
     - LowerBig
     - Goose
@@ -194,19 +219,237 @@ Looking at redds per year. Listing those years when there were not redds in all 
     - HatcheryPipe
     - LowerTableMountain
     - TableMountain
-    
+
+
+List based on actual physical overlap of redd point and survey location polygons  
+
+```{r, echo=FALSE}
+map_redd_2014 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>   # Assuming it's in WGS84 (EPSG:4326)
+  filter(year(date) == 2014) 
+
+# Loop through each layer name and count intersections with redd data
+for (layer_name in layers) {
+  # Read the layer from the GeoDatabase, suppress messages with quiet = TRUE
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  
+  # Transform shapefile to the same CRS as map_redd_sf (EPSG:4326)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  
+  # Find which redd points are within the shapefile (polygons)
+  intersecting_redds <- st_intersects(map_redd_2014, shapefile, sparse = FALSE)
+  
+  # Get the points that intersect (TRUE means overlap)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  
+  # Print the number of overlapping redd points for this layer
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+  
 
 ### 2015
 
+```{r, echo=FALSE}
+map_redd_2015 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2015) |> 
+  glimpse()
+
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2015, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+
+Note: the site name is "lower big", redd location name "big riffle" 
+  - big riffle redds are located on both "lower big" and "Big"
+  - redds located on survey location "Lower hour" are hour, lower hour and upper hour
+  - upper hour survey location has only two redds with location name "hour"
+  - G95EastSideChannelBottom has 1 redd under upper hour name
 
 Note: there is a redd on "g95 main" but survey location names are:  G95WestSideChannel, G95EastSideChannelTop and G95EastSideChannelBottom. Question: where does that point belong to?
 
-```{r}
-# TODO looking into inconsistency of names between redds location and survey locations
+### 2016
 
-unique(redd_data$location) # 83 unique names
+```{r, echo=FALSE}
+map_redd_2016 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2016) 
 
-print(layers) # 45 unique names
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2016, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+### 2017
+
+```{r, echo=FALSE}
+map_redd_2017 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2017) 
+
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2017, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+### 2018
+
+```{r, echo=FALSE}
+map_redd_2018 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2018) 
+
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2018, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+### 2019
+
+```{r, echo=FALSE}
+map_redd_2019 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2019) 
+
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2019, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+### 2020
+
+```{r, echo=FALSE}
+map_redd_2020 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2020) 
+
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2020, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+### 2021
+
+```{r, echo=FALSE}
+map_redd_2021 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2021) 
+
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2021, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+### 2022
+
+```{r, echo=FALSE}
+map_redd_2022 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2022) 
+
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2022, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+### 2023
+
+```{r, echo=FALSE}
+map_redd_2023 <- map_redd_byyear |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
+  filter(year(date) == 2023) 
+
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+  intersecting_redds <- st_intersects(map_redd_2023, shapefile, sparse = FALSE)
+  num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+  cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+}
+```
+
+```{r, include==FALSE}
+# cleaning redd_data names
+# redd_data_clean <- redd_data |>
+#   mutate(location = format_site)
+  # mutate(location = case_when(location %in% c("upper hatchery", "upper hatchery riffle") ~ "UpperHatchery",
+  #                             location === "upper cottonwood" ~ "UpperCottonwood",
+  #                             location %in% c("hatchery", "hatchery riffle") ~"Hatchery",
+  #                             location == "cottonwood" ~ "Cottonwood",
+  #                             location == "top of auditorium" ~ "TopofAuditorium"))
+```
+
+
+```{r, include=FALSE}
+#test code 
+# map_redd_sf <- map_redd_byyear %>%
+#   st_as_sf(coords = c("longitude", "latitude"), crs = 4326)  # Assuming it's in WGS84 (EPSG:4326)
+# 
+# # Loop through each layer name and count intersections with redd data
+# for (layer_name in layers) {
+#   # Read the layer from the GeoDatabase, suppress messages with quiet = TRUE
+#   shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
+#   
+#   # Transform shapefile to the same CRS as map_redd_sf (EPSG:4326)
+#   shapefile <- st_transform(shapefile, crs = 4326) |> 
+#                st_zm(drop = TRUE, what = "ZM")
+#   
+#   # Find which redd points are within the shapefile (polygons)
+#   intersecting_redds <- st_intersects(map_redd_sf, shapefile, sparse = FALSE)
+#   
+#   # Get the points that intersect (TRUE means overlap)
+#   num_overlapping_redds <- sum(apply(intersecting_redds, 1, any))
+#   
+#   # Print the number of overlapping redd points for this layer
+#   cat(paste("Number of redd points in", layer_name, ":", num_overlapping_redds, "\n"))
+# }
 
 ```
+
+
+
 
