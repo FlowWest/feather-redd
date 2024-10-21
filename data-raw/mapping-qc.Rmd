@@ -33,12 +33,13 @@ Goal of this document is to review the Feather River redd survey locations and t
 
 ### Summary of notes and observations of this markdown:
 
-  - Survey location names and redd locations are inconsistent, this could be a spelling difference, or similar words. Question: is it worth spending time on unifying names across these two data sets?
+  - Survey location and redd location names are inconsistent, this could be a spelling difference, or similar words. Question: is it worth spending time on unifying names across these two data sets?
   - Observations:
   - There a lot more survey location names on the redd survey data, than the actual site names (some might be simply different spelling)
-  - Most of the redd sites that are "off" a site location are off 
+  - Most of the redd sites that are "off" a survey location
     - There are some redds conglomerated in the stream that do not fall within a survey site, however they all have "great western" as location (between Upper Robinson and Aleck). Question: are we missing that site from the survey's sites?
   - Similar that previous point for "lower vance east/lower vance"
+  - 47 redd data points do not have lat/long
 
 ```{r, include=FALSE}
 # redd survey points
@@ -87,17 +88,33 @@ survey_locations_map <- survey_locations_map |>
   )
 ```
 
-Survey locations map
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
+# Survey locations map
 # Display the map
 survey_locations_map
 ```
 
+### Looking at names; redd locations and survey locations 
 
-Redds map
+  - There a lot more redd location names (83), than survey location names (45) (some might be simply different spelling)
+
+Redd location names
+
+```{r}
+unique(redd_data$location) # 83 unique names
+```
+
+Survey location names
+
+```{r}
+print(layers) # 45 unique names
+```
+
+
 
 ```{r, include=FALSE}
+# Redds map
 # note that in order to plot lat long, map_redd is not including the 47 data points that do not have lat/long.
 map_redd <- redd_data |> 
   mutate(latitude = ifelse(longitude == 0, 0, latitude), # modifying so that if either one of these is 0, then both should be 0
@@ -117,7 +134,7 @@ unmapped_redd <- redd_data |>
   glimpse()
 ```
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 palette <- viridis(n = nlevels(factor(map_redd$location)))
 
 leaflet(map_redd) |> 
@@ -132,7 +149,7 @@ leaflet(map_redd) |>
   )
 ```
 
-```{r}
+```{r, include=FALSE}
 map_redd_byyear <- map_redd |> 
   mutate(year = year(date))
 
@@ -140,6 +157,7 @@ redd_years <- unique(map_redd_byyear$year)  # Get all unique years in the datase
 ```
 
 ```{r, include=FALSE}
+year_palette <- viridis(n = length(redd_years), option = "plasma")
 for (layer_name in layers) {
   # Read the layer from the GeoDatabase
 shapefile <- st_read(dsn = gdb_path, layer = layer_name)
@@ -166,9 +184,9 @@ for (year in redd_years) {
       data = map_redd_byyear %>% filter(year == !!year),  # Filter data by year
       lng = ~longitude, 
       lat = ~latitude,
-      label = ~paste0("Number of Redds: ", number_redds, "<br> Location: ", location),
+      label = ~paste0("Number of Redds:", number_redds, "<br> Location:", location, "<br> Year:", year),
       radius = 3,  
-      color = "red",  
+      color = year_palette[which(redd_years == year)],  
       stroke = FALSE, 
       fillOpacity = 0.7,  
       group = as.character(year)  
@@ -188,50 +206,46 @@ Map with survey locations and redd data by year
 # Display the map
 survey_locations_map_combined
 ```
-Note: Survey location names and redd locations are inconsistent, this could be a spelling difference, or similar words. Question: is it worth spending time on unifying names across these two data sets?
 
-```{r, include=FALSE}
-# TODO looking into inconsistency of names between redds location and survey locations
 
-unique(redd_data$location) # 83 unique names
 
-print(layers) # 45 unique names
 
-```
 
-Looking at redds per year. Listing those years when there were not redds in all locations.
+## Survey locations that do not have any Redd observations - by year {.tabset} 
 
-## Survey locations that do no have Redds - by year {.tabset} 
 
 ### 2014
 
-List based on observations on map (this means redd points might no be exactly inside the survey location polygon, but close to it, and location name matches). Is it worth doing this check for all of them right now?
+```{r, include=FALSE}
+# List based on observations on map (this means redd points might no be exactly inside the survey location polygon, but close to it, and location name matches). Is it worth doing this check for all of them right now?
+# 
+#     - LowerBig
+#     - Goose
+#     - G95EastSideChannelTop
+#     - G95WestSideChannel
+#     - BigHoleWest
+#     - VanceWest
+#     - Aleck
+#     - Gateway
+#     - EyeSideChannel
+#     - Eye
+#     - Bedrock
+#     - TrailerPark
+#     - UpperMathews
+#     - Mathews
+#     - UpperRobinson
+#     - LowerRobinson
+#     - Steep
+#     - SteepSideChannel
+#     - Weir
+#     - HatcheryPipe
+#     - LowerTableMountain
+#     - TableMountain
 
-    - LowerBig
-    - Goose
-    - G95EastSideChannelTop
-    - G95WestSideChannel
-    - BigHoleWest
-    - VanceWest
-    - Aleck
-    - Gateway
-    - EyeSideChannel
-    - Eye
-    - Bedrock
-    - TrailerPark
-    - UpperMathews
-    - Mathews
-    - UpperRobinson
-    - LowerRobinson
-    - Steep
-    - SteepSideChannel
-    - Weir
-    - HatcheryPipe
-    - LowerTableMountain
-    - TableMountain
+```
 
 
-List based on actual physical overlap of redd point and survey location polygons  
+Listing how many redd observations overlap/are within a survey location polygon based on coordinates 
 
 ```{r, echo=FALSE}
 map_redd_2014 <- map_redd_byyear |> 
@@ -264,8 +278,7 @@ for (layer_name in layers) {
 ```{r, echo=FALSE}
 map_redd_2015 <- map_redd_byyear |> 
   st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>  
-  filter(year(date) == 2015) |> 
-  glimpse()
+  filter(year(date) == 2015) 
 
 for (layer_name in layers) {
   shapefile <- st_read(dsn = gdb_path, layer = layer_name, quiet = TRUE)
@@ -278,11 +291,12 @@ for (layer_name in layers) {
 ```
 
 
-Note: the site name is "lower big", redd location name "big riffle" 
-  - big riffle redds are located on both "lower big" and "Big"
-  - redds located on survey location "Lower hour" are hour, lower hour and upper hour
-  - upper hour survey location has only two redds with location name "hour"
-  - G95EastSideChannelBottom has 1 redd under upper hour name
+Notes: 
+  - survey location name is "lower big", redd location name "big riffle" 
+  - redd location "big riffle" are located on both "lower big" and "Big" survey locations
+  - redd locations "hour", "lower hour" and" upper hour" are located on survey location "Lower hour" (names are inconsistent/off)
+  - upper hour survey location has only two redds with location name "hour" (names are inconsistent/off)
+  - G95EastSideChannelBottom survey location has 1 redd "upper hour" name (names are inconsistent/off)
 
 Note: there is a redd on "g95 main" but survey location names are:  G95WestSideChannel, G95EastSideChannelTop and G95EastSideChannelBottom. Question: where does that point belong to?
 
@@ -461,7 +475,7 @@ for (layer_name in layers) {
 ```
 
 
-## Redd locations that are off stream, or that they do not fall within a locations site {.tabset} 
+## Redd locations that are off stream, or do not fall within a survey location {.tabset} 
 
 
 ```{r}
@@ -506,7 +520,7 @@ off_sites_summary <- redds_not_in_polygons |>
 print(off_sites_summary)
 ```
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 redds_not_in_polygons_map <- leaflet() %>%
   addTiles() %>%  # Add default OpenStreetMap tiles
   setView(lng = -121.5695, lat = 39.3665, zoom = 10)  # Set view to center on Feather River (adjust as needed)
@@ -528,40 +542,7 @@ redds_not_in_polygons_map <- redds_not_in_polygons_map %>%
 redds_not_in_polygons_map
 ```
 
-
-Filtering those redds that are off survey locations
-
-- Observations:
-  - There a lot more survey location names on the redd survey data, than the actual site names (some might be simply different spelling)
-  - Most of the redd sites that are "off" a site location are off 
-  
-  - Locations that are off-channel and hard to relate to survey sites:
-    - Location: lower auditorium, Date: 2015-10-29, Survey Week: 7-3
-    - Location: lower auditorium, Date: 2015-10-22, Survey Week: 6-4
-    - Location: top of auditorium, Date: 2015-11-24, Survey Week: 11-1
-    - Location: upper hatchery riffle, Date: 2014-10-22, Survey Week: 7-2
-    - Location: upper hatchery riffle, Date: 2014-10-02, Survey Week: 4-3
-    - Location: table mountain, Date: 2015-09-22, Survey Week: 2-2 (close to table mountain location but off channel)
-    - Location: top of auditorium, Date: 2014-10-20, Survey Week: 7-1
-    - Location: top of auditorium, Date: 2014-10-14, Survey Week: 6-1
-    - Location: lower auditorium, Date: 2015-10-19, Survey Week: 6-1
-    - Location: middle auditorium, Date: 2015-10-22, Survey Week: 6-4
-    - Location: upper hatchery, Date: 2015-10-28, Survey Week: 7-2
-    - Location: mid auditorium, Date: 2014-11-13, Survey Week: 8-2
-    - Location: moe's side channel, Date: 2015-10-09, Survey Week: 4-4
-    - Location: moe's side channel, Date: 2015-10-30, Survey Week: 7-4
-    
-    
-  - Locations that are very off distance from stream
-    - Location: lower auditorium, Date: 2014-10-01, Survey Week: 4-2 (located north from river, at Lake Orville)
-    - Location: lower auditorium, Date: 2014-09-18, Survey Week: 2-2
-    
-  - All others are geographically closer to at least one of the sites
-  - There are some redds conglomerated in the stream that do not fall within a survey site, however they all have "great western" as location (between Upper Robinson and Aleck). Question: are we missing that site from the survey's sites?
-  - Similar that previous point for "lower vance east/lower vance"
-
-
-Same map than above but adding sites
+Map showing redd locations listed - do not overlap with survey location
 
 ```{r, echo=FALSE}
 
@@ -614,5 +595,32 @@ not_overlap_map <- not_overlap_map %>%
 not_overlap_map
 ```
 
+- Observations:
 
-
+  - Most of the redd location points are slightly "off" a survey location (good example is lower mcfarland)
+  - 14 redd locations are off-channel and hard to relate to survey sites:
+  
+    - Location: lower auditorium, Date: 2015-10-29, Survey Week: 7-3
+    - Location: lower auditorium, Date: 2015-10-22, Survey Week: 6-4
+    - Location: top of auditorium, Date: 2015-11-24, Survey Week: 11-1
+    - Location: upper hatchery riffle, Date: 2014-10-22, Survey Week: 7-2
+    - Location: upper hatchery riffle, Date: 2014-10-02, Survey Week: 4-3
+    - Location: table mountain, Date: 2015-09-22, Survey Week: 2-2 (close to table mountain location but off channel)
+    - Location: top of auditorium, Date: 2014-10-20, Survey Week: 7-1
+    - Location: top of auditorium, Date: 2014-10-14, Survey Week: 6-1
+    - Location: lower auditorium, Date: 2015-10-19, Survey Week: 6-1
+    - Location: middle auditorium, Date: 2015-10-22, Survey Week: 6-4
+    - Location: upper hatchery, Date: 2015-10-28, Survey Week: 7-2
+    - Location: mid auditorium, Date: 2014-11-13, Survey Week: 8-2
+    - Location: moe's side channel, Date: 2015-10-09, Survey Week: 4-4
+    - Location: moe's side channel, Date: 2015-10-30, Survey Week: 7-4
+    
+    
+  - 2 redd locations are very off distance from stream:
+  
+    - Location: lower auditorium, Date: 2014-10-01, Survey Week: 4-2 (located north from river, at Lake Orville)
+    - Location: lower auditorium, Date: 2014-09-18, Survey Week: 2-2
+    
+  - All other redd locations are geographically closer to at least one of the survey sites
+  - There are some redds conglomerated in the stream that do not fall within a survey site, however they all have "great western" as location (between Upper Robinson and Aleck). Question: are we missing that site from the survey's sites?
+  - Similar that previous point for "lower vance east/lower vance"
