@@ -662,7 +662,7 @@ combined_redd_final <- combined_redd |>
 
 ```{r}
 #save clean data to data/
-write_csv(combined_redd_final, "data/all_redd_data.csv")
+write_csv(combined_redd_final, "data/redd_observations.csv")
 ```
 
 ```{r, include=FALSE}

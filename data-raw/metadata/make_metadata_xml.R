@@ -5,11 +5,11 @@ library(readxl)
 library(EML)
 
 datatable_metadata <-
-  dplyr::tibble(filepath = c("data/feather_redd.csv"),
+  dplyr::tibble(filepath = c("data/redd_observations.csv"),
                 attribute_info = c("data-raw/metadata/feather_redd_metadata.xlsx"),
                 datatable_description = c("Survey metadata from Feather River redd survey data"),
                 datatable_url = paste0("https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/",
-                                       c("all_redd_data.csv")))
+                                       c("redd_observations.csv")))
 
 # other_entity_metadata_1 <- list("file_name" = "unit_spatial_data.zip",
 #                                 "file_description" = "Kmz and GIS files for survey units",
