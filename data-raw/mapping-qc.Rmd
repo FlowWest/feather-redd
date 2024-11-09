@@ -43,7 +43,7 @@ Goal of this document is to review the Feather River redd survey locations and t
 
 ```{r, include=FALSE}
 # redd survey points
-redd_data <- read.csv("data/all_redd_data.csv")
+redd_data <- read.csv("data/archive/all_redd_data.csv") #this is the original redd csv that was written on redd_qc_2014_2023.Rmd. I brought it back because some of the fields were deleted manually and therefore broke this code
 
 # surveying sites from gis data map
 gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
