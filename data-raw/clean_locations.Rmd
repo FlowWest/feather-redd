@@ -70,6 +70,14 @@ fixed_zeros <- read.csv("data-raw/Faulty_lat_long_records_edits_Chris_110524.csv
   clean_names() |>
   glimpse()
 
+#TODO note that there is one latitude that still seems off - removing it for now
+fixed_zeros |> 
+  filter(latitude > 39.99) |> view()
+
+fixed_zeros <- fixed_zeros |> 
+  filter(!(date == "10/6/2014" & survey_wk == "5-1" & file_number == "77")) |> #removing that entry for now
+  glimpse()
+
 #join fixed zero values, and deleted data entries 
 redd_data_fixed_zeros <- data_zero_removed |> 
   bind_rows(fixed_zeros) |> 
