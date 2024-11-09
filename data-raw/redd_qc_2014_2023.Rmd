@@ -653,7 +653,7 @@ summary(combined_redd$velocity_m_s)
 
 ```{r, include = F}
 # edits to data
-combined_redd_final <- combined_redd |> 
+combined_redd_clean <- combined_redd |> 
   filter(type == "p" | is.na(type)) |> 
   mutate(date = as.Date(date),
          number_redds = ifelse(number_redds == 0, 1, number_redds)) |> 
@@ -661,8 +661,14 @@ combined_redd_final <- combined_redd |>
 ```
 
 ```{r}
-#save clean data to data/
-write_csv(combined_redd_final, "data/redd_observations.csv")
+#save data with locations info 
+write_csv(combined_redd_clean, "data/archive/all_redd_data.csv")
+
+combined_redd_clean <- combined_redd_final |> #TODO confirm with Ashley that this is what she did manually
+  select(-c(survey_wk, location, file_number)) 
+
+# clean data to data/ with fields removed suggested by feather river team
+write_csv(combined_redd_clean, "data/redd_observations.csv")
 ```
 
 ```{r, include=FALSE}
