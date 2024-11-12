@@ -1,5 +1,5 @@
 ---
-title: "feather river redd survey locations clean uo"
+title: "feather river redd survey locations clean up"
 date: "2024-11-06"
 output: 
   html_document:
@@ -138,11 +138,11 @@ redd_locations_clean <- redd_locations_fixed |>
   select(-c(location, survey_wk, file_number)) |>   #removing unnecessary fields 
   glimpse()
 
-write.csv(redd_locations_clean, "data/red_observations_clean.csv", row.names = FALSE)
+write.csv(redd_locations_clean, "data/red_observations.csv", row.names = FALSE)
 ```
 
 ```{r}
-read.csv("data/red_observations_clean.csv") |> glimpse()
+read.csv("data/red_observations.csv") |> glimpse()
 ```
 
 
