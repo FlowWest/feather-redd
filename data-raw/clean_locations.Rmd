@@ -134,6 +134,15 @@ leaflet(redd_locations_fixed) |>
 
 Save clean data
 ```{r}
-write.csv(redd_locations_fixed, "data/red_observations_clean.csv")
+redd_locations_clean <- redd_locations_fixed |> 
+  select(-c(location, survey_wk, file_number)) |>   #removing unnecessary fields 
+  glimpse()
+
+write.csv(redd_locations_clean, "data/red_observations_clean.csv", row.names = FALSE)
 ```
+
+```{r}
+read.csv("data/red_observations_clean.csv") |> glimpse()
+```
+
 
