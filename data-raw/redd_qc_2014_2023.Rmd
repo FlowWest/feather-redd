@@ -66,7 +66,7 @@ These data were originally acquired from Chris Cook
 
 
 ```{r, include=FALSE, warning=FALSE}
-redd_2014_raw <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd Survey Data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2014_raw <- readxl::read_excel(here::here("data-raw", "dwr_chinook_redd_survey_data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
   clean_names() |> 
   slice(-1912) |>  #removing the totals column
   glimpse()
@@ -78,39 +78,39 @@ redd_2014 <- redd_2014_raw |>
   glimpse()
 
 
-redd_2015 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2015_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2353)) |> 
+redd_2015 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2015_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2353)) |> 
   clean_names() |> 
   rename(number_redds = number_of_redds) |> 
   glimpse()
 
-redd_2016 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2016_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:1571)) |> 
+redd_2016 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2016_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:1571)) |> 
   clean_names() |> 
   rename(number_redds = number_of_redds) |> 
   glimpse()
 
-redd_2017 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2017_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2718)) |> 
+redd_2017 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2017_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2718)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2018 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2018_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:4170)) |> 
+redd_2018 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2018_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:4170)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2019 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2019_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5049)) |> 
+redd_2019 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2019_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5049)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2020 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2020_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5432)) |> 
+redd_2020 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2020_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5432)) |> 
   clean_names() |> 
   rename(longitude_m_e = longitude_n_e) |> 
   glimpse()
 
-redd_2021 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2021_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2595)) |> 
+redd_2021 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2021_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2595)) |> 
   clean_names() |> 
   mutate(type = ifelse(type == "P", "p", type)) |> 
   glimpse()
 
-redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2022_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:3762)) |> 
+redd_2022 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2022_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:3762)) |> 
   clean_names() |> 
   glimpse()
 ```
@@ -147,36 +147,36 @@ process_2023_data <- function(data) {
   glimpse()
 }
 
-redd_2023_week1 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |>
+redd_2023_week1 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx")) |>
   process_2023_data()
   
-redd_2023_week2 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 2)|>
+redd_2023_week2 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 2)|>
   process_2023_data()
 
-redd_2023_week3 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 3)|>
+redd_2023_week3 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 3)|>
   process_2023_data()
 
-redd_2023_week4 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 4)|>
+redd_2023_week4 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 4)|>
   process_2023_data()
 
-redd_2023_week5 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 5)|>
+redd_2023_week5 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 5)|>
   process_2023_data()
 
-redd_2023_week6 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 6)|>
+redd_2023_week6 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 6)|>
  process_2023_data()
 
-redd_2023_week7 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 7)|>
+redd_2023_week7 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 7)|>
   rename(x2 = `Workflow Level`) |> 
   process_2023_data()
 
-redd_2023_week8 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 8)|>
+redd_2023_week8 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 8)|>
   process_2023_data()
 
 
-redd_2023_week9 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 9)|>
+redd_2023_week9 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 9)|>
   process_2023_data()
 
-redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 10)|>
+redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 10)|>
   process_2023_data()
 ```
 
