@@ -138,11 +138,11 @@ redd_locations_clean <- redd_locations_fixed |>
   select(-c(location, survey_wk, file_number)) |>   #removing unnecessary fields 
   glimpse()
 
-write.csv(redd_locations_clean, "data/red_observations.csv", row.names = FALSE)
+write.csv(redd_locations_clean, "data/redd_observations.csv", row.names = FALSE)
 ```
 
 ```{r}
-read.csv("data/red_observations.csv") |> glimpse()
+read.csv("data/redd_observations.csv") |> glimpse()
 ```
 
 
