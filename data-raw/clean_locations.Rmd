@@ -62,20 +62,12 @@ data_zero_removed <- redd_data |>
 
 
 # Chris shared the correct lat/long for some of these records, and decided to delete some of the entries
-fixed_zeros <- read.csv("data-raw/Faulty_lat_long_records_edits_Chris_110524.csv") |> # csv with Chris' notes
+fixed_zeros <- read.csv("data-raw/Faulty_lat_long_records_edits_Chris_111224.csv") |> # csv with Chris' notes
   select(-1) |> 
   mutate(Northing = str_trim(Northing)) |>
   filter(Northing != "Erase this data") |> #erasing the 6 data entries he indicates to delete
   select(-c(latitude, longitude, Northing, Easting, X.1)) |>
   clean_names() |>
-  glimpse()
-
-#TODO note that there is one latitude that still seems off - removing it for now
-fixed_zeros |> 
-  filter(latitude > 39.99) |> view()
-
-fixed_zeros <- fixed_zeros |> 
-  filter(!(date == "10/6/2014" & survey_wk == "5-1" & file_number == "77")) |> #removing that entry for now
   glimpse()
 
 #join fixed zero values, and deleted data entries 
@@ -84,9 +76,6 @@ redd_data_fixed_zeros <- data_zero_removed |>
   glimpse()
 
 ```
-#TODO plot to check locations now
-
-#TODO need the original raw data file to be able to use same criteria to filter out data entries
 
 ```{r, include=FALSE}
 # filtering the points that off channel
@@ -141,5 +130,10 @@ leaflet(redd_locations_fixed) |>
     # label = ~as.character(location),
     # labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
   )
+```
+
+Save clean data
+```{r}
+write.csv(redd_locations_fixed, "data/red_observations_clean.csv")
 ```
 
