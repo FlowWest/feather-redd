@@ -7,12 +7,40 @@ All data processing and EDI uploads are managed in the same repository.
 1. Navigate to the [project repository](https://github.com/FlowWest/feather-redd/tree/main) and clone it to your local machine.
 
 ## Adding Data
+1. Before adding the data to the repository, make sure the data contains the following fields:
 
+  * date	
+  * type
+  * number_redds
+  * number_salmon
+  * latitude_m_n	
+  * longitude_m_e
+  * depth_m	
+  * pot_depth_m
+  * velocity_m_s
+  * percent_fines
+  * percent_small 
+  * percent_med	
+  * percent_large	
+  * percent_boulder	
+  * redd_width_m	
+  * redd_length_m
+
+
+Add excel file with new data into the dwr_chinook_redd_survey_data folder of your local computer copy following yyyy_Chinook_Redd_Survey_Data.xlsx name convention, replacing "yyyy" with the actual year of the data. Here's the GitHub path: (path)[https://github.com/FlowWest/feather-redd/tree/review-data/data-raw/dwr_chinook_redd_survey_data]
 
 ## Processing Data
-Data processing is handled...
+Data processing is handled by one script located in the data-raw folder called (redd_qc_2014_2023.Rmd)[https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd]
+#TODO change name to redd_qc.Rmd?
 
-1. Run #TODO the data we have so far was cleaned on 'redd_qc_2014_2023' located [here](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd). However every year data was different. Maybe we should check if there is a data entry structure they plan on using
+1. On redd_qc_2014_2023.Rmd script, add the following code under line 116 to read new data:
+  * 'redd_yyyy <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","yyyy_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  glimpse()'
+  
+2. After checkin that data is showing properly, 
+
+Run redd_qc_2014_2023.Rmd script located [here](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd). Note that every year's data was entered differently, therefore data cleaning was specific to each year. We will adapt this data cleaning process once data entry protocol is unified/consistent.
    
 2. After generating the CSV files, update their metadata (located [here](#TODO update link)):
    - **Survey Characteristics** (`file1_metadata.xlsx`): Update the minimum and maximum values for fields such as date, flow, turbidity, temperature, and visibility.
