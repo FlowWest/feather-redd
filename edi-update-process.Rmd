@@ -27,32 +27,26 @@ All data processing and EDI uploads are managed in the same repository.
   * redd_length_m
 
 
-Add excel file with new data into the dwr_chinook_redd_survey_data folder of your local computer copy following yyyy_Chinook_Redd_Survey_Data.xlsx name convention, replacing "yyyy" with the actual year of the data. Here's the GitHub path: (path)[https://github.com/FlowWest/feather-redd/tree/review-data/data-raw/dwr_chinook_redd_survey_data]
+2. Add excel file with new data into the `dwr_chinook_redd_survey_data` [folder](https://github.com/FlowWest/feather-redd/tree/review-data/data-raw/dwr_chinook_redd_survey_data) of your local computer copy following this name convention: `yyyy_Chinook_Redd_Survey_Data.xlsx`, replacing "yyyy" with the actual year of the data.
 
 ## Processing Data
-Data processing is handled by one script located in the data-raw folder called (redd_qc_2014_2023.Rmd)[https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd]
+Data processing is handled by one script located in the [data-raw](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw) folder:  [redd_qc_2014_2023.Rmd](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd)
 #TODO change name to redd_qc.Rmd?
 
 1. On redd_qc_2014_2023.Rmd script, add the following code under line 116 to read new data:
-  * 'redd_yyyy <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","yyyy_Chinook_Redd_Survey_Data.xlsx")) |> 
+  * `redd_yyyy <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","yyyy_Chinook_Redd_Survey_Data.xlsx")) |> 
   clean_names() |> 
-  glimpse()'
+  glimpse()`
   
-2. After checkin that data is showing properly, 
-
-Run redd_qc_2014_2023.Rmd script located [here](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd). Note that every year's data was entered differently, therefore data cleaning was specific to each year. We will adapt this data cleaning process once data entry protocol is unified/consistent.
+2. After checking that data is showing properly, run redd_qc_2014_2023.Rmd script located [here](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd). Note that every year's data was entered differently, therefore data cleaning was specific to each year. We will adapt this data cleaning process once data entry protocol is unified/consistent. This script will generate a csv called `redd_observations.csv` in the [data folder](https://github.com/FlowWest/feather-redd/tree/review-data/data)
    
-2. After generating the CSV files, update their metadata (located [here](#TODO update link)):
-   - **Survey Characteristics** (`file1_metadata.xlsx`): Update the minimum and maximum values for fields such as date, flow, turbidity, temperature, and visibility.
-   - **Fish Observations** (`file2_metadata.xlsx`): Update the minimum and maximum values for fields like date, count, fork length, depth, and velocity.
-   - **Locations Lookup** will most likely not change, unless a new location is added. If so, then metadata will also need to be updated.
-   - If the time range of the data has changed, update the **project metadata** in `project_name_metadata.xlsx` (under the Coverage tab).
+2. After generating the CSV files, update their metadata (located [here](https://github.com/FlowWest/feather-redd/tree/review-data/data-raw/metadata)):
+   - **Feather Redd** (`feather_redd_metadata.xlsx`): Update the minimum and maximum values for fields such as date, number_redds, number_salmon, etc.
+   - If the time range of the data has changed, update the **project metadata** in `feather_redd_project_metadata.xlsx` (under the Coverage tab).
    - If applicable, adjust the language in the data abstract to reflect the latest updates.
 
 ### Summary of CSVs Generated for EDI Upload
-- `name1_file.csv`
-- `name2_file.csv`
-- `name3_file.csv`
+-  `redd_observations.csv`
 
 ## EDI Update/Upload
   - Before starting this process, make sure you have an EDI account setup
@@ -60,7 +54,7 @@ Run redd_qc_2014_2023.Rmd script located [here](https://github.com/FlowWest/feat
   
 The data upload to EDI is handled in the `make_metadata_xml.R` script. The necessary modifications include:
 
-1. Change the EDI package number at line 40 (`edi_number <- "edi.1764.1"`) to the new version number. For example, if the current version is `edi.1764.1`, change it to `edi.1764.2`.
+1. Change the EDI package number at line 40 (`edi_number <- "edi.TODO update"`) to the new version number. For example, if the current version is `edi.1764.1`, change it to `edi.1764.2`.
 2. After successfully running the script, manually evaluate the package by logging in to the [EDI website](https://portal.edirepository.org/nis/login.jsp) portal, and navigating to the Tools tab and click on Evaluate/Upload Data Packages. 
 3. Add .xml file under EML Metadata File, select "manually upload data" under Data Upload Options. Click "Evaluate" button.
 4. Attach corresponding csv file and click "Evaluate". Check for any errors, warning messages are generally okay.
