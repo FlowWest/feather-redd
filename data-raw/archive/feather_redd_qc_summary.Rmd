@@ -1,0 +1,300 @@
+---
+title: "feather river redd data exploration"
+date: "2024-06-28"
+output: 
+  html_document:
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+library(tidyverse)
+library(lubridate)
+library(googleCloudStorageR)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(leaflet)
+library(RColorBrewer)
+library(viridis)
+```
+
+Goal of this document is to review the Feather River redd data and understand the following:
+
+- what data are collected?
+- what is the quality of the data?
+- what are the data limitations?
+- how are these data useful to Science Plan hypotheses?
+
+## Relevant Science Plan hypotheses
+
+1. Spawning habitat acreage
+
+- **From Science Plan:** "The metric for this hypothesis will be the acreage of spawning habitat with suitable water depths and velocities, and sizes of spawning gravel. Spawning habitat criteria, including depth, velocity, and target spawning substrate size will be defined in the specific VA action science and monitoring plan and associated design documents. The suitable gravel size for spawning habitat will be a range and distribution of spawning substrate sizes specific to the spawning population and hydrogeomorphic conditions in each tributary."
+
+- **Ideas:** This hypothesis was set up to use depth and velocity criteria to map spawning habitat acreage and compare to existing habitat. We could map spawning habitat based on redd locations over time. We would need latitude and longitude of all redds observed.
+
+2. Salmon redd density (this is the most relevant hypothesis)
+
+- **From Science Plan:** "The metric for this hypothesis will be the number of Chinook salmon redds per unit area in habitat enhancement project areas, while also accounting for the potential for redd superimposition.  The baseline for this hypothesis will be the redd density and superimposition rate at habitat enhancement locations compared to adjacent areas within the same reach, measured concurrently along with water quality criteria. In systems where redd mapping has been conducted consistently at both project locations and adjacent, non-enhanced locations, historical data can also be leveraged to examine trends and changes in redd density after the enhancement action."
+
+- **Ideas:** This is the number of redds per unit area. We would need a count of redds and some sort of delineation of the area where redds are occurring (this could be latitude/longitude of redd or river mile/reach surveyed, assuming whole area is surveyed)
+
+3. Natural origin adult Chinook salmon population estimates by tributary, and trend in abundance (harvest plus escapement)  
+
+- **From Science Plan:** "The metric for this hypothesis will be annual natural-origin adult Chinook salmon cohort replacement rates and trends over multiple years (e.g., > 3 years) over the period of VA implementation.   The baseline for this hypothesis will be the annual natural-origin adult Chinook salmon cohort replacement rate trends during the period associated with the Anadromous Fish Restoration Program Doubling Goal (years 1967-1991). A secondary baseline, to reflect recent conditions and population numbers, will be annual adult Chinook salmon cohort replacement rates and trends for natural-origin fall run Chinook salmon since 2010."
+
+- **Ideas:** We would need high quality redd data in order to estimate adult population
+
+```{r, include = F}
+# get standard data from cloud
+gcs_auth(json_file = Sys.getenv("GCS_AUTH_FILE"))
+gcs_global_bucket(bucket = Sys.getenv("GCS_DEFAULT_BUCKET"))
+
+gcs_get_object(object_name = "adult-holding-redd-and-carcass-surveys/feather-river/data/feather_redd.csv",
+               bucket = gcs_get_global_bucket(),
+               saveToDisk = here::here("data-raw", "feather-redd.csv"),
+               overwrite = TRUE)
+
+feather_redd_raw <- read_csv("data-raw/feather-redd.csv")
+```
+
+## What data are collected?
+
+*Contact*
+
+These data were originally acquired from Chris Cook
+
+*Timeframe*
+
+- 2009-2020 (we will need to update through 2024)
+- Longitude and latitude data: not available for 2009-2012, 2018-2020. NA values will be filled in for these data sets in final cleaned data set. Latitude and longitude are in NAD 1983 UTM Zone 10N 2.
+- Substrate: The substrate is observed visually and an estimate of the percentage of 5 size classes is recorded: fine <1cm, small 1-5cm, medium 6-15cm, large 16-30cm, boulder >30cm
+
+```{r}
+feather_redd_raw |> glimpse()
+```
+
+### Data questions
+
+- Need to better understand `type` field. Do "area" measurements have a shapefile associated with them? Is "point" meant to communicate that a specific point measurement was taken for a redd?
+- Why is the `redd_count` not always 1? If greater than 1 does that mean that redd specific measurements like depth are not collected?
+- Does salmon count mean that salmon were observed on redd? No species or run differentiation?
+- Where are depth measurements taken (just depth, not pot depth)?
+- Does `pot_depth` refer to the depth of the pit?
+- How are velocity measurements taken? Collected right above redd?
+- Where is width measured?
+- Latitude/Longitude unit system is inconsistent. Up until 2013, coordinate system is UTM, years following are shown as "latitude mn / longitude me" (probably zone 10). [This is some information we have found about that coordinate system](https://gis.stackexchange.com/questions/111847/what-kind-of-coordinate-system-has-values-like-48569-800me-706602-032mn). Why were the coordinate systems different, and how can we convert from mn/me to UTM?
+- "area" `type` does not appear after year 2015. Did any methodology change, is there a reason why it was only "point"?  
+- are each of the location sampled multiple times a year, or does locations changed overtime?
+
+
+### Data quality
+
+  * The data consistently collected include: date, location, survey_type, redd_count, salmon_count. 
+
+  * All other fields have greater than 65% NA. In 2010 only 38% of redd length and width were NA and in all other years these fields are about 80% NA.
+  
+  * Location coordinates have more than 50% NA values, and those with data available have inconsistent coordinate system
+
+```{r, include = F}
+# determine the years where there are data for the fields that have missing data
+years_na <- feather_redd_raw |> 
+  mutate(year = year(date)) |> 
+  pivot_longer(cols = 4:17, names_to = "data_field", values_to = "value") |>  
+  group_by(year, data_field) |> 
+  summarize(percent_na = sum(is.na(value))/length(value))
+
+knitr::kable(years_na |> 
+        group_by(data_field) |> 
+        summarize(mean = round(mean(percent_na), 2),
+                  median = round(median(percent_na), 2),
+                  min = round(min(percent_na), 2),
+                  max = round(max(percent_na), 2)))
+
+```
+
+### Data exploration {.tabset}
+
+Exploring fields that have data consistently
+
+#### date
+ 
+```{r}
+#date range
+range(feather_redd_raw$date)
+```
+
+
+#### location
+
+  * Location clean up is needed. There are some names that appear less than 5 times. We could check if they correspond to another location name, and it is spelled differently
+
+```{r}
+#locations
+table(feather_redd_raw$location) #there are 121 unique location names
+```
+
+**Locations surveyed less than 5 times**
+
+For locations that are being surveyed less than five times, we might want to verify if they belong to other location area names. Otherwise, these sites might not have enough data to reliably analyze over time.
+
+```{r}
+#plotting those locations that appear less than 5 times
+feather_redd_raw |> 
+  group_by(location) |> 
+  filter(n() < 5) |> 
+  ungroup() |> 
+  count(location) |> 
+  ggplot(aes(x = reorder(location, n), y = n)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  geom_text(aes(label = n), hjust = -0.3, size = 3.5) +
+  labs(title = "Count of Locations with Less Than 5 Observations",
+       x = "Location",
+       y = "Number of Data Records") +
+  theme_minimal()
+
+```
+
+**Frequent locations and years surveyed**
+
+```{r}
+location_frequent <- feather_redd_raw |> 
+  mutate(year = year(date)) |> 
+  select(location, year) |> 
+  group_by(location, year) |> 
+  distinct() |> 
+  ungroup() |> 
+  group_by(location) |> 
+  tally() |> 
+  filter(n > 5)
+
+feather_redd_raw |> 
+  mutate(year = as.factor(year(date))) |> 
+  select(location, year) |> 
+  group_by(location, year) |> 
+  distinct() |> 
+  filter(location %in% location_frequent$location) |> 
+  ggplot(aes(x = year, y = location, color = year)) +
+  geom_point(size = 2, alpha = 0.7) +
+  labs(title = "Distinct Locations by Year",
+       x = "Year",
+       y = "Year",
+       color = "Location") +  
+  scale_color_viridis_d() +  
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        axis.text = element_text(size = 8),
+        legend.position = "none")
+  
+```
+
+
+#### type
+
+- Note that after 2015 that there are not area methods anymore
+
+**Observations by type and date**
+
+```{r}
+#type
+unique(feather_redd_raw$type)
+
+ggplot(feather_redd_raw, aes(x = date, y = type, color = type)) +
+  geom_point(size = 2, alpha = 0.7) +
+  labs(title = "Types Over Time",
+       x = "Date",
+       y = "Type",
+       color = "Type") +
+   scale_color_viridis_d(na.value = "grey50") +  
+  theme_minimal() +
+# Use Viridis color scale
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        axis.text = element_text(size = 10))
+```
+
+**Count of observations by type**
+
+```{r}
+feather_redd_raw |> 
+  group_by(type) |> 
+  summarise(n = n()) |> 
+  ggplot(aes(x = type, y = n, fill = type)) +
+  geom_bar(stat = "identity", color = "black") +
+  geom_text(aes(label = n), vjust = -0.5, size = 3.5) +
+  scale_fill_viridis_d() +  
+  labs(title = "Count of Observations by Type",
+       x = "Type",
+       y = "Count") +
+  theme_minimal() 
+```
+
+#### redd_count
+
+**Redd counts by year**
+
+```{r}
+range(feather_redd_raw$redd_count)
+
+feather_redd_raw |> 
+  filter(is.na(date)==FALSE) |>  
+  ggplot(aes(x = date, y = redd_count)) + 
+  geom_col() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Redd Counts Over Time") +  
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5) 
+  )
+
+```
+
+#### salmon_count
+
+**Salmon counts by year**
+
+```{r, warning=FALSE}
+range(feather_redd_raw$salmon_count, na.rm = TRUE)
+
+feather_redd_raw |> 
+  filter(is.na(date)==FALSE) |>  
+  ggplot(aes(x = date, y = salmon_count)) + 
+  geom_col() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Salmon Counts Over Time") +  
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5) 
+  )
+```
+
+
+```{r, include = F}
+lat_long_test <- feather_redd_raw |>
+  filter(!is.na(longitude) | !is.na(latitude)) |>
+  mutate(latitude = as.numeric(substring(latitude, 1, 2)) +
+                      as.numeric(substring(latitude, 3, nchar(latitude))) / 1e5) |>
+  mutate(longitude = - (as.numeric(substring(longitude, 1, 3)) +
+                     as.numeric(substring(longitude, 4, nchar(longitude))) / 1e4)) |>
+  filter(longitude > -125 | latitude < 40) |> #filtering those that seem off, for now
+  glimpse()
+```
+
+## Data limitations
+
+- **Spatial data:** The lack of precision and availability of latitude and longitude coordinates limits the accuracy of spatial analyses. Without precise coordinates, we could analyze data only at a broader geographic scale, for example by area names, rather than specific location points. This limitation affects our ability to pinpoint exact spawning sites and accurately map spawning habitat. 
+- **Defining habitat:** It may be challenging to precisely define spawning habitat in the absence of complete substrate data, which is critical for understanding the suitability of spawning environments. We may also be limited by data gaps s for depth, and velocity. This gap makes it difficult to fully understand the habitat of Chinook salmon.
+- **Abundance:** These data may be challenging to use to estimate the spawning population because of the lack of information on measurement bias (e.g. how many redds are missed, what is the uncertainty). We may also want to make sure redds are not being double counted.
+
+Despite these limitations, we could use the available data to calculate redd density as the number of redds per unit area. By delineating surveyed areas based on available location names or river reaches, we can estimate redd density and assess patterns over time. 
