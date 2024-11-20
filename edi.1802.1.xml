@@ -610,7 +610,7 @@
       <entityName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024</entityName>
       <entityDescription>Survey Methods</entityDescription>
       <physical>
-        <objectName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024.pdf</objectName>
+        <objectName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024.zip</objectName>
         <size unit="bytes">14</size>
         <authentication method="MD5">3be7b8b182ccd96e48989b4e57311193</authentication>
         <dataFormat>
@@ -620,7 +620,7 @@
         </dataFormat>
         <distribution>
           <online>
-            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_July_2024.pdf</url>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_July_2024.zip</url>
           </online>
         </distribution>
       </physical>
