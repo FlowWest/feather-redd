@@ -615,7 +615,7 @@
         <authentication method="MD5">3be7b8b182ccd96e48989b4e57311193</authentication>
         <dataFormat>
           <externallyDefinedFormat>
-            <formatName>pdf</formatName>
+            <formatName>zip</formatName>
           </externallyDefinedFormat>
         </dataFormat>
         <distribution>
@@ -624,7 +624,7 @@
           </online>
         </distribution>
       </physical>
-      <entityType>pdf</entityType>
+      <entityType>zip</entityType>
     </otherEntity>
   </dataset>
   <additionalMetadata>
