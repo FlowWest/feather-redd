@@ -9,9 +9,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Badhia Yunes Katz (FlowWest)" />
 
 
-<title>edi-update-process.knit</title>
+<title>Feather River Redd Data EDI Upload Workflow</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -348,83 +349,97 @@ display: none;
 
 
 
+<h1 class="title toc-ignore">Feather River Redd Data EDI Upload
+Workflow</h1>
+<h4 class="author">Badhia Yunes Katz (FlowWest)</h4>
 
 </div>
 
 
-<div id="feather-river-redd-data-edi-upload-workflow" class="section level1">
-<h1>Feather River Redd Data EDI Upload Workflow</h1>
 <p>This guide provides step-by-step instructions to update the Feather
 River Redd Data EDI package with new data.</p>
 <div id="navigating-to-the-repository" class="section level2">
 <h2>Navigating to the Repository</h2>
 <p>All data processing and EDI uploads are managed in the same
-repository.<br />
-1. Navigate to the <a href="https://github.com/FlowWest/feather-redd/tree/main">project
-repository</a> and clone it to your local machine.</p>
+repository.</p>
+<ol style="list-style-type: decimal">
+<li>Navigate to the <a href="https://github.com/FlowWest/feather-redd/tree/main">project
+repository</a> and clone it to your local machine.</li>
+</ol>
 </div>
 <div id="adding-data" class="section level2">
 <h2>Adding Data</h2>
 <ol style="list-style-type: decimal">
-<li>Before adding the data to the repository, make sure the data
-contains the following fields:</li>
-</ol>
+<li><p>Before adding the data to the repository, make sure the data
+contains the following fields:</p>
 <ul>
 <li>date<br />
 </li>
-<li>type</li>
-<li>number_redds</li>
-<li>number_salmon</li>
+<li>type<br />
+</li>
+<li>number_redds<br />
+</li>
+<li>number_salmon<br />
+</li>
 <li>latitude_m_n<br />
 </li>
-<li>longitude_m_e</li>
-<li>depth_m</li>
-<li>pot_depth_m</li>
-<li>velocity_m_s</li>
-<li>percent_fines</li>
-<li>percent_small</li>
-<li>percent_med</li>
+<li>longitude_m_e<br />
+</li>
+<li>depth_m<br />
+</li>
+<li>pot_depth_m<br />
+</li>
+<li>velocity_m_s<br />
+</li>
+<li>percent_fines<br />
+</li>
+<li>percent_small<br />
+</li>
+<li>percent_med<br />
+</li>
 <li>percent_large<br />
 </li>
-<li>percent_boulder</li>
+<li>percent_boulder<br />
+</li>
 <li>redd_width_m<br />
 </li>
 <li>redd_length_m</li>
-</ul>
-<ol start="2" style="list-style-type: decimal">
-<li>Add excel file with new data into the
-<code>dwr_chinook_redd_survey_data</code> <a href="https://github.com/FlowWest/feather-redd/tree/review-data/data-raw/dwr_chinook_redd_survey_data">folder</a>
-of your local computer copy following this name convention:
+</ul></li>
+<li><p>Add the Excel file with new data into the
+<code>dwr_chinook_redd_survey_data</code> <a href="https://github.com/FlowWest/feather-redd/tree/main/data-raw/dwr_chinook_redd_survey_data">folder</a>
+of your local computer copy, following this naming convention:
 <code>yyyy_Chinook_Redd_Survey_Data.xlsx</code>, replacing “yyyy” with
-the actual year of the data.</li>
+the actual year of the data.</p>
+<p><strong>Additional Note</strong>: Ensure that the data values are
+consistent with the expected formats and units. If unsure about the data
+source or format, consult with the data collection team before
+proceeding.</p></li>
 </ol>
 </div>
 <div id="processing-data" class="section level2">
 <h2>Processing Data</h2>
-<p>Data processing is handled by one script located in the <a href="https://github.com/FlowWest/feather-redd/blob/review-data/data-raw">data-raw</a>
-folder: <a href="https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd">redd_qc_2014_2023.Rmd</a>
-#TODO change name to redd_qc.Rmd?</p>
+<p>Data processing is handled by one script located in the <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw">data-raw</a>
+folder: <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc_2014_2023.Rmd">redd_qc_2014_2023.Rmd</a></p>
 <ol style="list-style-type: decimal">
-<li>On redd_qc_2014_2023.Rmd script, add the following code under line
-116 to read new data:</li>
-</ol>
-<ul>
-<li><code>redd_yyyy &lt;- readxl::read_xlsx(here::here(&quot;data-raw&quot;,&quot;dwr_chinook_redd_survey_data&quot;,&quot;yyyy_Chinook_Redd_Survey_Data.xlsx&quot;)) |&gt;    clean_names() |&gt;    glimpse()</code></li>
-</ul>
-<ol start="2" style="list-style-type: decimal">
-<li><p>After checking that data is showing properly, run
-redd_qc_2014_2023.Rmd script located <a href="https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd">here</a>.
-Note that every year’s data was entered differently, therefore data
-cleaning was specific to each year. We will adapt this data cleaning
-process once data entry protocol is unified/consistent. This script will
-generate a csv called <code>redd_observations.csv</code> in the <a href="https://github.com/FlowWest/feather-redd/tree/review-data/data">data
-folder</a></p></li>
-<li><p>After generating the CSV files, update their metadata (located <a href="https://github.com/FlowWest/feather-redd/tree/review-data/data-raw/metadata">here</a>):</p>
+<li><p>On the <code>redd_qc_2014_2023.Rmd</code> (Change name to
+<code>redd_qc.Rmd</code>??) script, add the following code under line
+116 to read new data:
+<code>redd_yyyy &lt;- readxl::read_xlsx(here::here(&quot;data-raw&quot;, &quot;dwr_chinook_redd_survey_data&quot;, &quot;yyyy_Chinook_Redd_Survey_Data.xlsx&quot;)) |&gt;</code>
+<code>clean_names() |&gt;</code> <code>glimpse()</code></p></li>
+<li><p>After confirming that the data is showing properly, run the
+<code>redd_qc_2014_2023.Rmd</code> script located <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc_2014_2023.Rmd">here</a>.
+Note that each year’s data was entered differently, so the data cleaning
+is specific to each year. We will adapt this data cleaning process once
+the data entry protocol is unified/consistent.</p></li>
+<li><p>The script will generate a CSV called
+<code>redd_observations.csv</code> in the <a href="https://github.com/FlowWest/feather-redd/tree/main/data">data
+folder</a>.</p></li>
+<li><p>After generating the CSV files, update their metadata (located <a href="https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata">here</a>):</p>
 <ul>
 <li><strong>Feather Redd</strong>
 (<code>feather_redd_metadata.xlsx</code>): Update the minimum and
-maximum values for fields such as date, number_redds, number_salmon,
-etc.</li>
+maximum values for fields such as <code>date</code>,
+<code>number_redds</code>, <code>number_salmon</code>, etc.</li>
 <li>If the time range of the data has changed, update the
 <strong>project metadata</strong> in
 <code>feather_redd_project_metadata.xlsx</code> (under the Coverage
@@ -442,49 +457,61 @@ the latest updates.</li>
 </div>
 <div id="edi-updateupload" class="section level2">
 <h2>EDI Update/Upload</h2>
-<ul>
-<li>Before starting this process, make sure you have an EDI account
-setup</li>
-<li>Create or edit your .Renviron file to incluse your EDI username and
-password. To do this, enter the following code:
-<code>usethis::edit_r_environ()</code>. This will open your .Renviron
-file. Add a line for<code>edi_user_id = [enter your user name]</code>,
-and <code>edi_password = [enter your password]</code></li>
-</ul>
-<p>The data upload to EDI is handled in the
+<p>Before starting this process, ensure you have an EDI account set
+up.</p>
+<ol style="list-style-type: decimal">
+<li><p>Create or edit your <code>.Renviron</code> file to include your
+EDI username and password. To do this, enter the following code in R:
+<code>usethis::edit_r_environ()</code> This will open your
+<code>.Renviron</code> file. Add the following lines:
+<code>edi_user_id = [enter your user name]     edi_password = [enter your password]</code></p>
+<p><strong>Important Note</strong>: Do not share your EDI credentials
+publicly. Store them securely.</p></li>
+<li><p>The data upload to EDI is handled in the
 <code>make_metadata_xml.R</code> script. The necessary modifications
 include:</p>
-<ol style="list-style-type: decimal">
-<li>Change the EDI package number at line 40
+<ul>
+<li><p>Change the EDI package number at line 40
 (<code>edi_number &lt;- &quot;edi.TODO update&quot;</code>) to the new version
 number. For example, if the current version is <code>edi.1764.1</code>,
-change it to <code>edi.1764.2</code>.</li>
-<li>After successfully running the script, manually evaluate the package
-by logging in to the <a href="https://portal.edirepository.org/nis/login.jsp">EDI website</a>
-portal, and navigating to the Tools tab and click on Evaluate/Upload
-Data Packages.</li>
-<li>Add .xml file under EML Metadata File, select “manually upload data”
-under Data Upload Options. Click “Evaluate” button.</li>
-<li>Attach corresponding csv file and click “Evaluate”. Check for any
-errors, warning messages are generally okay.</li>
-<li>After evaluating the package without any errors, return back to
-<code>make_metadata_xml</code> script and update line 75 to the version
-number that will be updated. On this example, package version 1764.1
-will be updated. For the next update, this code will have the next most
-recent package version number (i.e 1764.2, 1764.3, 1764.4, etc):
-<code>EMLaide::update_edi_package(Sys.getenv(&quot;edi_user_id&quot;), Sys.getenv(&quot;edi_password&quot;), &quot;edi.1764.1&quot;, paste0(edi_number, &quot;.xml&quot;))</code></li>
-<li>Uncomment this code line, and run it (note: running this code will
-automatically upload the EDI package. Packages can not be overwritten,
-so if any changes are needed, both (1) new edi number on line 40 and (2)
-update_edi_package on line 75 will have to be updated, and script has to
-be ran again)</li>
+change it to <code>edi.1764.2</code>.</p></li>
+<li><p>After successfully running the script, manually evaluate the
+package by logging into the <a href="https://portal.edirepository.org/nis/login.jsp">EDI website</a>.
+Navigate to the <strong>Tools</strong> tab and click on
+<strong>Evaluate/Upload Data Packages</strong>.</p></li>
+</ul></li>
+<li><p>In the EDI portal:</p>
+<ul>
+<li>Add the <code>.xml</code> file under the <strong>EML Metadata
+File</strong> section.</li>
+<li>Select “manually upload data” under <strong>Data Upload
+Options</strong> and click the <strong>Evaluate</strong> button.</li>
+<li>Attach the corresponding CSV file and click
+<strong>Evaluate</strong>. Check for any errors (warning messages are
+generally okay).</li>
+</ul></li>
+<li><p>After evaluating the package without errors, return to the
+<code>make_metadata_xml.R</code> script and update line 75 with the new
+version number that will be used for the next update. For example, if
+the current version is <code>1764.1</code>, update it to
+<code>1764.2</code>.</p>
+<p>The line should look like this:
+<code>EMLaide::update_edi_package(Sys.getenv(&quot;edi_user_id&quot;), Sys.getenv(&quot;edi_password&quot;), &quot;edi.1764.1&quot;, paste0(edi_number, &quot;.xml&quot;))</code></p></li>
+<li><p>Uncomment this line and run the script. Note: Running this code
+will automatically upload the EDI package. Packages cannot be
+overwritten, so if changes are needed, both (1) the new EDI number on
+line 40 and (2) the <code>update_edi_package</code> function on line 75
+must be updated, and the script must be run again.</p></li>
 </ol>
 </div>
 <div id="edi-upload-check" class="section level2">
 <h2>EDI Upload Check</h2>
 <p>To verify the new package upload, navigate to the <a href="https://portal.edirepository.org/nis/home.jsp">EDI repository
 portal</a> and search for the updated package.</p>
-</div>
+<p><strong>Additional Note</strong>: After uploading, verify the
+submission on the EDI portal. Check for any errors or warnings related
+to the data fields, and ensure that the data appears as expected. If any
+issues arise, you may need to correct the files and re-upload them.</p>
 </div>
 
 

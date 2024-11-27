@@ -1,65 +1,113 @@
-# Feather River Redd Data EDI Upload Workflow
+---
+title: "Feather River Redd Data EDI Upload Workflow"
+author: "Badhia Yunes Katz (FlowWest)"
+output: html_document
+---
 
 This guide provides step-by-step instructions to update the Feather River Redd Data EDI package with new data.
 
 ## Navigating to the Repository
+
 All data processing and EDI uploads are managed in the same repository.  
+
 1. Navigate to the [project repository](https://github.com/FlowWest/feather-redd/tree/main) and clone it to your local machine.
 
 ## Adding Data
+
 1. Before adding the data to the repository, make sure the data contains the following fields:
 
-  * date	
-  * type
-  * number_redds
-  * number_salmon
-  * latitude_m_n	
-  * longitude_m_e
-  * depth_m	
-  * pot_depth_m
-  * velocity_m_s
-  * percent_fines
-  * percent_small 
-  * percent_med	
-  * percent_large	
-  * percent_boulder	
-  * redd_width_m	
-  * redd_length_m
+    * date  
+    * type  
+    * number_redds  
+    * number_salmon  
+    * latitude_m_n  
+    * longitude_m_e  
+    * depth_m  
+    * pot_depth_m  
+    * velocity_m_s  
+    * percent_fines  
+    * percent_small  
+    * percent_med  
+    * percent_large  
+    * percent_boulder  
+    * redd_width_m  
+    * redd_length_m
 
 
-2. Add excel file with new data into the `dwr_chinook_redd_survey_data` [folder](https://github.com/FlowWest/feather-redd/tree/review-data/data-raw/dwr_chinook_redd_survey_data) of your local computer copy following this name convention: `yyyy_Chinook_Redd_Survey_Data.xlsx`, replacing "yyyy" with the actual year of the data.
+2. Add the Excel file with new data into the `dwr_chinook_redd_survey_data` [folder](https://github.com/FlowWest/feather-redd/tree/main/data-raw/dwr_chinook_redd_survey_data) of your local computer copy, following this naming convention: `yyyy_Chinook_Redd_Survey_Data.xlsx`, replacing "yyyy" with the actual year of the data.
+
+    **Additional Note**: Ensure that the data values are consistent with the expected formats and units. If unsure about the data source or format, consult with the data collection team before proceeding.
 
 ## Processing Data
-Data processing is handled by one script located in the [data-raw](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw) folder:  [redd_qc_2014_2023.Rmd](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd)
-#TODO change name to redd_qc.Rmd?
 
-1. On redd_qc_2014_2023.Rmd script, add the following code under line 116 to read new data:
-  * `redd_yyyy <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","yyyy_Chinook_Redd_Survey_Data.xlsx")) |> 
-  clean_names() |> 
-  glimpse()`
-  
-2. After checking that data is showing properly, run redd_qc_2014_2023.Rmd script located [here](https://github.com/FlowWest/feather-redd/blob/review-data/data-raw/redd_qc_2014_2023.Rmd). Note that every year's data was entered differently, therefore data cleaning was specific to each year. We will adapt this data cleaning process once data entry protocol is unified/consistent. This script will generate a csv called `redd_observations.csv` in the [data folder](https://github.com/FlowWest/feather-redd/tree/review-data/data)
-   
-2. After generating the CSV files, update their metadata (located [here](https://github.com/FlowWest/feather-redd/tree/review-data/data-raw/metadata)):
-   - **Feather Redd** (`feather_redd_metadata.xlsx`): Update the minimum and maximum values for fields such as date, number_redds, number_salmon, etc.
-   - If the time range of the data has changed, update the **project metadata** in `feather_redd_project_metadata.xlsx` (under the Coverage tab).
-   - If applicable, adjust the language in the data abstract to reflect the latest updates.
+Data processing is handled by one script located in the [data-raw](https://github.com/FlowWest/feather-redd/blob/main/data-raw) folder:  [redd_qc_2014_2023.Rmd](https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc_2014_2023.Rmd)
+
+
+
+1. On the `redd_qc_2014_2023.Rmd` (Change name to `redd_qc.Rmd`??) script, add the following code under line 116 to read new data:
+    ```
+    redd_yyyy <- readxl::read_xlsx(here::here("data-raw", "dwr_chinook_redd_survey_data", "yyyy_Chinook_Redd_Survey_Data.xlsx")) |>
+    ```
+    ```
+    clean_names() |>
+    ```
+    ```
+      glimpse()
+    ```
+
+2. After confirming that the data is showing properly, run the `redd_qc_2014_2023.Rmd` script located [here](https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc_2014_2023.Rmd). Note that each year's data was entered differently, so the data cleaning is specific to each year. We will adapt this data cleaning process once the data entry protocol is unified/consistent.
+
+3. The script will generate a CSV called `redd_observations.csv` in the [data folder](https://github.com/FlowWest/feather-redd/tree/main/data).
+
+4. After generating the CSV files, update their metadata (located [here](https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata)):
+
+    - **Feather Redd** (`feather_redd_metadata.xlsx`): Update the minimum and maximum values for fields such as `date`, `number_redds`, `number_salmon`, etc.
+    - If the time range of the data has changed, update the **project metadata** in `feather_redd_project_metadata.xlsx` (under the Coverage tab).
+    - If applicable, adjust the language in the data abstract to reflect the latest updates.
 
 ### Summary of CSVs Generated for EDI Upload
--  `redd_observations.csv`
+
+- `redd_observations.csv`
 
 ## EDI Update/Upload
-  - Before starting this process, make sure you have an EDI account setup
-  - Create or edit your .Renviron file to incluse your EDI username and password. To do this, enter the following code: `usethis::edit_r_environ()`. This will open your .Renviron file. Add a line for` edi_user_id = [enter your user name]`, and `edi_password = [enter your password]`
-  
-The data upload to EDI is handled in the `make_metadata_xml.R` script. The necessary modifications include:
 
-1. Change the EDI package number at line 40 (`edi_number <- "edi.TODO update"`) to the new version number. For example, if the current version is `edi.1764.1`, change it to `edi.1764.2`.
-2. After successfully running the script, manually evaluate the package by logging in to the [EDI website](https://portal.edirepository.org/nis/login.jsp) portal, and navigating to the Tools tab and click on Evaluate/Upload Data Packages. 
-3. Add .xml file under EML Metadata File, select "manually upload data" under Data Upload Options. Click "Evaluate" button.
-4. Attach corresponding csv file and click "Evaluate". Check for any errors, warning messages are generally okay.
-5. After evaluating the package without any errors, return back to `make_metadata_xml` script and update line 75 to the version number that will be updated. On this example, package version 1764.1 will be updated. For the next update, this code will have the next most recent package version number (i.e 1764.2, 1764.3, 1764.4, etc): `EMLaide::update_edi_package(Sys.getenv("edi_user_id"), Sys.getenv("edi_password"), "edi.1764.1", paste0(edi_number, ".xml"))`
-3. Uncomment this code line, and run it (note: running this code will automatically upload the EDI package. Packages can not be overwritten, so if any changes are needed, both (1) new edi number on line 40 and (2) update_edi_package on line 75 will have to be updated, and script has to be ran again)
+Before starting this process, ensure you have an EDI account set up.  
+
+1. Create or edit your `.Renviron` file to include your EDI username and password. To do this, enter the following code in R:
+    ```
+    usethis::edit_r_environ()
+    ```
+    This will open your `.Renviron` file. Add the following lines:
+    ```
+    edi_user_id = [enter your user name]
+    edi_password = [enter your password]
+    ```
+
+    **Important Note**: Do not share your EDI credentials publicly. Store them securely.
+
+2. The data upload to EDI is handled in the `make_metadata_xml.R` script. The necessary modifications include:
+
+    - Change the EDI package number at line 40 (`edi_number <- "edi.TODO update"`) to the new version number. For example, if the current version is `edi.1764.1`, change it to `edi.1764.2`.
+
+    - After successfully running the script, manually evaluate the package by logging into the [EDI website](https://portal.edirepository.org/nis/login.jsp). Navigate to the **Tools** tab and click on **Evaluate/Upload Data Packages**. 
+
+3. In the EDI portal:
+    - Add the `.xml` file under the **EML Metadata File** section.
+    - Select "manually upload data" under **Data Upload Options** and click the **Evaluate** button.
+    - Attach the corresponding CSV file and click **Evaluate**. Check for any errors (warning messages are generally okay).
+  
+4. After evaluating the package without errors, return to the `make_metadata_xml.R` script and update line 75 with the new version number that will be used for the next update. For example, if the current version is `1764.1`, update it to `1764.2`.
+
+    The line should look like this:
+    ```
+    EMLaide::update_edi_package(Sys.getenv("edi_user_id"), Sys.getenv("edi_password"), "edi.1764.1", paste0(edi_number, ".xml"))
+    ```
+
+5. Uncomment this line and run the script. Note: Running this code will automatically upload the EDI package. Packages cannot be overwritten, so if changes are needed, both (1) the new EDI number on line 40 and (2) the `update_edi_package` function on line 75 must be updated, and the script must be run again.
 
 ## EDI Upload Check
-To verify the new package upload, navigate to the [EDI repository portal](https://portal.edirepository.org/nis/home.jsp) and search for the updated package.
+
+To verify the new package upload, navigate to the [EDI repository portal](https://portal.edirepository.org/nis/home.jsp) and search for the updated package. 
+
+**Additional Note**: After uploading, verify the submission on the EDI portal. Check for any errors or warnings related to the data fields, and ensure that the data appears as expected. If any issues arise, you may need to correct the files and re-upload them.
+
