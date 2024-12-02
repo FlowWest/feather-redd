@@ -419,15 +419,14 @@ proceeding.</p></li>
 <div id="processing-data" class="section level2">
 <h2>Processing Data</h2>
 <p>Data processing is handled by one script located in the <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw">data-raw</a>
-folder: <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc_2014_2023.Rmd">redd_qc_2014_2023.Rmd</a></p>
+folder: <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd">redd_qc_2014_2023.Rmd</a></p>
 <ol style="list-style-type: decimal">
-<li><p>On the <code>redd_qc_2014_2023.Rmd</code> (Change name to
-<code>redd_qc.Rmd</code>??) script, add the following code under line
-116 to read new data:
+<li><p>On the <code>redd_qc.Rmd</code> script, add the following code
+under line 116 to read new data:
 <code>redd_yyyy &lt;- readxl::read_xlsx(here::here(&quot;data-raw&quot;, &quot;dwr_chinook_redd_survey_data&quot;, &quot;yyyy_Chinook_Redd_Survey_Data.xlsx&quot;)) |&gt;</code>
 <code>clean_names() |&gt;</code> <code>glimpse()</code></p></li>
 <li><p>After confirming that the data is showing properly, run the
-<code>redd_qc_2014_2023.Rmd</code> script located <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc_2014_2023.Rmd">here</a>.
+<code>redd_qc.Rmd</code> script located <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd">here</a>.
 Note that each year’s data was entered differently, so the data cleaning
 is specific to each year. We will adapt this data cleaning process once
 the data entry protocol is unified/consistent.</p></li>
