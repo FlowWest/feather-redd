@@ -46,7 +46,7 @@ unique(redd_observations$location)
 Survey location names - redd data  locations will be matched to these names
 
 ```{r, echo=FALSE, message=FALSE}
-# Names for the table
+# Names from survey location provided by Chris Cook
 locations <- c(
   "UpperHatchery", "UpperCottonwood", "Hatchery", "Cottonwood",
   "TopofAuditorium", "MoesSideChannel", "UpperAuditorium", "MiddleAuditorium",
@@ -61,13 +61,22 @@ locations <- c(
   "LowerBig", "BigBar", "UpperMcFarland", "LowerMcFarland",
   "Developing"
 )
-
-# Convert to a data frame for tabular representation
+locations <- tolower(locations)
 table_data <- data.frame(
-  ID = seq_along(locations), # Add row numbers
+  ID = seq_along(locations), 
   Name = locations
 )
 
-# Generate the table
 knitr::kable(table_data, col.names = c("ID", "Location Name"))
 ```
+
+Identifying locations that do not match survey location names
+
+```{r, echo=FALSE}
+invalid_locations <- redd_observations$location[!redd_observations$location %in% locations]
+
+# Display invalid locations
+unique_invalid_locations <- unique(locations)
+print(unique_invalid_locations)
+```
+
