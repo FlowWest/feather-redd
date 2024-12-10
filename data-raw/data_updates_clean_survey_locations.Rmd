@@ -1,0 +1,42 @@
+---
+title: "feather river redd survey locations naming qc - adding names to data"
+date: "2024-12-09"
+rmarkdown::github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(sf)
+library(openxlsx)
+library(readxl)
+```
+The goal of this markdown is to clean up the location names from Feather River redd survey data.
+
+Summary of work that has been done so far:
+
+  * redd_qc_2014-2023 - mainly exploratory: 
+    *  raw data is pulled in, negative velocity values are set to NA
+    * pot_depth_m >= 40 is set to NA
+    * "type" is removed
+    
+  * mapping_qc: looks into latitude longitude and identifies issues. 
+    * Data file input: "data/archive/all_redd_data.csv" 
+  * clean_locations: fixed latitude/longitude provided by Chris Cook, these changes address the issues found on mapping_qc. 
+    * Data file input: "data/archive/all_redd_data.csv". 
+    * Data file output(s): "data-raw/redd_observations_clean_locations.csv" and "data/redd_observations.csv" (`location`, `survey_wk` and `file_number` removed)
+  
+```{r, include=FALSE}
+redd_observations <- read.csv("data-raw/redd_observations_clean_locations.csv")
+```
+
+Looking into unique location names
+```{r}
+
+```
+
