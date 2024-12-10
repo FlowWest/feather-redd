@@ -36,7 +36,38 @@ redd_observations <- read.csv("data-raw/redd_observations_clean_locations.csv")
 ```
 
 Looking into unique location names
-```{r}
 
+  * There are 81 unique names
+  
+```{r}
+unique(redd_observations$location)
 ```
 
+Survey location names - redd data  locations will be matched to these names
+
+```{r, echo=FALSE, message=FALSE}
+# Names for the table
+locations <- c(
+  "UpperHatchery", "UpperCottonwood", "Hatchery", "Cottonwood",
+  "TopofAuditorium", "MoesSideChannel", "UpperAuditorium", "MiddleAuditorium",
+  "LowerAuditorium", "HatcheryPipe", "LowerTableMountain", "TableMountain",
+  "BelowLowerAuditorium", "Bedrock", "TrailerPark", "UpperMathews",
+  "Mathews", "UpperRobinson", "LowerRobinson", "Steep",
+  "SteepSideChannel", "Weir", "Eye", "EyeSideChannel",
+  "Gateway", "Aleck", "HatcherySideChannel", "VanceEast",
+  "VanceWest", "BigHoleEast", "BigHoleWest", "BelowBigHoleEast",
+  "G95WestSideChannel", "G95EastSideChannelTop", "G95EastSideChannelBottom", "UpperHour",
+  "LowerHour", "Keister", "Goose", "Big",
+  "LowerBig", "BigBar", "UpperMcFarland", "LowerMcFarland",
+  "Developing"
+)
+
+# Convert to a data frame for tabular representation
+table_data <- data.frame(
+  ID = seq_along(locations), # Add row numbers
+  Name = locations
+)
+
+# Generate the table
+knitr::kable(table_data, col.names = c("ID", "Location Name"))
+```
