@@ -13,6 +13,7 @@ library(ggplot2)
 library(dplyr)
 library(readxl)
 library(sf)
+library(leaflet)
 library(openxlsx)
 library(readxl)
 ```
@@ -119,12 +120,83 @@ redd_observations_clean_1 <- redd_observations |>
     TRUE ~ location)) 
 
 print(unique(redd_observations_clean_1$location))
+```
 
+
+```{r}
 # check again for those names that do not match
 redd_observations_clean_1 |> 
-  pull(location) |> 
-  .[!. %in% locations] |> 
+ pull(location) %>%
+  .[!. %in% locations] %>%
   unique()
+
+ not_consistent_names <- redd_observations_clean_1 |> 
+   filter(!location %in% locations)  # Keep only the rows with inconsistent location names
+
+
+not_consistent_names <- st_as_sf(not_consistent_names, coords = c("longitude", "latitude"), crs = 4326)
+
          
+```
+
+```{r eval=FALSE, include=FALSE}
+gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
+
+layers <- st_layers(gdb_path)$name
+# Prep to plot map of survey locations
+survey_locations_map <- leaflet() |> 
+  addTiles() |> 
+  setView(lng = -121.5695, lat = 39.3665, zoom = 10)
+
+# Loop through each layer name and add it to the map
+for (layer_name in layers) {
+  # Read the layer
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+
+  # Transform to WGS84 (EPSG:4326) and remove the Z dimension
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+
+  # Add the polygons to the map
+  survey_locations_map <- survey_locations_map |> 
+    addPolygons(
+      data = shapefile,
+      fillColor = "lightblue",  
+      color = "darkblue",
+      weight = 2,               
+      opacity = 1.0,            
+      fillOpacity = 0.5,        
+      group = layer_name,
+      popup = paste("Layer Name: ", layer_name)
+    )
+}
+
+# Add markers from 'not_consistent_names' to the map for each unique location
+unique_locations <- unique(not_consistent_names$location)
+
+for (location in unique_locations) {
+  # Filter the data to get points for this specific location
+
+  
+  # Add the markers to the map with the location name as the group
+  survey_locations_map <- survey_locations_map |> 
+    addCircleMarkers(
+      data = not_consistent_names,
+      radius = 3,  # Adjust radius as needed
+      color = "red",
+      group = location,  # Group by the location name (group will be dynamically handled)
+      popup = ~paste("Location: ", location, "<br>", "Date: ", date)
+    )
+}
+
+# TODO fix boxes function
+survey_locations_map <- survey_locations_map |> 
+  addLayersControl(
+    overlayGroups = unique_locations,  # The groups are the unique location names
+    options = layersControlOptions(collapsed = TRUE)
+  )
+
+# Display the map
+survey_locations_map
 ```
 
