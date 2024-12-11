@@ -117,6 +117,7 @@ redd_observations_clean_1 <- redd_observations |>
     location == "upperhatcheryriffle" ~	"upperhatchery",
     location == "uppermatthews" ~	"uppermathews",
     location == "weirriffle"	~	"weir",
+    location == "developingriffle" ~ "developing",
     TRUE ~ location)) 
 
 print(unique(redd_observations_clean_1$location))
@@ -180,3 +181,8 @@ name_check_map <- name_check_map |>
 name_check_map
 ```
 
+Notes / observations form map:
+
+  * hour: most points are located near "LowerHour", however two are withing "UpperHour"
+  * palm / palmriffle are not within any survey location - it was not modified
+  * g95main / g-95main: points are located between G95EastSideChannelTop and G95WestSideChannel, however there is no survey location there
