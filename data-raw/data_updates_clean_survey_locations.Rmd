@@ -43,6 +43,16 @@ Looking into unique location names
 unique(redd_observations$location)
 ```
 
+```{r, include=FALSE}
+# removing spaces
+redd_observations$location <- gsub(" ", "", redd_observations$location)
+
+# Display the modified vector
+print(unique(redd_observations$location))
+
+```
+
+
 Survey location names - redd data  locations will be matched to these names
 
 ```{r, echo=FALSE, message=FALSE}
@@ -61,12 +71,15 @@ locations <- c(
   "LowerBig", "BigBar", "UpperMcFarland", "LowerMcFarland",
   "Developing"
 )
+
 locations <- tolower(locations)
 table_data <- data.frame(
   ID = seq_along(locations), 
   Name = locations
 )
+table_data <- table_data[order(table_data$Name), ]
 
+# Generate the sorted table
 knitr::kable(table_data, col.names = c("ID", "Location Name"))
 ```
 
@@ -76,7 +89,42 @@ Identifying locations that do not match survey location names
 invalid_locations <- redd_observations$location[!redd_observations$location %in% locations]
 
 # Display invalid locations
-unique_invalid_locations <- unique(locations)
+unique_invalid_locations <- unique(invalid_locations)
 print(unique_invalid_locations)
+```
+
+```{r}
+# renaming those that are just miss spelled 
+redd_observations_clean_1 <- redd_observations |> 
+  mutate(location = case_when(
+    location == "aleckriffle" ~ "aleck",
+    location == "bedrockriffle" ~ "bedrock",
+    location == "bigriffle" | location ==	"bigbarriffle" ~	"bigbar",
+    location == "g-95eastsidechannelbottom"	| location == "g95eastbottom"	~ "g95eastsidechannelbottom",
+    location == "g-95easttop" | location == "g95easttop"	~ "g95eastsidechanneltop",
+    location == "g-95westsidechannelbottom" | location ==	"g95west" | location ==	"g95westbottom" ~	"g95westsidechannel",
+    location == "gooseriffle"	~	"goose",
+    location == "hatcheryriffle" ~ "hatchery", # unsure relationship
+    location == "hatcherysidechannelupper" ~	"hatcherysidechannel",
+    location == "lowerbigriffle" ~	"lowerbig",
+    location == "matthews" ~	"mathews",
+    location == "midauditorium"| location == "midhour" ~	"middleauditorium", # unsure about midhour relationship
+    location == "moe'ssidechannel" ~ "moessidechannel",
+    location == "steepriffle"	~	"steep", # unsure
+    location == "steepside" ~ "steepsidechannel", #unsure
+    location == "topofaudtorium" ~ "topofauditorium",
+    location == "upperhatcheryriffle" ~	"upperhatchery",
+    location == "uppermatthews" ~	"uppermathews",
+    location == "weirriffle"	~	"weir",
+    TRUE ~ location)) 
+
+print(unique(redd_observations_clean_1$location))
+
+# check again for those names that do not match
+redd_observations_clean_1 |> 
+  pull(location) |> 
+  .[!. %in% locations] |> 
+  unique()
+         
 ```
 
