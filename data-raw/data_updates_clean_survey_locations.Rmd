@@ -58,7 +58,7 @@ Survey location names - redd data  locations will be matched to these names
 
 ```{r, echo=FALSE, message=FALSE}
 # Names from survey location provided by Chris Cook
-locations <- c(
+reference_locations <- c(
   "UpperHatchery", "UpperCottonwood", "Hatchery", "Cottonwood",
   "TopofAuditorium", "MoesSideChannel", "UpperAuditorium", "MiddleAuditorium",
   "LowerAuditorium", "HatcheryPipe", "LowerTableMountain", "TableMountain",
@@ -73,10 +73,10 @@ locations <- c(
   "Developing"
 )
 
-locations <- tolower(locations)
+reference_locations <- tolower(reference_locations)
 table_data <- data.frame(
-  ID = seq_along(locations), 
-  Name = locations
+  ID = seq_along(reference_locations), 
+  Name = reference_locations
 )
 table_data <- table_data[order(table_data$Name), ]
 
@@ -87,7 +87,7 @@ knitr::kable(table_data, col.names = c("ID", "Location Name"))
 Identifying locations that do not match survey location names
 
 ```{r, echo=FALSE}
-invalid_locations <- redd_observations$location[!redd_observations$location %in% locations]
+invalid_locations <- redd_observations$location[!redd_observations$location %in% reference_locations]
 
 # Display invalid locations
 unique_invalid_locations <- unique(invalid_locations)
@@ -124,20 +124,36 @@ print(unique(redd_observations_clean_1$location))
 
 
 ```{r}
-# check again for those names that do not match
-redd_observations_clean_1 |> 
- pull(location) %>%
-  .[!. %in% locations] %>%
-  unique()
+# checking for the locations that still dont match reference names, after cleaning above
+print(unique(redd_observations_clean_1$location[!redd_observations_clean_1$location %in% reference_locations]))
 
- not_consistent_names <- redd_observations_clean_1 |> 
-   filter(!location %in% locations)  # Keep only the rows with inconsistent location names
-
-
-not_consistent_names <- st_as_sf(not_consistent_names, coords = c("longitude", "latitude"), crs = 4326)
-
-         
+names_for_check <- redd_observations_clean_1 |> 
+   filter(!location %in% reference_locations)  # Keep only the rows with inconsistent location names
+# not_consistent_names <- st_as_sf(not_consistent_names, coords = c("longitude", "latitude"), crs = 4326)
 ```
+
+```{r}
+# Get the unique locations
+locations <- unique(names_for_check$location)
+
+# Create a leaflet map
+name_check_map <- leaflet(data = names_for_check) |> 
+  addTiles() |> 
+  addCircleMarkers(~longitude, ~latitude, popup = ~location, group = ~location,
+                   radius = 2,  # Adjust radius as needed
+                   color = "red")
+
+# Add a layer control with checkboxes for each unique location
+name_check_map <- name_check_map |> 
+  addLayersControl(
+    overlayGroups = locations,
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+# Display the map
+name_check_map
+```
+
 
 ```{r eval=FALSE, include=FALSE}
 gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
