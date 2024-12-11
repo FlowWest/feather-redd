@@ -132,49 +132,23 @@ names_for_check <- redd_observations_clean_1 |>
 # not_consistent_names <- st_as_sf(not_consistent_names, coords = c("longitude", "latitude"), crs = 4326)
 ```
 
-```{r}
-# Get the unique locations
-locations <- unique(names_for_check$location)
+Reference map to check where redds are located geographically
 
-# Create a leaflet map
-name_check_map <- leaflet(data = names_for_check) |> 
-  addTiles() |> 
-  addCircleMarkers(~longitude, ~latitude, popup = ~location, group = ~location,
-                   radius = 2,  # Adjust radius as needed
-                   color = "red")
-
-# Add a layer control with checkboxes for each unique location
-name_check_map <- name_check_map |> 
-  addLayersControl(
-    overlayGroups = locations,
-    options = layersControlOptions(collapsed = FALSE)
-  )
-
-# Display the map
-name_check_map
-```
-
-
-```{r eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# pulling layers from survey location map for reference
 gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
-
 layers <- st_layers(gdb_path)$name
-# Prep to plot map of survey locations
-survey_locations_map <- leaflet() |> 
+
+name_check_map <- leaflet() |> 
   addTiles() |> 
   setView(lng = -121.5695, lat = 39.3665, zoom = 10)
 
-# Loop through each layer name and add it to the map
 for (layer_name in layers) {
-  # Read the layer
   shapefile <- st_read(dsn = gdb_path, layer = layer_name)
-
-  # Transform to WGS84 (EPSG:4326) and remove the Z dimension
   shapefile <- st_transform(shapefile, crs = 4326) |> 
-               st_zm(drop = TRUE, what = "ZM")
-
-  # Add the polygons to the map
-  survey_locations_map <- survey_locations_map |> 
+    st_zm(drop = TRUE, what = "ZM")
+  
+name_check_map <- name_check_map |> 
     addPolygons(
       data = shapefile,
       fillColor = "lightblue",  
@@ -187,32 +161,22 @@ for (layer_name in layers) {
     )
 }
 
-# Add markers from 'not_consistent_names' to the map for each unique location
-unique_locations <- unique(not_consistent_names$location)
+locations <- unique(names_for_check$location)
+name_check_map <- name_check_map |> 
+  addCircleMarkers(data = names_for_check, 
+                   ~longitude, ~latitude, 
+                   popup = ~location, 
+                   group = ~location,
+                   radius = 2,  
+                   color = "red")
 
-for (location in unique_locations) {
-  # Filter the data to get points for this specific location
-
-  
-  # Add the markers to the map with the location name as the group
-  survey_locations_map <- survey_locations_map |> 
-    addCircleMarkers(
-      data = not_consistent_names,
-      radius = 3,  # Adjust radius as needed
-      color = "red",
-      group = location,  # Group by the location name (group will be dynamically handled)
-      popup = ~paste("Location: ", location, "<br>", "Date: ", date)
-    )
-}
-
-# TODO fix boxes function
-survey_locations_map <- survey_locations_map |> 
+name_check_map <- name_check_map |> 
   addLayersControl(
-    overlayGroups = unique_locations,  # The groups are the unique location names
-    options = layersControlOptions(collapsed = TRUE)
+    overlayGroups = c(locations), # Add chek boxes for the location names 
+    options = layersControlOptions(collapsed = FALSE)
   )
 
 # Display the map
-survey_locations_map
+name_check_map
 ```
 
