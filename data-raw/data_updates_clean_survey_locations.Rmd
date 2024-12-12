@@ -278,3 +278,14 @@ name_check_map_2 <- name_check_map_2 |>
 # Display the map
 name_check_map_2
 ```
+
+```{r}
+
+redd_observations_wnames <- redd_observations_clean_2 |> 
+  select(-file_number) |> # keeping survey week and location
+  glimpse()
+# save clean data
+write.csv(redd_observations_clean_2, "data/redd_observations_wnames.csv", row.names = FALSE)
+
+```
+
