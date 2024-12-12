@@ -282,10 +282,35 @@ name_check_map_2
 ```{r}
 
 redd_observations_wnames <- redd_observations_clean_2 |> 
+  mutate(date = as.Date(date)) |> 
   select(-file_number) |> # keeping survey week and location
   glimpse()
 # save clean data
 write.csv(redd_observations_clean_2, "data/redd_observations_wnames.csv", row.names = FALSE)
 
+```
+Summarizing by date and survey location 
+
+```{r}
+summary <- redd_observations_wnames |> 
+  group_by(location, date) |> 
+  summarize(number_redds) |> 
+  glimpse()
+
+redd_summary_by_date <- redd_observations_wnames |> 
+  group_by(location, date) |> 
+  summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
+  complete(location, date, fill = list(total_redds = 0)) 
+
+redd_observations_wnames <- redd_observations_wnames |> 
+  mutate(year = year(date), week = week(date))
+
+redd_summary_by_year_week <- redd_observations_wnames |> 
+  group_by(location, year, week) |> 
+  summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
+  complete(location, year, week, fill = list(total_redds = 0)) 
+
+list(by_date = redd_summary_by_date,
+     by_year_week = redd_summary_by_year_week)
 ```
 
