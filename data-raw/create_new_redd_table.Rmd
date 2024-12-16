@@ -1,0 +1,58 @@
+---
+title: "location table - feather river redd data"
+date: "2024-12-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(leaflet)
+```
+
+The purpose of this markdown is to analyze redd data and understand when redds were not observed. A new reference table will be created
+
+```{r}
+redd_observations <- read_csv("data/redd_observations_wnames.csv")
+```
+
+
+```{r}
+redd_observations |> 
+  mutate(week = week(date),
+         year = year(date)) |> 
+  ggplot(aes(x = week, y = number_redds)) +
+  geom_point() +
+  facet_wrap(~year)
+```
+
+### Data exploration by year - the goal is to compare to Chris documntation
+
+Summarizing by date and survey location 
+
+```{r}
+summary <- redd_observations |> 
+  group_by(location, date) |> 
+  summarize(number_redds) |> 
+  glimpse()
+
+redd_summary_by_date <- redd_observations |> 
+  group_by(location, date) |> 
+  summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
+  complete(location, date, fill = list(total_redds = 0)) # adding 0 to those days/locations that dont have redds 
+
+redd_observations <- redd_observations |> 
+  mutate(year = year(date), week = week(date))
+
+redd_summary_by_year_week <- redd_observations |> 
+  group_by(location, year, week) |> 
+  summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
+  complete(location, year, week, fill = list(total_redds = 0)) 
+
+list(by_date = redd_summary_by_date,
+     by_year_week = redd_summary_by_year_week)
+```
