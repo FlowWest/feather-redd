@@ -1,7 +1,7 @@
 ---
 title: "feather river redd survey locations naming qc - adding names to data"
 date: "2024-12-09"
-rmarkdown::github_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -18,6 +18,7 @@ library(openxlsx)
 library(readxl)
 library(stringr)
 ```
+
 The goal of this markdown is to clean up the location names from Feather River redd survey data.
 
 Summary of work that has been done so far:
@@ -26,6 +27,8 @@ Summary of work that has been done so far:
     * raw data is pulled in, negative velocity values are set to NA
     * pot_depth_m >= 40 is set to NA
     * "type" is removed
+    * 2023 number_redds set all to 1 
+    * note that 7 data entries in the raw data that had "0" in number_redds, those were set to 1
     
   * *mapping_qc*: looks into latitude longitude and identifies issues. 
     * Data file input: "data/archive/all_redd_data.csv" 
@@ -37,7 +40,7 @@ Summary of work that has been done so far:
 redd_observations <- read.csv("data-raw/redd_observations_clean_locations.csv")
 ```
 
-Looking into unique location names
+### Looking into unique location names
 
   * There are 81 unique names
   
@@ -55,7 +58,8 @@ print(unique(redd_observations$location))
 ```
 
 
-Survey location names - redd data locations will be matched to these names
+Survey location names - 
+The following names below are survey locations names provided by Feather River team. These location names are what they have on their reports and how they categorize the locations where surveys are conducted. Redd data locations will be matched to these names
 
 ```{r, echo=FALSE, message=FALSE}
 # Names from survey location provided by Chris Cook
@@ -140,7 +144,7 @@ names_for_check <- redd_observations_clean_1 |>
 
 Reference map to check where redds are located geographically
 
-```{r, echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 # pulling layers from survey location map for reference
 gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
 layers <- st_layers(gdb_path)$name
@@ -188,7 +192,7 @@ name_check_map <- name_check_map |>
 name_check_map
 ```
 
-Notes / observations form map:
+### Notes / observations form map:
 
   * hour: most points are located near "LowerHour", however two are withing "UpperHour"
   * palm / palmriffle are not within any survey location - it was not modified
@@ -239,7 +243,7 @@ unique(names_for_check_2$location)
 
 Map with redd points located outside of survey locations (and naming does not match any survey location)
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 name_check_map_2 <- leaflet() |> 
   addTiles() |> 
   setView(lng = -121.5695, lat = 39.3665, zoom = 10)
@@ -283,17 +287,6 @@ name_check_map_2 <- name_check_map_2 |>
 name_check_map_2
 ```
 
-```{r}
-problematic_records <- redd_observations_clean_2 |> 
-  filter(str_detect(date, "/")) |> 
-  glimpse()
-
-
-problematic_records <- problematic_records |> 
-  mutate(date = as.Date(date, format = "%m/%d/%Y")) |> 
-  view()
-
-```
 
 ```{r}
 redd_observations_wnames <- redd_observations_clean_2 |> 
@@ -304,38 +297,7 @@ redd_observations_wnames <- redd_observations_clean_2 |>
   view() 
   
 # save clean data
-# write.csv(redd_observations_clean_2, "data/redd_observations_wnames.csv", row.names = FALSE)
-
+write.csv(redd_observations_wnames, "data/redd_observations_wnames.csv", row.names = FALSE)
 ```
 
-```{r}
-ggplot(redd_observations_wnames, aes(x = date, y = number_redds)) +
-  geom_point()
-```
-
-
-Summarizing by date and survey location 
-
-```{r}
-summary <- redd_observations_wnames |> 
-  group_by(location, date) |> 
-  summarize(number_redds) |> 
-  glimpse()
-
-redd_summary_by_date <- redd_observations_wnames |> 
-  group_by(location, date) |> 
-  summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
-  complete(location, date, fill = list(total_redds = 0)) # adding 0 to those days/locations that dont have redds 
-
-redd_observations_wnames <- redd_observations_wnames |> 
-  mutate(year = year(date), week = week(date))
-
-redd_summary_by_year_week <- redd_observations_wnames |> 
-  group_by(location, year, week) |> 
-  summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
-  complete(location, year, week, fill = list(total_redds = 0)) 
-
-list(by_date = redd_summary_by_date,
-     by_year_week = redd_summary_by_year_week)
-```
 
