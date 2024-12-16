@@ -16,19 +16,20 @@ library(sf)
 library(leaflet)
 library(openxlsx)
 library(readxl)
+library(stringr)
 ```
 The goal of this markdown is to clean up the location names from Feather River redd survey data.
 
 Summary of work that has been done so far:
 
-  * redd_qc_2014-2023 - mainly exploratory: 
-    *  raw data is pulled in, negative velocity values are set to NA
+  * *redd_qc_2014-2023* - mainly exploratory: 
+    * raw data is pulled in, negative velocity values are set to NA
     * pot_depth_m >= 40 is set to NA
     * "type" is removed
     
-  * mapping_qc: looks into latitude longitude and identifies issues. 
+  * *mapping_qc*: looks into latitude longitude and identifies issues. 
     * Data file input: "data/archive/all_redd_data.csv" 
-  * clean_locations: fixed latitude/longitude provided by Chris Cook, these changes address the issues found on mapping_qc. 
+  * *clean_locations*: fixed latitude/longitude provided by Chris Cook, these changes address the issues found on mapping_qc. 
     * Data file input: "data/archive/all_redd_data.csv". 
     * Data file output(s): "data-raw/redd_observations_clean_locations.csv" and "data/redd_observations.csv" (`location`, `survey_wk` and `file_number` removed)
   
@@ -54,7 +55,7 @@ print(unique(redd_observations$location))
 ```
 
 
-Survey location names - redd data  locations will be matched to these names
+Survey location names - redd data locations will be matched to these names
 
 ```{r, echo=FALSE, message=FALSE}
 # Names from survey location provided by Chris Cook
@@ -84,7 +85,7 @@ table_data <- table_data[order(table_data$Name), ]
 knitr::kable(table_data, col.names = c("ID", "Location Name"))
 ```
 
-Identifying locations that do not match survey location names
+Identifying redd locations that do not match survey location names
 
 ```{r, echo=FALSE}
 invalid_locations <- redd_observations$location[!redd_observations$location %in% reference_locations]
@@ -123,7 +124,7 @@ redd_observations_clean_1 <- redd_observations |>
 print(unique(redd_observations_clean_1$location))
 ```
 
-Current unique redd location naems that do not match survey locations
+Redd location names that do not match survey locations, even after naming cleaning
 
 ```{r, echo=FALSE}
 # checking for the locations that still dont match reference names, after cleaning above
@@ -199,7 +200,7 @@ Notes / observations form map:
   * upperbigholeeast: modified to BigHoleEast
   * moe'sditch: modified 
   
-Modifications - all points that fall withing a survey location will be modified to match to that name
+Modifications - all points that fall within a survey location will be modified to match to that name
 
 ```{r, include=FALSE}
 redd_observations_clean_2 <- redd_observations_clean_1 |>
@@ -227,15 +228,18 @@ print(unique(redd_observations_clean_2$location))
 print(unique(redd_observations_clean_2$location[!redd_observations_clean_2$location %in% reference_locations]))
 ```
 
-Listing names that ramain unmatched to any suervey locations
+Listing redd location names that remain unmatched to any survey locations
 
 ```{r, echo=FALSE}
 names_for_check_2 <- redd_observations_clean_2 |> 
    filter(!location %in% reference_locations)
+
+unique(names_for_check_2$location)
 ```
 
-```{r, echo=FALSE}
+Map with redd points located outside of survey locations (and naming does not match any survey location)
 
+```{r, echo=FALSE}
 name_check_map_2 <- leaflet() |> 
   addTiles() |> 
   setView(lng = -121.5695, lat = 39.3665, zoom = 10)
@@ -280,15 +284,36 @@ name_check_map_2
 ```
 
 ```{r}
-
-redd_observations_wnames <- redd_observations_clean_2 |> 
-  mutate(date = as.Date(date)) |> 
-  select(-file_number) |> # keeping survey week and location
+problematic_records <- redd_observations_clean_2 |> 
+  filter(str_detect(date, "/")) |> 
   glimpse()
-# save clean data
-write.csv(redd_observations_clean_2, "data/redd_observations_wnames.csv", row.names = FALSE)
+
+
+problematic_records <- problematic_records |> 
+  mutate(date = as.Date(date, format = "%m/%d/%Y")) |> 
+  view()
 
 ```
+
+```{r}
+redd_observations_wnames <- redd_observations_clean_2 |> 
+  mutate(date = case_when(
+    str_detect(date, "/") ~ as.Date(date, format = "%m/%d/%Y"), # fix dates
+    TRUE ~ as.Date(date))) |> 
+  select(-file_number) |>  # keeping survey week and location
+  view() 
+  
+# save clean data
+# write.csv(redd_observations_clean_2, "data/redd_observations_wnames.csv", row.names = FALSE)
+
+```
+
+```{r}
+ggplot(redd_observations_wnames, aes(x = date, y = number_redds)) +
+  geom_point()
+```
+
+
 Summarizing by date and survey location 
 
 ```{r}
@@ -300,7 +325,7 @@ summary <- redd_observations_wnames |>
 redd_summary_by_date <- redd_observations_wnames |> 
   group_by(location, date) |> 
   summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
-  complete(location, date, fill = list(total_redds = 0)) 
+  complete(location, date, fill = list(total_redds = 0)) # adding 0 to those days/locations that dont have redds 
 
 redd_observations_wnames <- redd_observations_wnames |> 
   mutate(year = year(date), week = week(date))
