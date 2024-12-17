@@ -12,6 +12,7 @@ library(ggplot2)
 library(dplyr)
 library(readxl)
 library(leaflet)
+library(purrr)
 ```
 
 The purpose of this markdown is to analyze redd data and understand when redds were not observed. A new reference table will be created
@@ -29,6 +30,23 @@ redd_observations |>
   geom_point() +
   facet_wrap(~year)
 ```
+
+A new table will be created with: date, survey_group, survey_location, is_redd_observed. Survey_group will be created categorizing locations by: Hwy 162-outlet, HFC, upstream of Hwy 70 (GSA adjacent areas)
+
+```{r, include=FALSE}
+# defining categories
+upstream_hwy_70 <- c("TableMountain", "LowerTableMountain", "HatcheryPipe", "UpperCottonwood", "UpperHatchery", "Hatchery", "Cottonwood", "TopofAuditorium", "MoesSideChannel", "UpperAuditorium", "HatcherySideChannel", "LowerAuditorium", "BelowLowerAuditorium", "Bedrock",  "MiddleAuditorium") |> tolower()
+
+hwy_162_outlet <- c("TrailerPark", "UpperMathews", "Mathews", "Aleck", "UpperRobinson", "LowerRobinson", "SteepSideChannel", "Steep", "Weir", "EyeSideChannel", "Eye", "Gateway") |> tolower()
+
+hfc <- redd_observations |> 
+  mutate(location = tolower(location)) |> 
+  filter(!(location %in% upstream_hwy_70) & !(location %in% hwy_162_outlet)) |> 
+  distinct(location) |> 
+  filter(!location %in% c("g95main", "g-95main", "lowervanceeast", "greatwestern", "topofhatchery", "palm", "palmriffle")) |> 
+  pull(location)
+```
+
 
 ### Data exploration by year - the goal is to compare to Chris documntation
 
@@ -56,3 +74,94 @@ redd_summary_by_year_week <- redd_observations |>
 list(by_date = redd_summary_by_date,
      by_year_week = redd_summary_by_year_week)
 ```
+
+```{r}
+ redd_observations  |> 
+  mutate(year = year(date)) |> 
+  distinct(location, year) |> 
+  count(location, year) |> 
+  ggplot(aes(x = year, y = location, fill = n)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "blue", na.value = "white") +
+  scale_x_continuous(breaks = seq(min(redd_observations$date, na.rm = TRUE) |> year(),
+                                  max(redd_observations$date, na.rm = TRUE) |>  year(),
+                                  by = 1),
+                     expand = c(0, 0)) +
+  labs(title = "Surveyed Locations Across Years",
+       x = "Year",
+       y = "Location",
+       fill = "Survey Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1),
+        axis.text.y = element_text(angle = 25, size = 7))
+```
+
+```{r, include=FALSE}
+survey_data_week <- redd_observations  |> 
+  mutate(year = year(date),
+         week = week(date)) |> 
+  distinct(location, year, week) 
+
+survey_data_week |> 
+ggplot(aes(x = year, y = as.factor(week))) +
+  geom_tile(aes(fill = location), color = "white") +
+  labs(
+    title = "Surveyed Sites per Year and Week Number",
+    x = "Year",
+    y = "Week Number",
+    fill = "Location"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 8)) 
+```
+## Exploring data by year to compare to documentation
+
+### 2014
+
+```{r, echo=FALSE}
+week_start_2014 <- ymd("2014-09-09") # survey started Sept 9
+
+survey_data_2014 <- redd_observations |> 
+  filter(year(date) == 2014) |> 
+  mutate(custom_week = as.integer(difftime(date, week_start_2014, units = "weeks")) + 1) |> 
+  distinct(location, custom_week)
+
+ggplot(survey_data_2014, aes(x = location, y = as.factor(custom_week))) +
+  geom_tile(fill = "steelblue", color = "white") +
+  labs(title = "Surveyed Sites in 2014 by Week Number",
+       x = "Survey Location",
+       y = "Week Number") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+        axis.text.y = element_text(size = 8))
+```
+
+```{r}
+# since every survey started at a different date, it will we defined here
+week_start_dates <- tibble(year = 2014:2023,
+                           week_start = c("2014-09-09", "2015-09-16", "2016-09-20", "2017-10-03", "2018-09-28", "2019-09-16",
+                                          "2020-09-22", "2021-09-16", "2022-09-14", "2023-09-18") |> 
+                             ymd())
+# function to plot each year like above
+plot_year_data <- function(year, week_start) {
+  survey_data <- redd_observations |> 
+    filter(year(date) == year) |> 
+    mutate(custom_week = as.integer(difftime(date, week_start, units = "weeks")) + 1) |> 
+    distinct(location, custom_week)
+  
+ggplot(survey_data, aes(x = location, y = as.factor(custom_week))) +
+  geom_tile(fill = "steelblue", color = "white") +
+  labs(title = paste("Surveyed Sites in", year, "by Week Number"),
+       x = "Survey Location",
+       y = "Week Number") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+        axis.text.y = element_text(size = 8))
+}
+
+walk2(week_start_dates$year, week_start_dates$week_start, ~ print(plot_year_data(.x, .y)))
+
+```
+
