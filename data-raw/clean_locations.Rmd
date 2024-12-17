@@ -136,8 +136,6 @@ Save clean data
 ```{r}
 write.csv(redd_locations_fixed, "data-raw/redd_observations_clean_locations.csv", row.names = FALSE) # adding this code to bring location names back
 
-write.csv(redd_locations_clean, "data/redd_observations.csv", row.names = FALSE)
-
 redd_locations_clean <- redd_locations_fixed |> 
   select(-c(location, survey_wk, file_number)) |>   #removing unnecessary fields 
   glimpse()
