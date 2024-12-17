@@ -40,7 +40,7 @@ All data processing and EDI uploads are managed in the same repository.
 
 ## Processing Data
 
-Data processing is handled by one script located in the [data-raw](https://github.com/FlowWest/feather-redd/blob/main/data-raw) folder:  [redd_qc_2014_2023.Rmd](https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd)
+Data processing is handled by one script located in the [data-raw](https://github.com/FlowWest/feather-redd/blob/main/data-raw) folder:  [redd_qc.Rmd](https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd)
 
 
 
@@ -55,15 +55,15 @@ Data processing is handled by one script located in the [data-raw](https://githu
       glimpse()
     ```
 
-2. After confirming that the data is showing properly, run the `redd_qc.Rmd` script located [here](https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd). Note that each year's data was entered differently, so the data cleaning is specific to each year. We will adapt this data cleaning process once the data entry protocol is unified/consistent.
+2. After confirming that the data is showing properly, run the `redd_qc.Rmd` script located [here](https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd). If the format is not the same as [2022 data](https://github.com/FlowWest/feather-redd/blob/main/data-raw/2014-2023 Chinook Redd Survey Data/2022_Chinook_Redd_Survey_Data.xlsx) the script won't work and data cleaning will have to be adapted to format. See example of [data from 2023](https://github.com/FlowWest/feather-redd/blob/main/data-raw/2014-2023 Chinook Redd Survey Data/2022_Chinook_Redd_Survey_Data.xlsx). We will adapt this data cleaning process once the data entry protocol is unified/consistent.
 
 3. The script will generate a CSV called `redd_observations.csv` in the [data folder](https://github.com/FlowWest/feather-redd/tree/main/data).
 
-4. After generating the CSV files, update their metadata (located [here](https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata)):
+4. After generating the CSV files, update the metadata (located [here](https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata)):
 
     - **Feather Redd** (`feather_redd_metadata.xlsx`): Update the minimum and maximum values for fields such as `date`, `number_redds`, `number_salmon`, etc.
-    - If the time range of the data has changed, update the **project metadata** in `feather_redd_project_metadata.xlsx` (under the Coverage tab).
-    - If applicable, adjust the language in the data abstract to reflect the latest updates.
+    - Update the **project metadata** in `feather_redd_project_metadata.xlsx` (under the Coverage tab).
+    - If applicable, adjust the language in the abstract and methods to reflect the latest updates.
 
 ### Summary of CSVs Generated for EDI Upload
 
