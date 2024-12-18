@@ -236,7 +236,12 @@ Listing redd location names that remain unmatched to any survey locations
 
 ```{r, echo=FALSE}
 names_for_check_2 <- redd_observations_clean_2 |> 
-   filter(!location %in% reference_locations)
+   filter(!location %in% reference_locations) |> 
+   mutate(location = case_when(
+     location == "g-95main" ~ "g95main",
+     location == "palmriffle" ~ "palm",
+     TRUE ~ location))
+  
 
 unique(names_for_check_2$location)
 ```
@@ -286,6 +291,57 @@ name_check_map_2 <- name_check_map_2 |>
 # Display the map
 name_check_map_2
 ```
+
+```{r}
+name_check_map_2 <- leaflet() |> 
+  addTiles() |> 
+  setView(lng = -121.5695, lat = 39.3665, zoom = 10)
+
+# Add polygons (unchanged)
+for (layer_name in layers) {
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+    st_zm(drop = TRUE, what = "ZM")
+  
+  name_check_map_2 <- name_check_map_2 |> 
+    addPolygons(
+      data = shapefile,
+      fillColor = "lightblue",  
+      color = "darkblue",
+      weight = 2,               
+      opacity = 1.0,            
+      fillOpacity = 0.5,        
+      group = layer_name,
+      popup = paste("Layer Name: ", layer_name)
+    )
+}
+
+# Add circle markers with permanent labels
+locations <- unique(names_for_check_2$location)
+name_check_map_2 <- name_check_map_2 |> 
+  addCircleMarkers(
+    data = names_for_check_2, 
+    ~longitude, ~latitude, 
+    label = ~location,
+    labelOptions = labelOptions(noHide = TRUE), # Permanent label display
+    popup = ~paste("Location:", location, "<br>Date:", date, "<br>Latitude:", latitude, "<br>Longitude:",
+                   longitude, "<br>Survey Week:", survey_wk),
+    group = ~location,
+    radius = 2,  
+    color = "red"
+  )
+
+# Add layers control (unchanged)
+name_check_map_2 <- name_check_map_2 |> 
+  addLayersControl(
+    overlayGroups = c(locations), # Add checkboxes for the location names 
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+name_check_map_2
+
+```
+
 
 
 ```{r}
