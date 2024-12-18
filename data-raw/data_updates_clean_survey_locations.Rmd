@@ -63,6 +63,7 @@ The following names below are survey locations names provided by Feather River t
 
 ```{r, echo=FALSE, message=FALSE}
 # Names from survey location provided by Chris Cook
+# Great Western, Palm, Top of Hatchery, G95 Main and Lower Vance East are not included on locations provided but we asked Chris and we should keep them
 reference_locations <- c(
   "UpperHatchery", "UpperCottonwood", "Hatchery", "Cottonwood",
   "TopofAuditorium", "MoesSideChannel", "UpperAuditorium", "MiddleAuditorium",
@@ -75,7 +76,7 @@ reference_locations <- c(
   "G95WestSideChannel", "G95EastSideChannelTop", "G95EastSideChannelBottom", "UpperHour",
   "LowerHour", "Keister", "Goose", "Big",
   "LowerBig", "BigBar", "UpperMcFarland", "LowerMcFarland",
-  "Developing"
+  "Developing", "GreatWestern", "Palm", "TopofHatchery", "G95main", "LowerVanceEast"
 )
 
 reference_locations <- tolower(reference_locations)
@@ -123,6 +124,10 @@ redd_observations_clean_1 <- redd_observations |>
     location == "uppermatthews" ~	"uppermathews",
     location == "weirriffle"	~	"weir",
     location == "developingriffle" ~ "developing",
+    location == "gatewaysidechannel" | location == "gatewaymainchannel" ~ "gateway",
+    location == "upperbigholeeast" ~ "bigholeeast",
+    location == "g-95main" ~ "g95main",
+    location == "palmriffle" ~ "palm",
     TRUE ~ location)) 
 
 print(unique(redd_observations_clean_1$location))
@@ -194,12 +199,11 @@ name_check_map
 
 ### Notes / observations form map:
 
-  * hour: most points are located near "LowerHour", however two are withing "UpperHour"
+  * Great Western, Palm, Top of Hatchery, G95 Main and Lower Vance East are not included on location shapefiles provided, but we asked Chris and we should keep them
+  * hour: most points are located near "LowerHour", however two are within "UpperHour"
   * palm / palmriffle are not within any survey location - it was not modified
-  * g95main / g-95main: points are located between G95EastSideChannelTop and G95WestSideChannel, however there is no survey location there. There are two 95main points that are off
+  * g95main: There are two points that look like outliers from other points - we asked Chris and poins have been updated accordingly below
   * lowervanceeast: 3 points are within "BigHoleEast" (these were modified to BigHoleEast), all others are off any survey location - south of "VanceEast", north of "BigHoleEast"
-  * greatwestern: do not fall within and survey locations - no changes made
-  * topofhatchery: do not fall within and survey locations - no changes made
   * gatewaymainchannel: located on survey location Gateway, modified
   * upperbigholeeast: modified to BigHoleEast
   * moe'sditch: modified 
@@ -222,21 +226,22 @@ redd_observations_clean_2 <- redd_observations_clean_1 |>
     location == "lowervanceeast" & date == "2017-11-14" & latitude == "39.439059494603" & longitude == "-121.635427259305" ~ "bigholeeast",
     location == "lowervanceeast" & date == "2017-11-14" & latitude == "39.4388562088935" & longitude == "-121.635448923638" ~ "bigholeeast",
     location == "lowervanceeast" & date == "2017-11-14" & latitude == "39.4388504794907" & longitude == "-121.635372994652" ~ "bigholeeast",
-    location == "gatewaysidechannel" | location == "gatewaymainchannel" ~ "gateway",
-    location == "upperbigholeeast" ~ "bigholeeast",
-    location == "g-95main" ~ "g95main",
-    location == "palmriffle" ~ "palm",
+    location == "g95main" & date == "2015-11-19" & latitude == "39.4394792142928" & longitude == "-121.635254377528" ~ "bigholeeast",
+    location == "g95main" & date == "2015-11-19" & latitude == "39.4371081082104" & longitude == "-121.636483707754" ~  "bigholeeast", # check on this once Chris responds
     TRUE ~ location
   ))
+
 
 print(unique(redd_observations_clean_2$location))
 
 print(unique(redd_observations_clean_2$location[!redd_observations_clean_2$location %in% reference_locations]))
+# all redd locations now fall within reference locations!
 ```
 
-Listing redd location names that remain unmatched to any survey locations
+Listing redd location names that remain unmatched to any survey locations (should be 0)
 
 ```{r, echo=FALSE}
+# another check
 names_for_check_2 <- redd_observations_clean_2 |> 
    filter(!location %in% reference_locations) 
   
@@ -244,105 +249,8 @@ names_for_check_2 <- redd_observations_clean_2 |>
 unique(names_for_check_2$location)
 ```
 
-Map with redd points located outside of survey locations (and naming does not match any survey location)
 
-```{r, echo=FALSE, warning=FALSE}
-name_check_map_2 <- leaflet() |> 
-  addTiles() |> 
-  setView(lng = -121.5695, lat = 39.3665, zoom = 10)
-
-for (layer_name in layers) {
-  shapefile <- st_read(dsn = gdb_path, layer = layer_name)
-  shapefile <- st_transform(shapefile, crs = 4326) |> 
-    st_zm(drop = TRUE, what = "ZM")
-  
-name_check_map_2 <- name_check_map_2 |> 
-    addPolygons(
-      data = shapefile,
-      fillColor = "lightblue",  
-      color = "darkblue",
-      weight = 2,               
-      opacity = 1.0,            
-      fillOpacity = 0.5,        
-      group = layer_name,
-      popup = paste("Layer Name: ", layer_name)
-    )
-}
-
-locations <- unique(names_for_check_2$location)
-name_check_map_2 <- name_check_map_2 |> 
-  addCircleMarkers(data = names_for_check_2, 
-                   ~longitude, ~latitude, 
-                   label = ~paste(location),
-                   popup = ~paste("Location:", location, "<br>Date:", date, "<br>Latitude:", latitude, "<br>Longitude:",
-                                  longitude, "<br>Survey Week:", survey_wk),
-                   group = ~location,
-                   radius = 2,  
-                   color = "red")
-
-name_check_map_2 <- name_check_map_2 |> 
-  addLayersControl(
-    overlayGroups = c(locations), # Add chek boxes for the location names 
-    options = layersControlOptions(collapsed = FALSE)
-  )
-
-# Display the map
-name_check_map_2
-```
-
-```{r}
-name_check_map_2 <- leaflet() |> 
-  addTiles() |> 
-  setView(lng = -121.5695, lat = 39.3665, zoom = 10)
-
-# Add polygons (unchanged)
-for (layer_name in layers) {
-  shapefile <- st_read(dsn = gdb_path, layer = layer_name)
-  shapefile <- st_transform(shapefile, crs = 4326) |> 
-    st_zm(drop = TRUE, what = "ZM")
-  
-  name_check_map_2 <- name_check_map_2 |> 
-    addPolygons(
-      data = shapefile,
-      fillColor = "lightblue",  
-      color = "darkblue",
-      weight = 2,               
-      opacity = 1.0,            
-      fillOpacity = 0.5,        
-      group = layer_name,
-      popup = paste("Layer Name: ", layer_name)
-    )
-}
-
-# Add circle markers with permanent labels
-locations <- unique(names_for_check_2$location)
-name_check_map_2 <- name_check_map_2 |> 
-  addCircleMarkers(
-    data = names_for_check_2, 
-    ~longitude, ~latitude, 
-    label = ~location,
-    labelOptions = labelOptions(noHide = TRUE), # Permanent label display
-    popup = ~paste("Location:", location, "<br>Date:", date, "<br>Latitude:", latitude, "<br>Longitude:",
-                   longitude, "<br>Survey Week:", survey_wk),
-    group = ~location,
-    radius = 2,  
-    color = "red"
-  )
-
-# Add layers control (unchanged)
-name_check_map_2 <- name_check_map_2 |> 
-  addLayersControl(
-    overlayGroups = c(locations), # Add checkboxes for the location names 
-    options = layersControlOptions(collapsed = FALSE)
-  )
-
-name_check_map_2
-
-```
-
-
-
-```{r}
+```{r, include=FALSE}
 redd_observations_wnames <- redd_observations_clean_2 |> 
   mutate(date = case_when(
     str_detect(date, "/") ~ as.Date(date, format = "%m/%d/%Y"), # fix dates
