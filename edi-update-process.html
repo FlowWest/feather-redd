@@ -369,7 +369,7 @@ repository</a> and clone it to your local machine.</li>
 </div>
 <div id="adding-data" class="section level2">
 <h2>Adding Data</h2>
-<ol style="list-style-type: decimal">
+<ol start="2" style="list-style-type: decimal">
 <li><p>Before adding the data to the repository, make sure the data
 contains the following fields:</p>
 <ul>
@@ -419,32 +419,33 @@ proceeding.</p></li>
 <div id="processing-data" class="section level2">
 <h2>Processing Data</h2>
 <p>Data processing is handled by one script located in the <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw">data-raw</a>
-folder: <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd">redd_qc_2014_2023.Rmd</a></p>
-<ol style="list-style-type: decimal">
+folder: <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd">redd_qc.Rmd</a></p>
+<ol start="4" style="list-style-type: decimal">
 <li><p>On the <code>redd_qc.Rmd</code> script, add the following code
 under line 116 to read new data:
 <code>redd_yyyy &lt;- readxl::read_xlsx(here::here(&quot;data-raw&quot;, &quot;dwr_chinook_redd_survey_data&quot;, &quot;yyyy_Chinook_Redd_Survey_Data.xlsx&quot;)) |&gt;</code>
 <code>clean_names() |&gt;</code> <code>glimpse()</code></p></li>
 <li><p>After confirming that the data is showing properly, run the
 <code>redd_qc.Rmd</code> script located <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd">here</a>.
-Note that each year’s data was entered differently, so the data cleaning
-is specific to each year. We will adapt this data cleaning process once
-the data entry protocol is unified/consistent.</p></li>
+If the format is not the same as <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/2014-2023%20Chinook%20Redd%20Survey%20Data/2022_Chinook_Redd_Survey_Data.xlsx">2022
+data</a> the script won’t work and data cleaning will have to be adapted
+to format. See example of <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/2014-2023%20Chinook%20Redd%20Survey%20Data/2022_Chinook_Redd_Survey_Data.xlsx">data
+from 2023</a>. We will adapt this data cleaning process once the data
+entry protocol is unified/consistent.</p></li>
 <li><p>The script will generate a CSV called
 <code>redd_observations.csv</code> in the <a href="https://github.com/FlowWest/feather-redd/tree/main/data">data
 folder</a>.</p></li>
-<li><p>After generating the CSV files, update their metadata (located <a href="https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata">here</a>):</p>
+<li><p>After generating the CSV files, update the metadata (located <a href="https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata">here</a>):</p>
 <ul>
 <li><strong>Feather Redd</strong>
 (<code>feather_redd_metadata.xlsx</code>): Update the minimum and
 maximum values for fields such as <code>date</code>,
 <code>number_redds</code>, <code>number_salmon</code>, etc.</li>
-<li>If the time range of the data has changed, update the
-<strong>project metadata</strong> in
+<li>Update the <strong>project metadata</strong> in
 <code>feather_redd_project_metadata.xlsx</code> (under the Coverage
 tab).</li>
-<li>If applicable, adjust the language in the data abstract to reflect
-the latest updates.</li>
+<li>If applicable, adjust the language in the abstract and methods to
+reflect the latest updates.</li>
 </ul></li>
 </ol>
 <div id="summary-of-csvs-generated-for-edi-upload" class="section level3">
@@ -458,7 +459,7 @@ the latest updates.</li>
 <h2>EDI Update/Upload</h2>
 <p>Before starting this process, ensure you have an EDI account set
 up.</p>
-<ol style="list-style-type: decimal">
+<ol start="8" style="list-style-type: decimal">
 <li><p>Create or edit your <code>.Renviron</code> file to include your
 EDI username and password. To do this, enter the following code in R:
 <code>usethis::edit_r_environ()</code> This will open your
@@ -494,8 +495,8 @@ generally okay).</li>
 version number that will be used for the next update. For example, if
 the current version is <code>1764.1</code>, update it to
 <code>1764.2</code>.</p>
-<p>The line should look like this:
-<code>EMLaide::update_edi_package(Sys.getenv(&quot;edi_user_id&quot;), Sys.getenv(&quot;edi_password&quot;), &quot;edi.1764.1&quot;, paste0(edi_number, &quot;.xml&quot;))</code></p></li>
+<p>The line should look like this:</p>
+<pre><code>EMLaide::update_edi_package(Sys.getenv(&quot;edi_user_id&quot;), Sys.getenv(&quot;edi_password&quot;), &quot;edi.1764.1&quot;, paste0(edi_number, &quot;.xml&quot;))</code></pre></li>
 <li><p>Uncomment this line and run the script. Note: Running this code
 will automatically upload the EDI package. Packages cannot be
 overwritten, so if changes are needed, both (1) the new EDI number on
