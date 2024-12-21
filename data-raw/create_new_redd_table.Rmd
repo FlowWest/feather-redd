@@ -37,26 +37,26 @@ redd_observations |>
 Summarizing by date and survey location 
 
 ```{r}
-summary <- redd_observations |> 
-  group_by(location, date) |> 
-  summarize(number_redds) |> 
-  glimpse()
-
-redd_summary_by_date <- redd_observations |> 
-  group_by(location, date) |> 
-  summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
-  complete(location, date, fill = list(total_redds = 0)) # adding 0 to those days/locations that dont have redds 
-
-redd_observations <- redd_observations |> 
-  mutate(year = year(date), week = week(date))
-
-redd_summary_by_year_week <- redd_observations |> 
-  group_by(location, year, week) |> 
-  summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
-  complete(location, year, week, fill = list(total_redds = 0)) 
-
-list(by_date = redd_summary_by_date,
-     by_year_week = redd_summary_by_year_week)
+# summary <- redd_observations |> 
+#   group_by(location, date) |> 
+#   summarize(number_redds) |> 
+#   glimpse()
+# 
+# redd_summary_by_date <- redd_observations |> 
+#   group_by(location, date) |> 
+#   summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
+#   complete(location, date, fill = list(total_redds = 0)) # adding 0 to those days/locations that dont have redds 
+# 
+# redd_observations <- redd_observations |> 
+#   mutate(year = year(date), week = week(date))
+# 
+# redd_summary_by_year_week <- redd_observations |> 
+#   group_by(location, year, week) |> 
+#   summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
+#   complete(location, year, week, fill = list(total_redds = 0)) 
+# 
+# list(by_date = redd_summary_by_date,
+#      by_year_week = redd_summary_by_year_week)
 ```
 
 ```{r}
@@ -81,24 +81,24 @@ list(by_date = redd_summary_by_date,
 ```
 
 ```{r, include=FALSE}
-# survey_data_week <- redd_observations  |> 
-#   mutate(year = year(date),
-#          week = week(date)) |> 
-#   distinct(location, year, week) 
-# 
-# survey_data_week |> 
-# ggplot(aes(x = year, y = as.factor(week))) +
-#   geom_tile(aes(fill = location), color = "white") +
-#   labs(
-#     title = "Surveyed Sites per Year and Week Number",
-#     x = "Year",
-#     y = "Week Number",
-#     fill = "Location"
-#   ) +
-#   theme_minimal() +
-#   theme(
-#     axis.text.x = element_text(angle = 45, hjust = 1),
-#     axis.text.y = element_text(size = 8)) 
+survey_data_week <- redd_observations  |>
+  mutate(year = year(date),
+         week = week(date)) |>
+  distinct(location, year, week)
+
+survey_data_week |>
+ggplot(aes(x = year, y = as.factor(week))) +
+  geom_tile(aes(fill = location), color = "white") +
+  labs(
+    title = "Surveyed Sites per Year and Week Number",
+    x = "Year",
+    y = "Week Number",
+    fill = "Location"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 8))
 ```
 
 A new table will be created with: date, survey_group, survey_location, is_redd_observed. Survey_group will be created categorizing locations by: Hwy 162-outlet, HFC, upstream of Hwy 70 (GSA adjacent areas)
