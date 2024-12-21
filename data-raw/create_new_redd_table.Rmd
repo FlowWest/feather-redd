@@ -156,6 +156,7 @@ ggplot(survey_data_2014, aes(x = location, y = as.factor(custom_week))) +
 TODO and note, some years have different number of weeks than what is mentioned on documentation (2023-10 weeks, 2019-12 weeks, 2018-9 weeks, 2015-13 weeks, 2014-9 weeks)
 
 ```{r}
+#TODO note that it seems like some weeks were not surveyed at all. This means that even though we number the weeks starting with the first survey event, the survey week count is different. We might need to do the numbering manually?
 # since every survey started at a different date, it will we defined here
 week_start_dates <- tibble(year = 2014:2023,
                            week_start = c("2014-09-09", "2015-09-16", "2016-09-20", "2017-10-03", "2018-09-28", "2019-09-16",
