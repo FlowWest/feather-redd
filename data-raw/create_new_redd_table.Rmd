@@ -316,3 +316,22 @@ redd_2019_clean <- redd_2019 |>
 unique(redd_2019_clean$survey_wk)
 sum(is.na(redd_2019_clean$survey_wk))
 ```
+
+## 2018
+
+```{r}
+unique(redd_2018$survey_wk)
+sum(is.na(redd_2018$survey_wk))
+
+redd_2018_clean <- redd_2018 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "2-Mar" ~ "3", # this date corresponds to week 3 - 2018-10-02
+      survey_wk == "1-May" ~ "NA", # 1-May weeks have 2018-10-02 date. No data entries have survey_wk recorded. Setting these to NA for now
+      TRUE ~ str_extract(survey_wk, "^[0-9]+")  
+    )
+  )
+
+unique(redd_2018_clean$survey_wk)
+sum(is.na(redd_2018_clean$survey_wk))
+```
