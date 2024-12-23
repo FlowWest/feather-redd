@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eml:eml xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.2" packageId="edi.1802.1" system="EDI" xsi:schemaLocation="https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd">
+  <access authSystem="https://pasta.edirepository.org/authentication" order="allowFirst" scope="document">
+    <allow>
+      <principal>public</principal>
+      <permission>read</permission>
+    </allow>
+    <allow>
+      <principal>cvpia</principal>
+      <permission>write</permission>
+    </allow>
+  </access>
+  <dataset>
+    <shortName>Feather redd</shortName>
+    <title>Redd survey data of Chinook salmon in the Feather River</title>
+    <creator>
+      <individualName>
+        <givenName>Chris</givenName>
+        <surName>Cook</surName>
+      </individualName>
+      <organizationName>California Department of Water Resources</organizationName>
+      <electronicMailAddress>chris.cook@water.ca.gov</electronicMailAddress>
+    </creator>
+    <associatedParty>
+      <individualName>
+        <givenName>Casey</givenName>
+        <surName>Campos</surName>
+      </individualName>
+      <organizationName>California Department of Water Resources</organizationName>
+      <electronicMailAddress>casey.campos@water.ca.gov</electronicMailAddress>
+      <role>principal investigator</role>
+    </associatedParty>
+    <pubDate>2024-11-21</pubDate>
+    <abstract>
+      <para>
+    Since 2014, the California Department of Water Resources (DWR) has
+    conducted annual Chinook salmon redd surveys. The objective of this
+    data collection effort is to quantify and understand potential shits
+    in redd distribution and potential habitat differences between
+    historic and restored sites. The redd surveys are conducted in the
+    uppermost 16 miles of the lower Feather River though have been
+    concentrated in the uppermost two miles of the lower Feather River
+    in, and adjacent to the Gravel Supplementation Areas (GSAs). Redd
+    surveys are conducted less frequently in the 14 miles downstream of
+    the GSAs. Surveys typically begin in mid-September at the onset of
+    spawning and generally conclude at the end of November. This dataset
+    represents an extensive time series that could be used to identify
+    habitat conditions where Chinook salmon spawn, how these conditions
+    have changed over time, especially in areas where restoration has
+    occurred. These data were published to support the Healthy Rivers
+    and Landscapes Program.
+  </para>
+    </abstract>
+    <keywordSet>
+      <keyword>chinook salmon</keyword>
+      <keyword>habitat</keyword>
+      <keyword>Oncorhynchus tshawytscha</keyword>
+      <keyword>California</keyword>
+      <keyword>Central Valley</keyword>
+      <keyword>Feather River</keyword>
+      <keyword>Healthy Rivers and Landscapes</keyword>
+      <keyword>spawn</keyword>
+    </keywordSet>
+    <intellectualRights>
+      <para>This information is released under the Creative Commons license - Attribution - CC BY (https://creativecommons.org/licenses/by/4.0/). The consumer of these data ("Data User" herein) is required to cite it appropriately in any publication that results from its use. The Data User should realize that these data may be actively used by others for ongoing research and that coordination may be necessary to prevent duplicate publication. The Data User is urged to contact the authors of these data if any questions about methodology or results occur. Where appropriate, the Data User is encouraged to consider collaboration or co-authorship with the authors. The Data User should realize that misinterpretation of data may occur if used out of context of the original study. While substantial efforts are made to ensure the accuracy of data and associated documentation, complete accuracy of data sets cannot be guaranteed. All data are made available "as is." The Data User should be aware, however, that data are updated periodically and it is the responsibility of the Data User to check for new versions of the data. The data authors and the repository where these data were obtained shall not be liable for damages resulting from any use or misinterpretation of the data. Thank you.</para>
+    </intellectualRights>
+    <licensed>
+      <licenseName>Creative Commons Attribution 4.0 International</licenseName>
+      <url>https://spdx.org/licenses/CC-BY-4.0.html</url>
+      <identifier>CC-BY-4.0</identifier>
+    </licensed>
+    <coverage>
+      <geographicCoverage>
+        <geographicDescription>Feather River Rotary Screw Trap</geographicDescription>
+        <boundingCoordinates>
+          <westBoundingCoordinate>-121.6326</westBoundingCoordinate>
+          <eastBoundingCoordinate>-121.6046</eastBoundingCoordinate>
+          <northBoundingCoordinate>39.4621</northBoundingCoordinate>
+          <southBoundingCoordinate>39.2122</southBoundingCoordinate>
+        </boundingCoordinates>
+      </geographicCoverage>
+      <temporalCoverage>
+        <rangeOfDates>
+          <beginDate>
+            <calendarDate>2014-09-09</calendarDate>
+          </beginDate>
+          <endDate>
+            <calendarDate>2023-11-29</calendarDate>
+          </endDate>
+        </rangeOfDates>
+      </temporalCoverage>
+      <taxonomicCoverage>
+        <taxonomicClassification>
+          <taxonRankName>kingdom</taxonRankName>
+          <taxonRankValue>Animalia</taxonRankValue>
+          <taxonomicClassification>
+            <taxonRankName>phylum</taxonRankName>
+            <taxonRankValue>Chordata</taxonRankValue>
+            <taxonomicClassification>
+              <taxonRankName>class</taxonRankName>
+              <taxonRankValue>Teleostei</taxonRankValue>
+              <taxonomicClassification>
+                <taxonRankName>order</taxonRankName>
+                <taxonRankValue>Salmoniformes</taxonRankValue>
+                <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                  <taxonRankValue>Salmonidae</taxonRankValue>
+                  <taxonomicClassification>
+                    <taxonRankName>genus</taxonRankName>
+                    <taxonRankValue>Oncorhynchus</taxonRankValue>
+                    <taxonomicClassification>
+                      <taxonRankName>species</taxonRankName>
+                      <taxonRankValue>Oncorhynchus tshawytscha</taxonRankValue>
+                      <commonName>Chinook Salmon</commonName>
+                      <taxonId provider="https://itis.gov">161980</taxonId>
+                    </taxonomicClassification>
+                  </taxonomicClassification>
+                </taxonomicClassification>
+              </taxonomicClassification>
+            </taxonomicClassification>
+          </taxonomicClassification>
+        </taxonomicClassification>
+      </taxonomicCoverage>
+    </coverage>
+    <maintenance>
+      <description>ongoing</description>
+      <maintenanceUpdateFrequency>annually</maintenanceUpdateFrequency>
+    </maintenance>
+    <contact>
+      <individualName>
+        <givenName>Chris</givenName>
+        <surName>Cook</surName>
+      </individualName>
+      <organizationName>California Department of Water Resources</organizationName>
+      <electronicMailAddress>chris.cook@water.ca.gov</electronicMailAddress>
+    </contact>
+    <methods>
+      <methodStep>
+        <description>
+          <section>
+            <title>Objectives</title>
+            <para>
+      The objectives of this data collection effort are to quantify and
+      understand potential shifts in redd distribution and to quantify
+      potential physical habitat differences (size, substrate, etc.)
+      between historic and restored sites. During the redd surveys, the
+      entirety of restored Gravel Supplementation Areas (GSAs) are
+      inspected for newly developed redds.
+    </para>
+          </section>
+          <section>
+            <title>Sampling Protocol</title>
+            <para>
+      The survey extent is 16 miles extending from Table Mountain Bridge
+      in downtown Oroville, California downstream to the East Gridley
+      Road Bridge near Gridley, California. The surveys, however, have
+      been concentrated in the uppermost two miles (known as the Low
+      Flow Channel) of the lower Feather River in, and adjacent to the
+      GSAs, and are conducted less frequently in the 14 miles downstream
+      (known as the High Flow Channel) of the GSAs. The majority of
+      spawning has been found to occur in the Low Flow Channel. Surveys
+      typically begin in mid-September at the onset of spawning and
+      conclude at the end of November. Surveys in and adjacent to the
+      GSAs are suspended when it is no longer possible to distinguish
+      new redds due to superimposition. For this reason, the duration of
+      the survey period in the GSAs can change between years.
+    </para>
+            <para>
+      Visual redd surveys are performed by a crew of two staff members
+      wearing polarized sunglasses. The crew members thoroughly search
+      each survey location looking for newly developed redds. A boat is
+      used to locate and position surveyors over redds in deeper
+      sections (greater than 3 ft) of the river where wading is not
+      possible. Only completed redds, identified by a pit and tail
+      spill, are marked and counted. Test redds, those without a
+      completed pit and tail spill, are not marked.
+    </para>
+            <para>
+      Redds are recorded geospatially with a Trimble GeoXH 6000 handheld
+      GPS utilizing virtual reference station real time position
+      correction with accuracy of 10 cm or a Juniper Systems Geode GNS3M
+      Multi-Frequency Antennae. A single point is recorded by placing
+      the GPS antennae over the center of the redd to record its
+      location.
+    </para>
+            <para>
+      Depth, velocity, and substrate data is recorded on every fifth or
+      tenth redd based on time constraints during each survey week.
+      Substrate composition is recorded by visually estimating the
+      percentage of five substrate size categories: fines (less than 1
+      cm), gravel (1-5 cm), cobble (6-15 cm), large cobble (16-30 cm),
+      and boulder (greater than 30 cm). Physical data (depth, velocity,
+      and substrate) is not recorded for redds where a boat is necessary
+      to collect position data. Depth measurements are recorded with a
+      standard top-setting wading rod at the head and in the pot of the
+      redd. Velocity readings are measured at 60 percent depth at the
+      head of the redd with an Ott MF Pro flowmeter.
+    </para>
+          </section>
+          <section>
+            <title>Caveats</title>
+            <para>
+      While this data collection effort covers the majority of spawning
+      habitat, it is not a census of all redds due to resource
+      limitations and difficulty distinguishing redds late in the season
+      due to superimposition.
+    </para>
+            <para>
+      Data represent areas where redds are present. Areas without redds
+      are not captured in the data though, for the Low Flow Channel, it
+      can be assumed that areas without a redd measurement were surveyed
+      and did not have any redds.
+    </para>
+            <para>
+      Measurements are not available for every redd due to high numbers
+      of redds late in the season and resource limitations.
+    </para>
+          </section>
+          <section>
+            <title>Attachments</title>
+            <para>
+      Attached are the methods for this data collection effort including
+      project maps.
+    </para>
+          </section>
+        </description>
+      </methodStep>
+    </methods>
+    <project>
+      <title>Redd survey data of Chinook salmon in the Feather River</title>
+      <personnel>
+        <individualName>
+          <givenName>Chris</givenName>
+          <surName>Cook</surName>
+        </individualName>
+        <organizationName>California Department of Water Resources</organizationName>
+        <electronicMailAddress>chris.cook@water.ca.gov</electronicMailAddress>
+        <role>Project Lead</role>
+      </personnel>
+      <award>
+        <funderName>California Department of Water Resources</funderName>
+        <funderIdentifier>DWR</funderIdentifier>
+        <awardNumber>NA</awardNumber>
+        <title>NA</title>
+        <awardUrl>NA</awardUrl>
+      </award>
+    </project>
+    <dataTable>
+      <entityName>redd_observations.csv</entityName>
+      <entityDescription>Survey metadata from Feather River redd survey data</entityDescription>
+      <physical>
+        <objectName>redd_observations.csv</objectName>
+        <size unit="bytes">3373162</size>
+        <authentication method="MD5">d5f5414373385cbf74bcfbdfb9624f6c</authentication>
+        <dataFormat>
+          <textFormat>
+            <numHeaderLines>1</numHeaderLines>
+            <recordDelimiter>\n</recordDelimiter>
+            <attributeOrientation>column</attributeOrientation>
+            <simpleDelimited>
+              <fieldDelimiter>,</fieldDelimiter>
+            </simpleDelimited>
+          </textFormat>
+        </dataFormat>
+        <distribution>
+          <online>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/redd_observations.csv</url>
+          </online>
+        </distribution>
+      </physical>
+      <attributeList>
+        <attribute>
+          <attributeName>date</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Date of redd survey</attributeDefinition>
+          <measurementScale>
+            <dateTime>
+              <formatString>YYYY-MM-DD</formatString>
+              <dateTimeDomain>
+                <bounds>
+                  <minimum exclusive="false">41891</minimum>
+                  <maximum exclusive="false">45259</maximum>
+                </bounds>
+              </dateTimeDomain>
+            </dateTime>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>number_redds</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Number of redds observed. Only includes full redds with a pot and a tail.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>redds</customUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">15</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>number_salmon</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Number of salmon observed on redd</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>salmon</customUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">50</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>depth_m</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Water depth in meters where redd was observed at the head of the redd. Measurements are not taken on every redd due to resource constraints.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>meter</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1.5</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>pot_depth_m</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Depth of redd pot in meters.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>meter</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">50</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>velocity_m_s</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Water velocity in meters per second where redd was observed at the head of the redd. Measurements are not taken on every redd due to resource constraints.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>meterPerSecond</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">0.004</minimum>
+                  <maximum exclusive="false">2.74</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>percent_fines</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Substrate composition of the redd in terms of the percent fine substrate (or silt or sand). Fine is defined as less than 1cm. This is evaluated visually.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>percent</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">90</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>percent_small</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Substrate composition of the redd in terms of the percent small substrate (or gravel). Small is defined as less than 1-5cm. This is evaluated visually.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>percent</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">90</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>percent_med</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Substrate composition of the redd in terms of the percent medium substrate (or cobble). Medium is defined as 6-15cm. This is evaluated visually.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>percent</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">100</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>percent_large</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Substrate composition of the redd in terms of the percent large substrate (or large cobble). Large is defined as less than 16-30cm. This is evaluated visually.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>percent</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">90</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>percent_boulder</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Substrate composition of the redd in terms of the percent boulder substrate. Boulder is defined as greater than 30cm. This is evaluated visually.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>percent</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">70</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>redd_width_m</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Width of redd in meters taken at the head of the redd.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>meter</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">20</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>redd_length_m</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Length of redd in meters taken.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>meter</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">9.7</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>longitude</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Longitude of redd. Geospatial measurements are taken at the center of the redd.</attributeDefinition>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>decimal degrees</customUnit>
+              </unit>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">-127.4887</minimum>
+                  <maximum exclusive="false">0</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>latitude</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Latitude of redd. Geospatial measurements are taken at the center of the redd.</attributeDefinition>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>decimal degrees</customUnit>
+              </unit>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">39.6958</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>elevation_ft</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Elevation at redd point in feet.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>feet</customUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">49.82</minimum>
+                  <maximum exclusive="false">134.77</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>accuracy_ft</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Indicates the accuracy of the latitude and longitude measurements in feet.</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>feet</customUnit>
+              </unit>
+              <numericDomain>
+                <numberType>integer</numberType>
+                <bounds>
+                  <minimum exclusive="false">0.41</minimum>
+                  <maximum exclusive="false">9.84</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>boat_point</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>If redd observation was taken from a boat this field will be TRUE. Levels = c(TRUE, FALSE).</attributeDefinition>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <textDomain>
+                  <definition>If redd observation was taken from a boat this field will be TRUE. Levels = c(TRUE, FALSE).</definition>
+                </textDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+      </attributeList>
+      <numberOfRecords>36864</numberOfRecords>
+    </dataTable>
+    <otherEntity>
+      <entityName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024</entityName>
+      <entityDescription>Survey Methods</entityDescription>
+      <physical>
+        <objectName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024.pdf</objectName>
+        <size unit="bytes">738408</size>
+        <authentication method="MD5">add05bb975b56058755b30a31cb10d8a</authentication>
+        <dataFormat>
+          <externallyDefinedFormat>
+            <formatName>pdf</formatName>
+          </externallyDefinedFormat>
+        </dataFormat>
+        <distribution>
+          <online>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_July_2024.pdf</url>
+          </online>
+        </distribution>
+      </physical>
+      <entityType>pdf</entityType>
+    </otherEntity>
+  </dataset>
+  <additionalMetadata>
+    <metadata>
+      <unitList>
+        <unit id="redds" name="redds" unitType="dimensionless">
+          <description>number of redds</description>
+        </unit>
+        <unit id="salmon" name="salmon" unitType="dimensionless">
+          <description>number of salmon </description>
+        </unit>
+        <unit id="decimal degrees" name="decimal degrees" unitType="dimensionless">
+          <description>decimal degrees</description>
+        </unit>
+        <unit id="feet" name="feet" unitType="dimensionless">
+          <description>feet</description>
+        </unit>
+      </unitList>
+    </metadata>
+  </additionalMetadata>
+</eml:eml>

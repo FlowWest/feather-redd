@@ -1,6 +1,6 @@
 ---
 title: "feather river redd data exploration"
-date: "2024-08-27"
+date: "2024-09-26"
 output: 
   html_document:
     theme: flatly
@@ -23,6 +23,7 @@ library(janitor)
 library(sf)
 library(openxlsx)
 library(readxl)
+library(leaflet)
 ```
 
 Goal of this document is to review the Feather River redd data and understand the following:
@@ -58,15 +59,14 @@ These data were originally acquired from Chris Cook
 
 *Timeframe*
 
-- 2017-2023 
-- Longitude and latitude data: #TODO add info
+- 2014-2023 
+
 
 ### Data quality
 
-#TODO add info
 
 ```{r, include=FALSE, warning=FALSE}
-redd_2014_raw <- readxl::read_excel(here::here("data-raw", "2014-2023 Chinook Redd Survey Data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
+redd_2014_raw <- readxl::read_excel(here::here("data-raw", "dwr_chinook_redd_survey_data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
   clean_names() |> 
   slice(-1912) |>  #removing the totals column
   glimpse()
@@ -78,39 +78,39 @@ redd_2014 <- redd_2014_raw |>
   glimpse()
 
 
-redd_2015 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2015_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2353)) |> 
+redd_2015 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2015_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2353)) |> 
   clean_names() |> 
   rename(number_redds = number_of_redds) |> 
   glimpse()
 
-redd_2016 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2016_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:1571)) |> 
+redd_2016 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2016_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:1571)) |> 
   clean_names() |> 
   rename(number_redds = number_of_redds) |> 
   glimpse()
 
-redd_2017 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2017_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2718)) |> 
+redd_2017 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2017_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2718)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2018 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2018_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:4170)) |> 
+redd_2018 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2018_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:4170)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2019 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2019_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5049)) |> 
+redd_2019 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2019_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5049)) |> 
   clean_names() |> 
   glimpse()
 
-redd_2020 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2020_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5432)) |> 
+redd_2020 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2020_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5432)) |> 
   clean_names() |> 
   rename(longitude_m_e = longitude_n_e) |> 
   glimpse()
 
-redd_2021 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2021_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2595)) |> 
+redd_2021 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2021_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2595)) |> 
   clean_names() |> 
   mutate(type = ifelse(type == "P", "p", type)) |> 
   glimpse()
 
-redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2022_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:3762)) |> 
+redd_2022 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2022_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:3762)) |> 
   clean_names() |> 
   glimpse()
 ```
@@ -118,285 +118,143 @@ redd_2022 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Sur
 
 ```{r, include=FALSE, warning=FALSE}
 # 2023 data is formatted a bit different. Cleaning format here
+# TODO confirm the mapping of substrate
+# including elevation, accuracy and boat_point that are not included in other years
 
-
-redd_2023_week1 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx")) |>
-  clean_names() |> 
+process_2023_data <- function(data) {
+  data |> 
+      clean_names()|> 
   mutate(date =  mdy_hm(date_time),
          survey_wk = str_extract(x2, "\\d+-\\d+"),
          location = riffle_name,
          file_number = NA,
          type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
+         number_redds = 1, # assume count is 1 for each
+         number_salmon = number_of_fish_on_redd,
          latitude_m_n = latitude_wgs_84,
          longitude_m_e = longitude_wgs_84,
          depth_m  = water_depth_m,
          pot_depth_m = NA,
          velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
+         percent_fines = as.numeric(percent_sand_0_0625_2mm) + as.numeric(percent_silt_0_062mm), 
          percent_small = as.numeric(percent_gravel_2_64mm),
          percent_med = as.numeric(percent_pebble_64_128),
          percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
+         percent_boulder = as.numeric(percent_boulder_256mm),
+         boat_point = case_when(boat_point == "Yes"~ T, 
+                                T ~ F)) |> 
+  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m, elevation_ft, accuracy_ft, boat_point) |> 
   glimpse()
+}
 
-redd_2023_week2 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 2)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(x2, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week1 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx")) |>
+  process_2023_data()
+  
+redd_2023_week2 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 2)|>
+  process_2023_data()
 
-redd_2023_week3 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 3)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(x2, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week3 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 3)|>
+  process_2023_data()
 
-redd_2023_week4 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 4)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(x2, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week4 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 4)|>
+  process_2023_data()
 
-redd_2023_week5 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 5)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(x2, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week5 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 5)|>
+  process_2023_data()
 
-redd_2023_week6 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 6)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(x2, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week6 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 6)|>
+ process_2023_data()
 
-redd_2023_week7 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 7)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(workflow_level, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week7 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 7)|>
+  rename(x2 = `Workflow Level`) |> 
+  process_2023_data()
 
-redd_2023_week8 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 8)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(x2, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week8 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 8)|>
+  process_2023_data()
 
 
-redd_2023_week9 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 9)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(x2, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = NA,
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week9 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 9)|>
+  process_2023_data()
 
-redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","2014-2023 Chinook Redd Survey Data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 10)|>
-  clean_names()|> 
-  mutate(date =  mdy_hm(date_time),
-         survey_wk = str_extract(x2, "\\d+-\\d+"),
-         location = riffle_name,
-         file_number = NA,
-         type = as.character(NA),
-         number_redds = number_of_fish_on_redd,
-         number_salmon = NA,
-         latitude_m_n = latitude_wgs_84,
-         longitude_m_e = longitude_wgs_84,
-         depth_m  = water_depth_m,
-         pot_depth_m = NA,
-         velocity_m_s = as.numeric(velocity_m_sec),
-         percent_fines = as.numeric(percent_sand_0_0625_2mm), #should we also include % Silt <0.062mm
-         percent_small = as.numeric(percent_gravel_2_64mm),
-         percent_med = as.numeric(percent_pebble_64_128),
-         percent_large = as.numeric(percent_cobble_128_256mm),
-         percent_boulder = as.numeric(percent_boulder_256mm)) |> 
-  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m) |> 
-  glimpse()
+redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 10)|>
+  process_2023_data()
 ```
 
 
-```{r}
+```{r, include=FALSE}
 redd_2023 <- bind_rows(redd_2023_week1, redd_2023_week2, redd_2023_week3, redd_2023_week4, redd_2023_week5, redd_2023_week6, redd_2023_week7, redd_2023_week8, redd_2023_week9, redd_2023_week11) |> 
   glimpse()
 ```
 
 ### Data questions
 
-- 2023 data has a lot of missing number_redds
-- Latitude/Longitude unit system is inconsistent. Up until 2013, coordinate system is UTM, years following are shown as "latitude mn / longitude me" (probably zone 10). [This is some information we have found about that coordinate system](https://gis.stackexchange.com/questions/111847/what-kind-of-coordinate-system-has-values-like-48569-800me-706602-032mn). Why were the coordinate systems different, and how can we convert from mn/me to UTM?
-- 2023 data has some fields that arent on previous years: redd #, Elevation (ft), Accuracy (ft), Subsample,
-Boat Point, Comment, User. Should we include those in the combined data?
-- On 2023 data, there is some data that was not collected, that was previously included in past years;
-file_number (unless it is the same than redd_number?), type, number_salmon, pot_depth_m, 
+- Latitude/Longitude unit system is inconsistent. Only 2023 has UTM coordinate system, other years following are shown as "latitude mn / longitude me" (probably zone 10). [This is some information we have found about that coordinate system](https://gis.stackexchange.com/questions/111847/what-kind-of-coordinate-system-has-values-like-48569-800me-706602-032mn). Why were the coordinate systems different?
 - 2023 data has 6 fields for types of soil (boulder, cobble, pebble, gravel, sand and silt), other years have 5 (fines, small, med, large). They were matched by size but % silt was left out for now. Should we include that column in combined data?  
+- 2014-10-20 has 6 records with high number_salmon numbers (over 15, check if these are not errors)
+- Velocity on 2020-11–18 is negative, is it safe to assume this is a mistake, we turn these into NA
+- There are some pretty high pot_depth_m over 40, is it safe to assume this is a mistake, we turn these into NA
+- There are five record values for number of salmon that are over 20 (2014-10-20), can we confirm these are accurate? 
 
 
-All coordinates, except 2023, are on  mn me format, transforming to UTM here
-#TODO continue to look into the lat/long that did not tranform
-```{r}
+
+```{r, include = F}
+# All coordinates, except 2023, are on  mn me format, transforming to UTM here
 combined_14_22 <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018, redd_2019, redd_2020, redd_2021, redd_2022) |> 
   glimpse()
 
-redd_sf <- combined_14_22 |> 
+#check # of NA values
+# sum(redd_sf$latitude_m_n == 0)
+
+combined_14_22 <- combined_14_22 |> 
   mutate(
     longitude_m_e = ifelse(is.na(longitude_m_e), 0, longitude_m_e),
     latitude_m_n = ifelse(is.na(latitude_m_n), 0, latitude_m_n)
-  )
-  
-# Create an sf object with the correct UTM zone
-sf_points <- st_as_sf(redd_sf, coords = c("longitude_m_e", "latitude_m_n"), crs = 32610)
+  ) 
+#check # of 0  values
+sum(combined_14_22$latitude_m_n == 0)
+sum(combined_14_22$longitude_m_e == 0)
 
-# Transform to geographic coordinates (latitude/longitude)
-geo_points <- st_transform(sf_points, crs = 4326)
+combined_14_22_utm <- combined_14_22 |> 
+    st_as_sf(coords = c("longitude_m_e", "latitude_m_n"), crs = 32610) |> 
+  st_transform(crs = 4326)
 
-# View the transformed coordinates
-print(geo_points)
+# Extract coordinates and add them as separate columns
+coords <- st_coordinates(combined_14_22_utm)
+combined_14_22_utm$longitude <- coords[, "X"]
+combined_14_22_utm$latitude <- coords[, "Y"]
+combined_14_22_utm <- st_drop_geometry(combined_14_22_utm)
 
-combined_14_22$longitude <- st_coordinates(geo_points)[, "X"]
-combined_14_22$latitude <- st_coordinates(geo_points)[, "Y"]
+# check those that dont make sense for UTM
+sum(combined_14_22_utm$latitude < 38)
+sum(combined_14_22_utm$longitude > -119)
 
-# View the updated dataframe
-head(combined_14_22)
+#setting those to 0 - TODO check if this is a fair assumption 
+data_14_22 <- combined_14_22_utm |> 
+  mutate(latitude = ifelse(latitude < 38, 0, latitude),
+         longitude = ifelse(longitude > -119, 0, longitude))
+
+#up until this point coordinates data from 2014 to 2022 is the cleanest 
+```
+
+```{r, include=FALSE}
+#looking into coordinates of 2023 
+summary(redd_2023$latitude_m_n) # these seems reasonable for UTM
+summary(redd_2023$longitude_m_e)
+
+redd_2023 <- redd_2023 |> # using consitent name
+  rename(latitude = latitude_m_n,
+         longitude = longitude_m_e) 
 ```
 
 
 Combining all years into one object
 
 ```{r}
-combined_redd <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018, redd_2019, redd_2020, redd_2021, redd_2022, redd_2023) |> 
+combined_redd <- bind_rows(data_14_22, redd_2023) |> 
+  mutate(location = tolower(location),
+         type = tolower(type),
+         date = as.Date(date)) |> 
   glimpse()
-```
-
-```{r}
-str(combined_redd)
 ```
 
 ### Data exploration {.tabset}
@@ -404,18 +262,47 @@ str(combined_redd)
 Exploring fields that have data consistently
 
 #### date
+
+  - Surveys are conducted September to December
  
-```{r}
+```{r, warning = F, message=F}
 #date range
 range(combined_redd$date, na.rm = TRUE)
 ```
+
+Looking at temporal coverage 
+
+```{r, warning=FALSE}
+ggplot(combined_redd, aes(month(date), number_salmon)) +
+  geom_point() +
+  facet_wrap(~year(date)) +
+  labs(title = "Count of salmon per month",
+       x = "Month",
+       y = "Number of Salmon") +
+  theme_minimal()
+```
+
+Since there are outliers, will remove and plot again
+
+```{r}
+combined_redd |> 
+  filter(number_salmon <10) |> 
+  ggplot(aes(month(date), number_salmon)) +
+  geom_point() +
+  facet_wrap(~year(date)) +
+  labs(title = "Count of salmon per month",
+       x = "Month",
+       y = "Number of Salmon") +
+  theme_minimal()
+```
+
 
 
 #### location
 
   * Location clean up is needed. There are some names that appear less than 5 times. We could check if they correspond to another location name, and it is spelled differently
 
-```{r}
+```{r, warning = F, message=F}
 #locations
 table(combined_redd$location) #there are 88 unique location names
 
@@ -426,7 +313,7 @@ unique(combined_redd$location)
 
 For locations that are being surveyed less than five times, we might want to verify if they belong to other location area names. Otherwise, these sites might not have enough data to reliably analyze over time.
 
-```{r}
+```{r, warning = F, message=F}
 #plotting those locations that appear less than 5 times
 combined_redd |> 
   group_by(location) |> 
@@ -446,7 +333,7 @@ combined_redd |>
 
 **Frequent locations and years surveyed**
 
-```{r, warning=FALSE}
+```{r, warning = F, message=F}
 location_frequent <- combined_redd |> 
   mutate(year = year(date)) |> 
   select(location, year) |> 
@@ -484,7 +371,7 @@ combined_redd |>
 
 **Observations by type and date**
 
-```{r, warning=FALSE}
+```{r, warning = F, message=F}
 #type
 unique(combined_redd$type)
 
@@ -508,8 +395,9 @@ ggplot(combined_redd, aes(x = date, y = type, color = type)) +
 **Count of observations by type**
 
 - note that all 2023 data does not have a `type` field
+- based on conversations with the Feather River team we should remove the "a" observations and this field
 
-```{r}
+```{r, warning = F, message=F}
 combined_redd |> 
   group_by(type) |> 
   summarise(n = n()) |> 
@@ -527,14 +415,12 @@ combined_redd |>
 
 **Redd counts by year**
 
-```{r}
+```{r, warning = F, message=F}
 range(combined_redd$number_redds, na.rm = TRUE)
-
-combined_redd <- combined_redd %>%
-  mutate(date = as.Date(date))
+summary(combined_redd$number_redds)
 ```
 
-```{r, warning=FALSE}
+```{r, warning = F, message=F}
 ggplot(combined_redd, aes(x = date, y = number_redds)) +
   geom_point() +
   facet_wrap(~year(date), scales = "free") +
@@ -549,7 +435,7 @@ ggplot(combined_redd, aes(x = date, y = number_redds)) +
 
 Same plot than above but with date values aggregated - using geom_col()
 
-```{r}
+```{r, warning = F, message=F}
 ggplot(combined_redd, aes(x = date, y = number_redds)) +
   geom_col() +
   facet_wrap(~year(date), scales = "free") +
@@ -563,37 +449,43 @@ ggplot(combined_redd, aes(x = date, y = number_redds)) +
 
 ```
 
-
-```{r, include=FALSE}
-#checking for the number_redds NA values 
-sum(is.na(redd_2023$number_redds))
-
-sum(is.na(redd_2023_week11$number_redds))
-
-sum(is.na(redd_2023_week1$number_redds))
-
-sum(is.na(redd_2023_week2$number_redds))
-
-sum(is.na(redd_2023_week9$number_redds))
-
-#2023 data has a lot of missing number_redds
-```
-
-
 #### salmon_count
 
 **Salmon counts by year**
 
-```{r, warning=FALSE}
+  - Noticed some outliers. Plotting below again removing values over 20
+  
+```{r, warning = F, message=F}
 range(combined_redd$number_salmon, na.rm = TRUE)
+summary(combined_redd$number_salmon)
 
 combined_redd |> 
-  filter(is.na(date)==FALSE) |>  
+  ggplot(aes(date, number_salmon)) + 
+  geom_point() +
+  labs(title = "Salmon Counts Over Time") +  # TODO check if values over 20 are not outliers
+  theme_minimal()
+```
+
+```{r}
+combined_redd |> 
+  filter(number_salmon < 20) |> 
+  ggplot(aes(date, number_salmon)) + 
+  geom_point() +
+  labs(title = "Salmon Counts Over Time (values over 20 removed)") +  # TODO check if values over 20 are not outliers
+  theme_minimal() 
+```
+
+```{r, warning = F, message=F}
+# plotting values lower that 30  
+
+combined_redd |> 
+  filter(is.na(date)==FALSE,
+         number_salmon < 20) |>  
   ggplot(aes(x = date, y = number_salmon)) + 
-  geom_col() +
+  geom_point() +
   facet_wrap(~year(date), scales = "free") +
   scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
-  labs(title = "Salmon Counts Over Time") +  
+  labs(title = "Salmon Counts Over Time by Year (values over 20 removed)") +  
   theme_minimal() +
   theme(
     strip.background = element_rect(fill = "lightgrey", color = "grey50"),
@@ -601,35 +493,287 @@ combined_redd |>
   )
 ```
 
-Latitude and longitude needs to be transformed to UTM
-#TODO
+
+
+#### depth
+
+```{r, warning = F, message=F}
+range(combined_redd$depth_m, na.rm = TRUE)
+summary(combined_redd$depth_m)
+```
+
+```{r, warning = F, message=F}
+ggplot(combined_redd, aes(x = date, y = depth_m)) +
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Depth Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+
+ggplot(combined_redd, aes(x = factor(month(date, label = TRUE), levels = month.abb), y = depth_m)) +
+  geom_boxplot() +
+  facet_wrap(~year(date)) +
+  labs(x = "Month", y = "Depth (m)") +
+  theme_minimal()
+
+summary(combined_redd$depth_m)
+
+```
+
+#### velocity
+
+```{r, warning = F, message=F}
+range(combined_redd$velocity_m_s, na.rm = TRUE)
+summary(combined_redd$velocity_m_s)
+```
+```{r, include=FALSE}
+#checking where the negative values are coming from
+combined_redd |> 
+  filter(velocity_m_s <= 0) |> #it is only one day 
+  glimpse()
+
+#note apply this to the actual data
+```
+
+Turning that negative velocity to NA and plotting
+
+```{r, warning = F, message=F}
+combined_redd <- combined_redd |> 
+  mutate(velocity_m_s = ifelse(velocity_m_s < 0, NA, velocity_m_s))
+
+ggplot(combined_redd, aes(x = date, y = velocity_m_s)) +
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Velocity Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+ggplot(combined_redd, aes(velocity_m_s, depth_m)) +
+  geom_point() +
+  labs(title = "Depth vs Velocity") +
+  theme_minimal()
+```
+
+#### pot_depth_m
+
+```{r, echo=FALSE}
+range(combined_redd$pot_depth_m)
+summary(combined_redd$pot_depth_m)
+```
+
+```{r, warning=FALSE}
+ggplot(combined_redd, aes(x = date, y = pot_depth_m)) + # two outliers
+  geom_point()
+```
+
+Same plot as above but outliers removed
+
+```{r}
+combined_redd |> 
+  filter(pot_depth_m < 40) |> 
+  ggplot(aes(x = date, y = pot_depth_m)) + 
+  geom_point()
+```
+
+Turning values over 40 to NA
+
+```{r}
+combined_redd <- combined_redd |> 
+  mutate(pot_depth_m = ifelse(pot_depth_m >= 40, NA, pot_depth_m)) 
+```
+
+```{r, warning=FALSE}
+
+ggplot(combined_redd, aes(x = factor(month(date, label = TRUE), levels = month.abb), y = pot_depth_m)) +
+  geom_boxplot() +
+  facet_wrap(~year(date)) +
+  labs(title = "Pot Depth per month (values over 40 removed)") +
+  labs(x = "Month", y = "Pot Depth (m)") +
+  theme_minimal()
+
+```
+
+#### latitude/ longitude plot
+
+Cleaning lat/long to plot on a map
+
+```{r, include=FALSE}
+summary(combined_redd$latitude)
+summary(combined_redd$longitude)
+
+# modifying so that if either one of these is 0, then both should be 0
+map_redd <- combined_redd |> 
+  mutate(latitude = ifelse(longitude == 0, 0, latitude),
+         longitude = ifelse(latitude == 0, 0, longitude)) |> 
+  filter(latitude != 0,
+         longitude != 0) # filtering out those that are 0 for plotting purposes
+
+# plotting on map
+
+palette <- viridis(n = nlevels(factor(map_redd$location)))
+```
+
+```{r, echo=FALSE}
+leaflet(map_redd) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    ~longitude, ~latitude,
+    popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
+    radius = 2,  # Adjust radius as needed
+    color = ~palette[as.numeric(factor(location))],
+    # label = ~as.character(location),
+    # labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
+  )
+```
+
+summary of depth
+
+```{r}
+summary(combined_redd$depth_m)
+```
+
+summary of pot_depth after modifications
+```{r}
+summary(combined_redd$pot_depth_m)
+```
+
+summary of velocity_m_s after modifications
+```{r}
+summary(combined_redd$velocity_m_s)
+```
 
 ```{r, include = F}
-# # Filter out rows with NA in either latitude or longitude
-# combined_redd_clean <- combined_redd |> 
-#   filter(!is.na(longitude_m_e) & !is.na(latitude_m_n))
-# 
-# # Create an sf object from your data
-# combined_redd_sf <- combined_redd_clean |> 
-#   mutate(
-#     longitude_m_e = ifelse(is.na(longitude_m_e), NA, longitude_m_e),
-#     latitude_m_n = ifelse(is.na(latitude_m_n), NA, latitude_m_n)) |> 
-#   st_as_sf(coords = c("longitude_m_e", "latitude_m_n"), crs = 4326)
-# 
-# # Transform to UTM (replace "32633" with the appropriate UTM EPSG code for your zone)
-# combined_redd_utm <- st_transform(combined_redd_sf, crs = 32611)
-
-```
-
-	
-
-```{r}
-#TODO note to check velocity for the following record:
-# 2020-11-18 9-3 Upper Hatchery Riffle 49 velocity is negative 
+# edits to data
+combined_redd_clean <- combined_redd |> 
+  filter(type == "p" | is.na(type)) |> 
+  mutate(date = as.Date(date),
+         number_redds = ifelse(number_redds == 0, 1, number_redds)) |> 
+  select(-type) # removing based on Feather River team instructions
 ```
 
 ```{r}
-#save clean data to data/
-write_csv(combined_redd, "data/all_redd_data.csv")
+#save data with locations info 
+write_csv(combined_redd_clean, "data/archive/all_redd_data.csv")
+
+combined_redd_final <- combined_redd_clean |> #TODO confirm with Ashley that this is what she did manually
+  select(-c(survey_wk, location, file_number)) 
+
+# clean data to data/ with fields removed suggested by feather river team
+write_csv(combined_redd_clean, "data/redd_observations.csv")
 ```
 
+```{r, include=FALSE}
+#Testing if we can pull polygons from Chris' map to categorize redd data
+
+# gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
+# 
+# st_layers(gdb_path)
+# 
+# layer_name <- "UpperHatchery"
+# shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+# 
+# 
+# # Transform to WGS84 (EPSG:4326)
+# shapefile <- st_transform(shapefile, crs = 4326)
+# 
+# # Remove the Z dimension (convert from 3D to 2D geometry)
+# shapefile <- st_zm(shapefile, drop = TRUE, what = "ZM")
+# 
+# 
+# # Plot the polygon using leaflet
+# leaflet(data = shapefile) |> 
+#   addTiles() |> 
+#   addPolygons(
+#     fillColor = "lightblue",  # Customize the fill color
+#     color = "darkblue",       # Border color of polygons
+#     weight = 2,               # Border thickness
+#     opacity = 1.0,            # Border opacity
+#     fillOpacity = 0.5         # Polygon fill opacity
+#   ) |> 
+#   setView(lng = -119.4179, lat = 36.7783, zoom = 6)  
+ 
+```
+
+### Plotting survey locations from Chris' map
+
+The following layers are included on map:
+
+```{r, echo=FALSE}
+# Specify the path to the geodatabase
+gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
+
+# List all layers in the geodatabase
+layers <- st_layers(gdb_path)$name
+print(layers)
+```
+
+
+```{r, include=FALSE}
+# Initialize a leaflet map centered on Feather River, California
+survey_locations_map <- leaflet() |> 
+  addTiles() |> 
+  setView(lng = -121.5695, lat = 39.3665, zoom = 10)  # Coordinates centered on Feather River
+
+# Loop through each layer name and add it to the map
+for (layer_name in layers) {
+  # Read the layer
+  shapefile <- st_read(dsn = gdb_path, layer = layer_name)
+
+  # Transform to WGS84 (EPSG:4326) and remove the Z dimension
+  shapefile <- st_transform(shapefile, crs = 4326) |> 
+               st_zm(drop = TRUE, what = "ZM")
+
+  # Add the polygons to the map
+  survey_locations_map <- survey_locations_map |> 
+    addPolygons(
+      data = shapefile,
+      fillColor = "lightblue",  
+      color = "darkblue",
+      weight = 2,               
+      opacity = 1.0,            
+      fillOpacity = 0.5,        
+      group = layer_name,
+      popup = paste("Layer Name: ", layer_name)
+    )
+}
+
+# Add layer control
+survey_locations_map <- survey_locations_map |> 
+  addLayersControl(
+    overlayGroups = layers,
+    options = layersControlOptions(collapsed = FALSE)
+  )
+```
+
+
+```{r, echo=FALSE}
+# Display the map
+survey_locations_map
+```
+
+### Adding the points where redds are found to the survey locations
+
+```{r, echo=FALSE}
+survey_locations_map_combined <- survey_locations_map |> 
+  addCircleMarkers(
+    data = map_redd,
+    lng = ~longitude, 
+    lat = ~latitude,
+    popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
+    radius = 3,  # Adjust radius as needed
+    color = "red",  # Change the color of the points
+    stroke = FALSE,  # Remove border
+    fillOpacity = 0.7  # Adjust fill opacity
+  )
+
+survey_locations_map_combined #TODO look into lower auditorium points. There are two that seem off locations 
+```
