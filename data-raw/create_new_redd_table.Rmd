@@ -13,6 +13,7 @@ library(dplyr)
 library(readxl)
 library(leaflet)
 library(purrr)
+library(stringr)
 ```
 
 The purpose of this markdown is to analyze redd data and understand when redds were not observed. A new reference table will be created
@@ -215,32 +216,16 @@ redd_2014 <- redd_observations |>
   filter(year(date) == 2014) 
 ```
 
-```{r, include=FALSE}
-
-
-unique(redd_2020$survey_wk)
-
-unique(redd_2019$survey_wk)
-
-unique(redd_2018$survey_wk)
-
-unique(redd_2017$survey_wk)
-
-unique(redd_2016$survey_wk)
-
-unique(redd_2015$survey_wk)
-
-unique(redd_2014$survey_wk)
-```
 
 Transform survey week
 
 ## 2023
+
 ```{r}
 unique(redd_2023$survey_wk)
 
 redd_2023_clean <- redd_2023 |> 
-  mutate(survey_wk = as.integer(sub("-.*", "", survey_wk)))
+  mutate(survey_wk = as.character(sub("-.*", "", survey_wk)))
 ```
 
 
@@ -259,6 +244,8 @@ redd_2022_clean <- redd_2022 |>
       survey_wk == "1-Apr" ~ "4",  # These date corresponds to records that have week == 4
       TRUE ~ str_extract(survey_wk, "^[0-9]+")))
 
+unique(redd_2022_clean$survey_wk)
+
 sum(is.na(redd_2022_clean$survey_wk)) # check for NA values
 ```
 
@@ -269,7 +256,7 @@ unique(redd_2021$survey_wk)
 sum(is.na(redd_2021$survey_wk))
 
 redd_2021_clean <- redd_2021 |> 
-   mutate(survey_wk = as.integer(sub("-.*", "", survey_wk)))
+   mutate(survey_wk = as.character(sub("-.*", "", survey_wk)))
 
 unique(redd_2021_clean$survey_wk)
 sum(is.na(redd_2021_clean$survey_wk)) # check for NA values
@@ -327,13 +314,13 @@ redd_2018_clean <- redd_2018 |>
     mutate(
     survey_wk = case_when(
       survey_wk == "2-Mar" ~ "3", # this date corresponds to week 3 - 2018-10-02
-      survey_wk == "1-May" ~ "NA", # 1-May weeks have 2018-10-02 date. No data entries have survey_wk recorded. Setting these to NA for now
+      survey_wk == "1-May" ~ NA, # 1-May weeks have 2018-10-02 date. No data entries have survey_wk recorded. Setting these to NA for now
       TRUE ~ str_extract(survey_wk, "^[0-9]+")  
     )
   )
 
 unique(redd_2018_clean$survey_wk)
-sum(is.na(redd_2018_clean$survey_wk))
+sum(is.na(redd_2018_clean$survey_wk)) # 5 NA values from 1-May
 ```
 
 ## 2017
@@ -343,13 +330,7 @@ unique(redd_2017$survey_wk)
 sum(is.na(redd_2017$survey_wk))
 
 redd_2017_clean <- redd_2017 |> 
-    mutate(
-    survey_wk = case_when(
-      survey_wk == "2-Mar" ~ "3", # this date corresponds to week 3 - 2018-10-02
-      survey_wk == "1-May" ~ "NA", # 1-May weeks have 2018-10-02 date. No data entries have survey_wk recorded. Setting these to NA for now
-      TRUE ~ str_extract(survey_wk, "[0-9]+")  
-    )
-  )
+    mutate(survey_wk = str_extract(survey_wk, "[0-9]+"))
 
 unique(redd_2017_clean$survey_wk)
 sum(is.na(redd_2017_clean$survey_wk))
@@ -392,3 +373,39 @@ redd_2015_clean <- redd_2015 |>
 unique(redd_2015_clean$survey_wk)
 sum(is.na(redd_2015_clean$survey_wk))
 ```
+
+## 2014
+
+```{r}
+unique(redd_2014$survey_wk)
+sum(is.na(redd_2014$survey_wk))
+
+redd_2014_clean <- redd_2014 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "1-Jan" ~ "1", # 2014-09-09
+      survey_wk == "2-Mar" ~ "3", # 2014-09-25
+      survey_wk == "2-Apr" ~ "4", # 2014-10-01  
+      survey_wk == "1-May" ~ "5", # 2014-10-06
+      survey_wk == "1-Jun" ~ "6", # 2014-10-14	
+      survey_wk == "2-Jun" ~ "6", # 2014-10-17
+      survey_wk == "1-Aug" ~ "8", #2 014-11-12
+      survey_wk == "HF2" ~ NA, # date of 2014-11-07 all survey_wk of HF2. No data entries have actual survey_wk recorded. Setting these to NA for now
+      survey_wk == "HF" ~ NA, # date of 2014-10-09 all survey_wk of HF. No data entries have actual survey_wk recorded. Setting these to NA for now
+      TRUE ~ str_extract(survey_wk, "[0-9]+")))
+
+unique(redd_2014_clean$survey_wk)
+sum(is.na(redd_2014_clean$survey_wk)) # the 46 values that are HF2 and HF
+```
+
+Combine all years
+
+```{r}
+clean_redd <- bind_rows(redd_2014_clean, redd_2015_clean, redd_2016_clean, redd_2017_clean, redd_2018_clean, redd_2019_clean, redd_2020_clean, redd_2021_clean, redd_2022_clean, redd_2023_clean)
+
+
+sum(is.na(clean_redd$survey_wk)) # TODO figure out why these NA values are being introduced 
+```
+
+
+
