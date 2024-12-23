@@ -139,8 +139,8 @@ week_start_2014 <- ymd("2014-09-09") # survey started Sept 9
 
 survey_data_2014 <- redd_observations |>
   filter(year(date) == 2014) |>
-  mutate(custom_week = as.integer(difftime(date, week_start_2014, units = "weeks")) + 1) |>
-  distinct(location, custom_week) |>
+  # mutate(custom_week = as.integer(difftime(date, week_start_2014, units = "weeks")) + 1) |>
+  # distinct(location, custom_week) |>
   glimpse()
 
 ggplot(survey_data_2014, aes(x = location, y = as.factor(custom_week))) +
@@ -182,4 +182,137 @@ ggplot(survey_data, aes(x = location, y = as.factor(custom_week))) +
 walk2(week_start_dates$year, week_start_dates$week_start, ~ print(plot_year_data(.x, .y)))
 
 ```
+```{r, include=FALSE}
+# filtering by year to clean weeks
+redd_2023 <- redd_observations |> 
+  filter(year(date) == 2023) 
 
+redd_2022 <- redd_observations |> 
+  filter(year(date) == 2022) 
+
+redd_2021 <- redd_observations |> 
+  filter(year(date) == 2021) 
+
+redd_2020 <- redd_observations |> 
+  filter(year(date) == 2020)
+
+redd_2019 <- redd_observations |> 
+  filter(year(date) == 2019) 
+
+redd_2018 <- redd_observations |> 
+  filter(year(date) == 2018) 
+
+redd_2017 <- redd_observations |> 
+  filter(year(date) == 2017) 
+
+redd_2016 <- redd_observations |> 
+  filter(year(date) == 2016) 
+
+redd_2015 <- redd_observations |> 
+  filter(year(date) == 2015) 
+
+redd_2014 <- redd_observations |> 
+  filter(year(date) == 2014) 
+```
+
+```{r, include=FALSE}
+
+
+unique(redd_2020$survey_wk)
+
+unique(redd_2019$survey_wk)
+
+unique(redd_2018$survey_wk)
+
+unique(redd_2017$survey_wk)
+
+unique(redd_2016$survey_wk)
+
+unique(redd_2015$survey_wk)
+
+unique(redd_2014$survey_wk)
+```
+
+Transform survey week
+
+## 2023
+```{r}
+unique(redd_2023$survey_wk)
+
+redd_2023_clean <- redd_2023 |> 
+  mutate(survey_wk = as.integer(sub("-.*", "", survey_wk)))
+```
+
+
+## 2022 
+
+```{r}
+unique(redd_2022$survey_wk)
+
+sum(is.na(redd_2022$survey_wk))
+
+redd_2022 |> filter(survey_wk == "1-Apr") |> view()
+
+redd_2022_clean <- redd_2022 |> 
+   mutate(
+    survey_wk = case_when(
+      survey_wk == "1-Apr" ~ "4",  # These date corresponds to records that have week == 4
+      TRUE ~ str_extract(survey_wk, "^[0-9]+")))
+
+sum(is.na(redd_2022_clean$survey_wk)) # check for NA values
+```
+
+## 2021
+
+```{r}
+unique(redd_2021$survey_wk)
+sum(is.na(redd_2021$survey_wk))
+
+redd_2021_clean <- redd_2021 |> 
+   mutate(survey_wk = as.integer(sub("-.*", "", survey_wk)))
+
+unique(redd_2021_clean$survey_wk)
+sum(is.na(redd_2021_clean$survey_wk)) # check for NA values
+```
+
+## 2020
+
+```{r}
+unique(redd_2020$survey_wk)
+sum(is.na(redd_2020$survey_wk))
+
+redd_2020_clean <- redd_2020 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "5-Mar" ~ "3", # this date corresponds to week 3 - 2020-10-09 - Check all these changes
+      survey_wk == "4-May" ~ "5", # this date corresponds to week 5 - 2020-10-22
+      survey_wk == "3-Aug" ~ "8", # this date corresponds to week 8 - 2020-11-12
+      TRUE ~ str_extract(survey_wk, "^[0-9]+")  
+    )
+  )
+
+unique(redd_2020_clean$survey_wk)
+sum(is.na(redd_2020_clean$survey_wk))
+```
+
+## 2019
+
+```{r}
+# note that the range of these survey weeks is 3 - 12. We should ask what happened to week 1 and 2
+unique(redd_2019$survey_wk)
+sum(is.na(redd_2019$survey_wk))
+
+redd_2019_clean <- redd_2019 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "2-Jun" ~ "6", # this date corresponds to week 6	- 2019-10-08
+      survey_wk == "5-Jun" ~ "6", # this date corresponds to week 6 - 2019-10-11
+      survey_wk == "3-Jul" ~ "7", # this date corresponds to week 7 - 2019-10-16
+      survey_wk == "1-Nov" ~ "11", # this date corresponds to week 11 - 2019-11-12
+      TRUE ~ str_extract(survey_wk, "^[0-9]+")  
+    )
+  )
+
+unique(redd_2019_clean$survey_wk)
+sum(is.na(redd_2019_clean$survey_wk))
+```
