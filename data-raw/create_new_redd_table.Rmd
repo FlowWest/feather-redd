@@ -159,28 +159,28 @@ TODO and note, some years have different number of weeks than what is mentioned 
 ```{r}
 #TODO note that it seems like some weeks were not surveyed at all. This means that even though we number the weeks starting with the first survey event, the survey week count is different. We might need to do the numbering manually?
 # since every survey started at a different date, it will we defined here
-week_start_dates <- tibble(year = 2014:2023,
-                           week_start = c("2014-09-09", "2015-09-16", "2016-09-20", "2017-10-03", "2018-09-28", "2019-09-16",
-                                          "2020-09-22", "2021-09-16", "2022-09-14", "2023-09-18") |> 
-                             ymd())
-# function to plot each year like above
-plot_year_data <- function(year, week_start) {
-  survey_data <- redd_observations |> 
-    filter(year(date) == year) |> 
-    mutate(custom_week = as.integer(difftime(date, week_start, units = "weeks")) + 1) |> 
-    distinct(location, custom_week)
-  
-ggplot(survey_data, aes(x = location, y = as.factor(custom_week))) +
-  geom_tile(fill = "steelblue", color = "white") +
-  labs(title = paste("Surveyed Sites in", year, "by Week Number"),
-       x = "Survey Location",
-       y = "Week Number") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
-        axis.text.y = element_text(size = 8))
-}
-
-walk2(week_start_dates$year, week_start_dates$week_start, ~ print(plot_year_data(.x, .y)))
+# week_start_dates <- tibble(year = 2014:2023,
+#                            week_start = c("2014-09-09", "2015-09-16", "2016-09-20", "2017-10-03", "2018-09-28", "2019-09-16",
+#                                           "2020-09-22", "2021-09-16", "2022-09-14", "2023-09-18") |> 
+#                              ymd())
+# # function to plot each year like above
+# plot_year_data <- function(year, week_start) {
+#   survey_data <- redd_observations |> 
+#     filter(year(date) == year) |> 
+#     mutate(custom_week = as.integer(difftime(date, week_start, units = "weeks")) + 1) |> 
+#     distinct(location, custom_week)
+#   
+# ggplot(survey_data, aes(x = location, y = as.factor(custom_week))) +
+#   geom_tile(fill = "steelblue", color = "white") +
+#   labs(title = paste("Surveyed Sites in", year, "by Week Number"),
+#        x = "Survey Location",
+#        y = "Week Number") +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+#         axis.text.y = element_text(size = 8))
+# }
+# 
+# walk2(week_start_dates$year, week_start_dates$week_start, ~ print(plot_year_data(.x, .y)))
 
 ```
 ```{r, include=FALSE}
@@ -223,9 +223,13 @@ Transform survey week
 
 ```{r}
 unique(redd_2023$survey_wk)
+sum(is.na(redd_2023$survey_wk)) #1420 NA values
 
 redd_2023_clean <- redd_2023 |> 
   mutate(survey_wk = as.character(sub("-.*", "", survey_wk)))
+
+unique(redd_2023_clean$survey_wk) # week 10 is skipped, this is consistent with documentation. Maybe change week 11 to 10?
+sum(is.na(redd_2023_clean$survey_wk))
 ```
 
 
@@ -404,7 +408,8 @@ Combine all years
 clean_redd <- bind_rows(redd_2014_clean, redd_2015_clean, redd_2016_clean, redd_2017_clean, redd_2018_clean, redd_2019_clean, redd_2020_clean, redd_2021_clean, redd_2022_clean, redd_2023_clean)
 
 
-sum(is.na(clean_redd$survey_wk)) # TODO figure out why these NA values are being introduced 
+sum(is.na(clean_redd$survey_wk)) # most NA values are from 2023 when no survey_wk data was added 
+
 ```
 
 
