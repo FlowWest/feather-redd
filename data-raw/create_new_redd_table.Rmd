@@ -60,26 +60,7 @@ Summarizing by date and survey location
 #      by_year_week = redd_summary_by_year_week)
 ```
 
-```{r}
- redd_observations  |> 
-  mutate(year = year(date)) |> 
-  distinct(location, year) |> 
-  count(location, year) |> 
-  ggplot(aes(x = year, y = location, fill = n)) +
-  geom_tile(color = "white") +
-  scale_fill_gradient(low = "white", high = "blue", na.value = "white") +
-  scale_x_continuous(breaks = seq(min(redd_observations$date, na.rm = TRUE) |> year(),
-                                  max(redd_observations$date, na.rm = TRUE) |>  year(),
-                                  by = 1),
-                     expand = c(0, 0)) +
-  labs(title = "Surveyed Locations Across Years",
-       x = "Year",
-       y = "Location",
-       fill = "Survey Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 35, hjust = 1),
-        axis.text.y = element_text(angle = 25, size = 7))
-```
+
 
 ```{r, include=FALSE}
 survey_data_week <- redd_observations  |>
@@ -136,22 +117,22 @@ A new table will be created with: date, survey_group, survey_location, is_redd_o
 ### 2014
 
 ```{r, echo=FALSE}
-week_start_2014 <- ymd("2014-09-09") # survey started Sept 9
-
-survey_data_2014 <- redd_observations |>
-  filter(year(date) == 2014) |>
-  # mutate(custom_week = as.integer(difftime(date, week_start_2014, units = "weeks")) + 1) |>
-  # distinct(location, custom_week) |>
-  glimpse()
-
-ggplot(survey_data_2014, aes(x = location, y = as.factor(custom_week))) +
-  geom_tile(color = "white") +
-  labs(title = "Surveyed Sites in 2014 by Week Number",
-       x = "Survey Location",
-       y = "Week Number") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
-        axis.text.y = element_text(size = 8))
+# week_start_2014 <- ymd("2014-09-09") # survey started Sept 9
+# 
+# survey_data_2014 <- redd_observations |>
+#   filter(year(date) == 2014) |>
+#   # mutate(custom_week = as.integer(difftime(date, week_start_2014, units = "weeks")) + 1) |>
+#   # distinct(location, custom_week) |>
+#   glimpse()
+# 
+# ggplot(survey_data_2014, aes(x = location, y = as.factor(custom_week))) +
+#   geom_tile(color = "white") +
+#   labs(title = "Surveyed Sites in 2014 by Week Number",
+#        x = "Survey Location",
+#        y = "Week Number") +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+#         axis.text.y = element_text(size = 8))
 ```
 
 TODO and note, some years have different number of weeks than what is mentioned on documentation (2023-10 weeks, 2019-12 weeks, 2018-9 weeks, 2015-13 weeks, 2014-9 weeks)
@@ -413,4 +394,41 @@ sum(is.na(clean_redd$survey_wk)) # most NA values are from 2023 when no survey_w
 ```
 
 
+```{r}
+plot_data <- clean_redd |> 
+  mutate(year = year(date),  
+         survey_wk = as.numeric(survey_wk)) |> 
+  filter(!is.na(survey_wk)) |> 
+  distinct(year, location, survey_wk) 
+
+data_by_year <- split(plot_data, plot_data$year)
+
+plots <- lapply(names(data_by_year), function(year) {
+  ggplot(data_by_year[[year]], aes(x = survey_wk, y = location)) +
+    geom_tile(fill = "steelblue", color = "white") +
+    scale_x_continuous(
+      breaks = seq(min(data_by_year[[year]]$survey_wk, na.rm = TRUE), 
+                   max(data_by_year[[year]]$survey_wk, na.rm = TRUE), 
+                   by = 1)) +
+    labs(title = paste("Survey Locations and Weeks in", year),
+         x = "Survey Week",
+         y = "Location") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          axis.text.y = element_text(size = 8))})
+
+plots
+```
+
+```{r}
+# create tables with same info than above
+survey_table <- clean_redd |> 
+  mutate(year = year(date)) |> 
+  count(year, survey_wk, location) |> 
+  pivot_wider(names_from = location,
+              values_from = n,
+              values_fill = 0)
+
+print(survey_table)
+```
 
