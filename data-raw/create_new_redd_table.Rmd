@@ -430,5 +430,8 @@ survey_table <- clean_redd |>
               values_fill = 0)
 
 print(survey_table)
+
+#save table
+write.csv(survey_table, "data-raw/redd_survey_locations_check.csv")
 ```
 
