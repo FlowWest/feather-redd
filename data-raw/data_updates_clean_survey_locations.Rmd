@@ -236,10 +236,27 @@ redd_observations_clean_2 <- redd_observations_clean_1 |>
     location == "uppermathews" & date == "2023-10-19" & latitude == "39.51572598" & longitude == "-121.5576469" ~ "upperauditorium",
     location == "uppermathews" & date == "2023-10-19" & latitude == "39.51570684" & longitude == "-121.55787447" ~ "upperauditorium",
     location == "trailerpark" & date == "2023-09-26" & latitude == "39.51600036" & longitude == "-121.55916329" ~ "moessidechannel",
+    location == "tablemountain" & date == "2022-11-22" & latitude == "39.496410384211" & longitude == "-121.579623191602" ~ "trailerpark",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4176998620939" & longitude == "-121.627223819039" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.417653889353" & longitude == "-121.627343452105" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174661545398" & longitude == "-39.4174661545398" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174294735085" & longitude == "-121.627411511883" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4173586922004" & longitude == "-121.627554538371" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.41572855345" & longitude == "-121.626946544251" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4157329027447" & longitude == "-121.627060052528" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156719809222" & longitude == "-121.627129956771" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156289839513" & longitude == "-121.627133750753" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156255231564" & longitude == "-121.627261165499" ~ "lowerhour",
     TRUE ~ location
   ))
 
 
+# pending points to ask Chris - 
+# pending <- redd_observations_clean_2 |> 
+#   filter(location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4192277254991" & longitude == "-121.626608190798" |
+#          location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4098841591031" & longitude == "-121.625766739867") |> 
+#   glimpse()
+         
 
 print(unique(redd_observations_clean_2$location))
 
