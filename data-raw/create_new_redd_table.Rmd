@@ -432,7 +432,7 @@ survey_table <- clean_redd |>
 print(survey_table)
 
 #save table
-write.csv(survey_table, "data-raw/redd_survey_locations_check.csv")
+# write.csv(survey_table, "data-raw/redd_survey_locations_check.csv")
 ```
 
 ```{r}
@@ -443,6 +443,103 @@ table_test <- clean_redd |>
 
 # View the table
 print(table_test)
+
+gsa_sites <- c("TableMountain", "LowerTableMountain", "HatcheryPipe", "UpperCottonwood", "UpperHatchery", "Hatchery", "topofhatchery", "Cottonwood", "TopofAuditorium", "MoesSideChannel", "UpperAuditorium", "HatcherySideChannel", "LowerAuditorium", "BelowLowerAuditorium", "Bedrock",  "MiddleAuditorium") |> tolower()
+
+lfc <- c("TrailerPark", "UpperMathews", "Mathews", "Aleck", "UpperRobinson", "LowerRobinson", "SteepSideChannel", "Steep", "Weir", "EyeSideChannel", "Eye", "Gateway", "greatwestern") |> tolower()
+
+hfc <- clean_redd |>
+  mutate(location = tolower(location)) |>
+  filter(!(location %in% gsa_sites) & !(location %in% lfc)) |>
+  distinct(location) |>
+  # filter(!location %in% c("g95main", "lowervanceeast", "greatwestern", "palm")) |>
+  pull(location)
+```
+
+
+```{r}
+#location check
+
+# HFC
+leaflet(clean_redd |> filter(location %in% hfc)) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    lng = ~longitude,  # Longitude for x-axis
+    lat = ~latitude,   # Latitude for y-axis
+    popup = ~paste("Location:", location, "<br>Year:", lubridate::year(date)), 
+    color = "blue",    
+    radius = 5) |> 
+  addLegend(
+    position = "bottomright",
+    colors = "blue",
+    labels = "Survey Locations",
+    title = "Legend"
+  )
+
+#LFC
+leaflet(clean_redd |> filter(location %in% lfc)) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    lng = ~longitude,  
+    lat = ~latitude,   
+    popup = ~paste("Location:", location, "<br>Year:", lubridate::year(date)), 
+    color = "blue",   
+    radius = 5) |> 
+  addLegend(
+    position = "bottomright",
+    colors = "blue",
+    labels = "Survey Locations",
+    title = "Legend"
+  )
+
+#GSA
+leaflet(clean_redd |> filter(location %in% gsa_sites)) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    lng = ~longitude,  
+    lat = ~latitude,   
+    popup = ~paste("Location:", location, "<br>Date:", date, "<br>Latitude:", latitude, "<br>Longitude:", longitude), 
+    color = "blue",    
+    radius = 5) |> 
+  addLegend(
+    position = "bottomright",
+    colors = "blue",
+    labels = "Survey Locations",
+    title = "Legend"
+  )
+```
+
+
+```{r}
+# this table has survey_wk
+table_test_2 <- clean_redd |> 
+  mutate(year = lubridate::year(date),
+         location = tolower(location),
+         gsa_sites = location %in% gsa_sites,
+         redds_observed = "Yes") |> 
+    distinct(year, location, survey_wk, gsa_sites, redds_observed) |> 
+  arrange(year, location, survey_wk) 
+# View the table
+print(table_test_2)
+
+# this table does not have survey_wk - has survey group
+table_test_3 <- clean_redd |> 
+  mutate(year = lubridate::year(date),
+         location = tolower(location),
+         # gsa_sites = location %in% gsa_sites,
+         survey_group = case_when(
+           location %in% gsa_sites ~ "gsa", 
+           location %in% lfc ~ "lfc",
+           location %in% hfc ~ "hfc", 
+           TRUE ~ "unknown")) |> 
+  distinct(year, location, survey_group) |> 
+  mutate(redd_observed = "Yes")   
+
+# View the table
+print(table_test_3)
+
+#save table
+write.csv(table_test_3, "data-raw/redd_survey_locations_check_2.csv")
 ```
 
 
