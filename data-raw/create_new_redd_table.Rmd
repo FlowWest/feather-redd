@@ -435,3 +435,14 @@ print(survey_table)
 write.csv(survey_table, "data-raw/redd_survey_locations_check.csv")
 ```
 
+```{r}
+table_test <- clean_redd |> 
+  mutate(year = lubridate::year(date)) |> 
+  distinct(year, location) |>              
+  mutate(surveyed = "Yes")                  
+
+# View the table
+print(table_test)
+```
+
+
