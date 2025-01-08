@@ -207,6 +207,7 @@ name_check_map
   * gatewaymainchannel: located on survey location Gateway, modified
   * upperbigholeeast: modified to BigHoleEast
   * moe'sditch: modified 
+  * upper mathews: 
   
 Modifications - all points that fall within a survey location will be modified to match to that name
 
@@ -227,9 +228,17 @@ redd_observations_clean_2 <- redd_observations_clean_1 |>
     location == "lowervanceeast" & date == "2017-11-14" & latitude == "39.4388562088935" & longitude == "-121.635448923638" ~ "bigholeeast",
     location == "lowervanceeast" & date == "2017-11-14" & latitude == "39.4388504794907" & longitude == "-121.635372994652" ~ "bigholeeast",
     location == "g95main" & date == "2015-11-19" & latitude == "39.4394792142928" & longitude == "-121.635254377528" ~ "bigholeeast",
-    location == "g95main" & date == "2015-11-19" & latitude == "39.4371081082104" & longitude == "-121.636483707754" ~  "bigholeeast", # check on this once Chris responds
+    location == "g95main" & date == "2015-11-19" & latitude == "39.4371081082104" & longitude == "-121.636483707754" ~  "bigholeeast",
+    location == "uppermathews" & date == "2023-10-25" & latitude == "39.5157891" & longitude == "-121.55643006" ~ "upperauditorium", # TODO from here below were modified on 01/08/25 - might want to confirm with Chris that modifications are ok. Names were changed based on their actual location
+    location == "uppermathews" & date == "2023-10-25" & latitude == "39.51585525" & longitude == "-121.55658786" ~ "upperauditorium",
+    location == "uppermathews" & date == "2023-10-25" & latitude == "39.51600506" & longitude == "-121.55655445" ~ "upperauditorium",
+    location == "uppermathews" & date == "2023-10-25" & latitude == "39.51589657" & longitude == "-121.55733036" ~ "upperauditorium",
+    location == "uppermathews" & date == "2023-10-19" & latitude == "39.51572598" & longitude == "-121.5576469" ~ "upperauditorium",
+    location == "uppermathews" & date == "2023-10-19" & latitude == "39.51570684" & longitude == "-121.55787447" ~ "upperauditorium",
+    location == "trailerpark" & date == "2023-09-26" & latitude == "39.51600036" & longitude == "-121.55916329" ~ "moessidechannel",
     TRUE ~ location
   ))
+
 
 
 print(unique(redd_observations_clean_2$location))
