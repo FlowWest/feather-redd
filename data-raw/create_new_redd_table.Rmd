@@ -14,6 +14,7 @@ library(readxl)
 library(leaflet)
 library(purrr)
 library(stringr)
+library(tidyr)
 ```
 
 The purpose of this markdown is to analyze redd data and understand when redds were not observed. A new reference table will be created
@@ -539,7 +540,46 @@ table_test_3 <- clean_redd |>
 print(table_test_3)
 
 #save table
-write.csv(table_test_3, "data-raw/redd_survey_locations_check_2.csv")
+# write.csv(table_test_3, "data-raw/redd_survey_locations_check_2.csv")
 ```
 
+```{r}
+# creating a table to crosscheck mannually with documentation
+years <- 2014:2023
+
+all_locations <- tibble(
+  location = c(gsa_sites, lfc, hfc),
+  survey_group = c(
+    rep("gsa", length(gsa_sites)),
+    rep("lfc", length(lfc)),
+    rep("hfc", length(hfc))
+  )
+)
+
+expanded_data <- expand.grid(
+  year = years,
+  location = unique(all_locations$location)
+) |> 
+  as_tibble()
+
+# Add spawning area information
+spawning_areas_lfc <- c("gateway", "eyeriffle", "steep", "weir", "lowerrobinson", "upperrobinson", "alec")
+spawning_areas_hfc <- c("vanceeast", "bigholeeast", "g95eastsidechanneltop", "lowerhour", "keister", "bigbar", "lowermcfarland", "developing")
+
+table_for_crosscheck <- expanded_data |> 
+  left_join(all_locations, by = "location") |> 
+  mutate(
+    spawning_area = case_when(
+      survey_group == "gsa" ~ TRUE,
+      survey_group == "lfc" & location %in% spawning_areas_lfc ~ TRUE,
+      survey_group == "hfc" & location %in% spawning_areas_hfc ~ TRUE,
+      TRUE ~ FALSE
+    )
+  ) |> 
+  arrange(year, location)
+
+print(table_for_crosscheck)
+
+write.csv(table_for_crosscheck, "data-raw/table_for_crosscheck.csv")
+```
 
