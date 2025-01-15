@@ -239,7 +239,7 @@ redd_observations_clean_2 <- redd_observations_clean_1 |>
     location == "tablemountain" & date == "2022-11-22" & latitude == "39.496410384211" & longitude == "-121.579623191602" ~ "trailerpark",
     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4176998620939" & longitude == "-121.627223819039" ~ "lowerhour",
     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.417653889353" & longitude == "-121.627343452105" ~ "lowerhour",
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174661545398" & longitude == "-39.4174661545398" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174661545398" & longitude == "-121.62741308081" ~ "lowerhour",
     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174294735085" & longitude == "-121.627411511883" ~ "lowerhour",
     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4173586922004" & longitude == "-121.627554538371" ~ "lowerhour",
     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.41572855345" & longitude == "-121.626946544251" ~ "lowerhour",
@@ -247,6 +247,8 @@ redd_observations_clean_2 <- redd_observations_clean_1 |>
     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156719809222" & longitude == "-121.627129956771" ~ "lowerhour",
     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156289839513" & longitude == "-121.627133750753" ~ "lowerhour",
     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156255231564" & longitude == "-121.627261165499" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4098841591031" & longitude == "-121.625766739867" ~ "lowerhour",
+    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4192277254991" & longitude == "-121.626608190798" ~ "lowerhour",
     TRUE ~ location
   ))
 
@@ -263,33 +265,34 @@ print(unique(redd_observations_clean_2$location))
 print(unique(redd_observations_clean_2$location[!redd_observations_clean_2$location %in% reference_locations]))
 # all redd locations now fall within reference locations!
 ```
-```{r, include=FALSE}
-#pending as of 01/08/25
-redd_questions <- redd_observations_clean_1 |> 
-  filter(location == "uppermathews" & date == "2023-10-25" & latitude == "39.5157891" & longitude == "-121.55643006" |
-    location == "uppermathews" & date == "2023-10-25" & latitude == "39.51585525" & longitude == "-121.55658786" |
-    location == "uppermathews" & date == "2023-10-25" & latitude == "39.51600506" & longitude == "-121.55655445" |
-    location == "uppermathews" & date == "2023-10-25" & latitude == "39.51589657" & longitude == "-121.55733036" |
-    location == "uppermathews" & date == "2023-10-19" & latitude == "39.51572598" & longitude == "-121.5576469" | 
-    location == "uppermathews" & date == "2023-10-19" & latitude == "39.51570684" & longitude == "-121.55787447"| 
-    location == "trailerpark" & date == "2023-09-26" & latitude == "39.51600036" & longitude == "-121.55916329" | 
-    location == "tablemountain" & date == "2022-11-22" & latitude == "39.496410384211" & longitude == "-121.579623191602" | 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4176998620939" & longitude == "-121.627223819039" | 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.417653889353" & longitude == "-121.627343452105" |
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174661545398" & longitude == "-39.4174661545398" | 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174294735085" & longitude == "-121.627411511883" | 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4173586922004" & longitude == "-121.627554538371" | 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.41572855345" & longitude == "-121.626946544251" | 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4157329027447" & longitude == "-121.627060052528" | 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156719809222" & longitude == "-121.627129956771"| 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156289839513" & longitude == "-121.627133750753" | 
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156255231564" & longitude == "-121.627261165499" |
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174661545398" & longitude == "-121.627261165499" |
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4192277254991" & longitude == "-121.626608190798" |
-    location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4098841591031" & longitude == "-121.625766739867") |>
-  glimpse()
 
-write.csv(redd_questions, "data-raw/redd_questions_0125.csv")
+```{r, include=FALSE}
+#pending as of 01/08/25 --- RESOLVED
+# redd_questions <- redd_observations_clean_1 |> 
+#   filter(location == "uppermathews" & date == "2023-10-25" & latitude == "39.5157891" & longitude == "-121.55643006" |
+#     location == "uppermathews" & date == "2023-10-25" & latitude == "39.51585525" & longitude == "-121.55658786" |
+#     location == "uppermathews" & date == "2023-10-25" & latitude == "39.51600506" & longitude == "-121.55655445" |
+#     location == "uppermathews" & date == "2023-10-25" & latitude == "39.51589657" & longitude == "-121.55733036" |
+#     location == "uppermathews" & date == "2023-10-19" & latitude == "39.51572598" & longitude == "-121.5576469" | 
+#     location == "uppermathews" & date == "2023-10-19" & latitude == "39.51570684" & longitude == "-121.55787447"| 
+#     location == "trailerpark" & date == "2023-09-26" & latitude == "39.51600036" & longitude == "-121.55916329" | 
+#     location == "tablemountain" & date == "2022-11-22" & latitude == "39.496410384211" & longitude == "-121.579623191602" | 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4176998620939" & longitude == "-121.627223819039" | 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.417653889353" & longitude == "-121.627343452105" |
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174661545398" & longitude == "-39.4174661545398" | 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174294735085" & longitude == "-121.627411511883" | 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4173586922004" & longitude == "-121.627554538371" | 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.41572855345" & longitude == "-121.626946544251" | 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4157329027447" & longitude == "-121.627060052528" | 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156719809222" & longitude == "-121.627129956771"| 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156289839513" & longitude == "-121.627133750753" | 
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4156255231564" & longitude == "-121.627261165499" |
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4174661545398" & longitude == "-121.627261165499" |
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4192277254991" & longitude == "-121.626608190798" |
+#     location == "middleauditorium" & date == "2014-11-07" & latitude == "39.4098841591031" & longitude == "-121.625766739867") |>
+#   glimpse()
+# 
+# write.csv(redd_questions, "data-raw/redd_questions_0125.csv")
 ```
 
 Listing redd location names that remain unmatched to any survey locations (should be 0)
