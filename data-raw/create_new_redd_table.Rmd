@@ -15,6 +15,7 @@ library(leaflet)
 library(purrr)
 library(stringr)
 library(tidyr)
+library(janitor)
 ```
 
 The purpose of this markdown is to analyze redd data and understand when redds were not observed. A new reference table will be created
@@ -455,6 +456,13 @@ hfc <- clean_redd |>
   distinct(location) |>
   # filter(!location %in% c("g95main", "lowervanceeast", "greatwestern", "palm")) |>
   pull(location)
+
+# Chris shared a list of spawning areas on 01/16/25
+spawning_sites <- c("Gateway", "EyeRiffle", "Steep", "Weir", "LowerRobinson", "UpperRobinson", "Aleck", "TrailerPark", "Mathews", "Steep", "SideChannel", "EyeSideChannel",
+                    "VanceEast", "BigHoleEast", "G95EastSideChannelTop", "LowerHour", "Keister", "BigBar", "LowerMcFarland", "Developing", "VanceWest", "LowerVanceEast", "BigHoleWest", "G95Main", "G95EastSideChannelBottom", "UpperHour", "Goose", "UpperMcFarland",
+                    "TableMountain", "LowerTableMountain", "HatcheryPipe", "Hatchery Side Channel", "Below Auditorium") |>  
+  tolower() |>
+  glimpse()
 ```
 
 
@@ -524,24 +532,47 @@ table_test_2 <- clean_redd |>
 print(table_test_2)
 
 # this table does not have survey_wk - has survey group
-table_test_3 <- clean_redd |> 
+# used this code filtering to each of the years and generate a table. Then compared data of each year with documentation
+# that excel was processed off R, but added to repo (data-raw/yearly_check.xlsx)
+table_test_3 <- clean_redd |>
   mutate(year = lubridate::year(date),
          location = tolower(location),
          # gsa_sites = location %in% gsa_sites,
          survey_group = case_when(
-           location %in% gsa_sites ~ "gsa", 
+           location %in% gsa_sites ~ "gsa",
            location %in% lfc ~ "lfc",
-           location %in% hfc ~ "hfc", 
-           TRUE ~ "unknown")) |> 
-  distinct(year, location, survey_group) |> 
-  mutate(redd_observed = "Yes")   
-
-# View the table
+           location %in% hfc ~ "hfc",
+           TRUE ~ "unknown")) |>
+  distinct(year, location, survey_group) |>
+  mutate(redd_observed = "Yes",
+         spawning_area = location %in% spawning_sites) |> 
+  glimpse()
+ 
+# # View the table
 print(table_test_3)
 
 #save table
 # write.csv(table_test_3, "data-raw/redd_survey_locations_check_2.csv")
 ```
+
+```{r}
+# cross check
+gsa <- table_test_3 |> 
+  filter(survey_group == "gsa") 
+
+unique(gsa$location)
+
+lfc <- table_test_3 |> 
+  filter(survey_group == "lfc") 
+
+unique(lfc$location)
+
+hfc <- table_test_3 |> 
+  filter(survey_group == "hfc") 
+
+unique(hfc$location)
+```
+
 
 ```{r}
 # creating a table to crosscheck mannually with documentation
@@ -563,14 +594,16 @@ expanded_data <- expand.grid(
   as_tibble()
 
 # Add spawning area information
-spawning_areas_lfc <- c("gateway", "eyeriffle", "steep", "weir", "lowerrobinson", "upperrobinson", "alec")
-spawning_areas_hfc <- c("vanceeast", "bigholeeast", "g95eastsidechanneltop", "lowerhour", "keister", "bigbar", "lowermcfarland", "developing")
+spawning_areas_lfc <- c("Gateway", "EyeRiffle", "Steep", "Weir", "LowerRobinson", "UpperRobinson", "Aleck", "TrailerPark", "Mathews", "Steep", "SideChannel", "EyeSideChannel") |> tolower()
+spawning_areas_hfc <- c("VanceEast", "BigHoleEast", "G95EastSideChannelTop", "LowerHour", "Keister", "BigBar", "LowerMcFarland", "Developing", "VanceWest", "LowerVanceEast", "BigHoleWest", "G95Main", "G95EastSideChannelBottom", "UpperHour", "Goose", "UpperMcFarland") |> tolower()
+
+spawning_areas_gsa <- c("TableMountain", "LowerTableMountain", "HatcheryPipe", "HatcherySideChannel", "BelowAuditorium") |> tolower()
 
 table_for_crosscheck <- expanded_data |> 
   left_join(all_locations, by = "location") |> 
   mutate(
     spawning_area = case_when(
-      survey_group == "gsa" ~ TRUE,
+      survey_group == "gsa" & location %in% spawning_areas_gsa ~ TRUE,
       survey_group == "lfc" & location %in% spawning_areas_lfc ~ TRUE,
       survey_group == "hfc" & location %in% spawning_areas_hfc ~ TRUE,
       TRUE ~ FALSE
