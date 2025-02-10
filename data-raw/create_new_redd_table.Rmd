@@ -234,6 +234,8 @@ redd_2022_clean <- redd_2022 |>
 unique(redd_2022_clean$survey_wk)
 
 sum(is.na(redd_2022_clean$survey_wk)) # check for NA values
+
+sv_wk_2022 <- redd_2022 |> filter(survey_wk == "1-Apr")
 ```
 
 ## 2021
@@ -267,6 +269,10 @@ redd_2020_clean <- redd_2020 |>
 
 unique(redd_2020_clean$survey_wk)
 sum(is.na(redd_2020_clean$survey_wk))
+
+sv_wk_2020 <- redd_2020 |> 
+  filter(survey_wk == "5-Mar" | survey_wk == "4-May" |
+         survey_wk == "3-Aug") 
 ```
 
 ## 2019
@@ -289,6 +295,11 @@ redd_2019_clean <- redd_2019 |>
 
 unique(redd_2019_clean$survey_wk)
 sum(is.na(redd_2019_clean$survey_wk))
+
+sv_wk_2019 <- redd_2019 |> 
+  filter(survey_wk == "2-Jun" | survey_wk == "5-Jun" |
+         survey_wk == "3-Jul"|
+         survey_wk == "1-Nov") 
 ```
 
 ## 2018
@@ -308,6 +319,8 @@ redd_2018_clean <- redd_2018 |>
 
 unique(redd_2018_clean$survey_wk)
 sum(is.na(redd_2018_clean$survey_wk)) # 5 NA values from 1-May
+
+#TODO do the same that other years that have weird survey week numbers
 ```
 
 ## 2017
