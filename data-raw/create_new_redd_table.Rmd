@@ -235,7 +235,7 @@ unique(redd_2022_clean$survey_wk)
 
 sum(is.na(redd_2022_clean$survey_wk)) # check for NA values
 
-sv_wk_2022 <- redd_2022 |> filter(survey_wk == "1-Apr")
+# sv_wk_2022 <- redd_2022 |> filter(survey_wk == "1-Apr")
 ```
 
 ## 2021
@@ -270,9 +270,9 @@ redd_2020_clean <- redd_2020 |>
 unique(redd_2020_clean$survey_wk)
 sum(is.na(redd_2020_clean$survey_wk))
 
-sv_wk_2020 <- redd_2020 |> 
-  filter(survey_wk == "5-Mar" | survey_wk == "4-May" |
-         survey_wk == "3-Aug") 
+# sv_wk_2020 <- redd_2020 |> 
+#   filter(survey_wk == "5-Mar" | survey_wk == "4-May" |
+#          survey_wk == "3-Aug") 
 ```
 
 ## 2019
@@ -296,10 +296,10 @@ redd_2019_clean <- redd_2019 |>
 unique(redd_2019_clean$survey_wk)
 sum(is.na(redd_2019_clean$survey_wk))
 
-sv_wk_2019 <- redd_2019 |> 
-  filter(survey_wk == "2-Jun" | survey_wk == "5-Jun" |
-         survey_wk == "3-Jul"|
-         survey_wk == "1-Nov") 
+# sv_wk_2019 <- redd_2019 |> 
+#   filter(survey_wk == "2-Jun" | survey_wk == "5-Jun" |
+#          survey_wk == "3-Jul"|
+#          survey_wk == "1-Nov") 
 ```
 
 ## 2018
@@ -320,7 +320,9 @@ redd_2018_clean <- redd_2018 |>
 unique(redd_2018_clean$survey_wk)
 sum(is.na(redd_2018_clean$survey_wk)) # 5 NA values from 1-May
 
-#TODO do the same that other years that have weird survey week numbers
+# For survey_wk fix table
+# sv_wk_2018 <- redd_2018 |> 
+#   filter(survey_wk == "2-Mar" | survey_wk == "1-May") 
 ```
 
 ## 2017
@@ -364,7 +366,7 @@ redd_2015_clean <- redd_2015 |>
       survey_wk == "1-Mar" ~ "3", # 2015-09-28
       survey_wk == "2-May" ~ "5", #	2015-10-15
       survey_wk == "3-May" ~ "5", # date: 2015-10-16
-      survey_wk == "HFWK1" ~ "5", # date: 2015-10-16
+      survey_wk == "HFWK1" ~ "5", # date: 2015-10-16 #uncomment this because HFWK1 is not a typo
       survey_wk == "2-Jun" ~ "6", # 2015-10-20
       survey_wk == "2-Sep" ~ "9", # 2015-11-11
       survey_wk == "2-Oct" ~ "10", # 2015-11-19
@@ -372,6 +374,15 @@ redd_2015_clean <- redd_2015 |>
 
 unique(redd_2015_clean$survey_wk)
 sum(is.na(redd_2015_clean$survey_wk))
+
+# For survey_wk fix table
+# sv_wk_2015 <- redd_2015 |> 
+  # filter(survey_wk == "2-Jan" | survey_wk == "1-Feb" |
+  #          survey_wk == "3-Feb" | survey_wk == "1-Mar" |
+  #          survey_wk == "2-Mar" | survey_wk == "1-May" |
+  #          survey_wk == "2-May" | survey_wk == "3-May" |
+  #          survey_wk == "HFWK1" | survey_wk == "2-Jun" |
+  #          survey_wk == "2-Sep" | survey_wk == "2-Oct" ) 
 ```
 
 ## 2014
@@ -392,10 +403,24 @@ redd_2014_clean <- redd_2014 |>
       survey_wk == "1-Aug" ~ "8", #2 014-11-12
       survey_wk == "HF2" ~ NA, # date of 2014-11-07 all survey_wk of HF2. No data entries have actual survey_wk recorded. Setting these to NA for now
       survey_wk == "HF" ~ NA, # date of 2014-10-09 all survey_wk of HF. No data entries have actual survey_wk recorded. Setting these to NA for now
-      TRUE ~ str_extract(survey_wk, "[0-9]+")))
+      TRUE ~ str_extract(survey_wk, "[0-9]+"))) #TODO HF and HF2 will stay as survey_week
 
 unique(redd_2014_clean$survey_wk)
 sum(is.na(redd_2014_clean$survey_wk)) # the 46 values that are HF2 and HF
+
+# For survey_wk fix table
+# sv_wk_2014 <- redd_2014 |> 
+#   filter(survey_wk == "1-Jan" | survey_wk == "2-Mar" |
+#            survey_wk == "2-Apr" | survey_wk == "1-May" |
+#            survey_wk == "1-Jun" | survey_wk == "2-Jun" |
+#            survey_wk == "1-Aug" | survey_wk == "HF2") 
+```
+
+```{r}
+# combine all survey weeks that need fix
+# pending_fix_sw <- bind_rows(sv_wk_2014, sv_wk_2015, sv_wk_2018, sv_wk_2019, sv_wk_2020, sv_wk_2022)
+# 
+# write.csv(pending_fix_sw, "data-raw/pending_sv_wk.csv")
 ```
 
 Combine all years
