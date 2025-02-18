@@ -4,6 +4,8 @@ library(stringr)
 library(readxl)
 library(readr)
 
+# the goal of creating this table is to have a reference of when surveys were conducted
+# Feather redd team provided a table with date references for each year's survey week. We have debrief that into "survey_week_date_reference_2014_2023.csv"
 survey_dates <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_date_reference_2014_2023.csv")  |> 
   mutate(survey_week = as.numeric(survey_wk),
          start_date = as.Date(start_date, format = "%m/%d/%Y"), 
@@ -12,7 +14,8 @@ survey_dates <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_dat
   filter(!is.na(survey_week)) |>  # Removing rows where survey_week is something other than a number (HF, HFWk1) since not explained on documentation
   glimpse()
 
-
+# feather redd data team also provided documentation of a yearly description for which survey week was each site surveyed "General Chinook Salmon Redd Survey Methods with Yearly Summaries"
+# survey_week_site_reference_2014_2023.csv was manually created as a translation of that document
 survey_sites <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_site_reference_2014_2023.csv") 
 survey_sites <- survey_sites |> 
   select(2, 3, 6, 8) |> 
