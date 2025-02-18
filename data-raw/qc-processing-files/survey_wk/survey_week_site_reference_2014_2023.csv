@@ -256,7 +256,7 @@
 277,2019,moessidechannel,gsa,FALSE,TRUE,TRUE,1 &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11,
 281,2019,tablemountain,gsa,TRUE,TRUE,TRUE,1 &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11,
 282,2019,topofauditorium,gsa,FALSE,TRUE,TRUE,1 &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11,
-283,2019,topofhatchery,gsa,FALSE,TRUE,FALSE,NA,Top of Hatchery was not surveyed in 2019
+283,2019,topofhatchery,gsa,FALSE,FALSE,FALSE,NA,Top of Hatchery was not surveyed in 2019
 285,2019,upperauditorium,gsa,FALSE,TRUE,TRUE,1 &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11,
 286,2019,uppercottonwood,gsa,FALSE,TRUE,TRUE,1 &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11,
 287,2019,upperhatchery,gsa,FALSE,TRUE,TRUE,1 &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11,
