@@ -29,7 +29,7 @@ survey_dates <- survey_dates_raw |>
 
 # feather redd data team also provided documentation of a yearly description for which survey week was each site surveyed "General Chinook Salmon Redd Survey Methods with Yearly Summaries"
 # survey_week_site_reference_2014_2023.csv was manually created as a translation of that document
-survey_sites <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_site_reference_2014_2023.csv") 
+survey_sites <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_site_reference_2014_2023_0220update.csv") 
 survey_sites <- survey_sites |> 
   select(2, 3, 6, 8) |> 
   glimpse()
