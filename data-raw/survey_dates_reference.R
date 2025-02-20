@@ -6,12 +6,25 @@ library(readr)
 
 # the goal of creating this table is to have a reference of when surveys were conducted
 # Feather redd team provided a table with date references for each year's survey week. We have debrief that into "survey_week_date_reference_2014_2023.csv"
-survey_dates <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_date_reference_2014_2023.csv")  |> 
+# for the survey weeks that do not correspond to a number, I am assigning a numeric value, for the sake of code simplicity
+
+survey_dates_raw <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_date_reference_2014_2023.csv")  
+
+# filtering out non-numeric survey weeks
+survey_dates <- survey_dates_raw |> 
+  mutate(survey_wk = case_when(
+    survey_wk == "HF" & year == "2014" ~ "10",
+    survey_wk == "HF2" & year == "2014" ~ "11",
+    survey_wk == "HFWk1" & year == "2015" ~ "14",
+    survey_wk == "High Flow 1-1" & year == "2017" ~ "12", 
+    # survey_wk == "Low Flow 1-1" & year == "2017" ~ "13", # keeping code but date already coresponds to another sv_wk
+    TRUE ~ survey_wk  
+  )) |> 
   mutate(survey_week = as.numeric(survey_wk),
-         start_date = as.Date(start_date, format = "%m/%d/%Y"), 
-         end_date = as.Date(end_date, format = "%m/%d/%Y"))|> 
-  select(-survey_wk) |> 
-  filter(!is.na(survey_week)) |>  # Removing rows where survey_week is something other than a number (HF, HFWk1) since not explained on documentation
+         start_date = as.Date(start_date, format = "%m/%d/%Y"),
+         end_date = as.Date(end_date, format = "%m/%d/%Y"))|>
+  select(-survey_wk) |>
+  filter(!is.na(survey_week)) |>  # Removing Low Flow 1 -1
   glimpse()
 
 # feather redd data team also provided documentation of a yearly description for which survey week was each site surveyed "General Chinook Salmon Redd Survey Methods with Yearly Summaries"
