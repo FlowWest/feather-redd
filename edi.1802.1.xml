@@ -250,8 +250,8 @@
       <entityDescription>Survey metadata from Feather River redd survey data</entityDescription>
       <physical>
         <objectName>redd_observations.csv</objectName>
-        <size unit="bytes">3373162</size>
-        <authentication method="MD5">d5f5414373385cbf74bcfbdfb9624f6c</authentication>
+        <size unit="bytes">3881213</size>
+        <authentication method="MD5">179a5aff6da0747bf3c1205ba8c5c532</authentication>
         <dataFormat>
           <textFormat>
             <numHeaderLines>1</numHeaderLines>
@@ -264,7 +264,7 @@
         </dataFormat>
         <distribution>
           <online>
-            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/redd_observations.csv</url>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data/redd_observations.csv</url>
           </online>
         </distribution>
       </physical>
@@ -621,12 +621,12 @@
       <numberOfRecords>36864</numberOfRecords>
     </dataTable>
     <otherEntity>
-      <entityName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024</entityName>
+      <entityName>General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries</entityName>
       <entityDescription>Survey Methods</entityDescription>
       <physical>
-        <objectName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024.pdf</objectName>
-        <size unit="bytes">738408</size>
-        <authentication method="MD5">add05bb975b56058755b30a31cb10d8a</authentication>
+        <objectName>General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf</objectName>
+        <size unit="bytes">14</size>
+        <authentication method="MD5">3be7b8b182ccd96e48989b4e57311193</authentication>
         <dataFormat>
           <externallyDefinedFormat>
             <formatName>pdf</formatName>
@@ -634,7 +634,7 @@
         </dataFormat>
         <distribution>
           <online>
-            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_July_2024.pdf</url>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf</url>
           </online>
         </distribution>
       </physical>

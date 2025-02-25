@@ -8,7 +8,7 @@ datatable_metadata <-
   dplyr::tibble(filepath = c("data/redd_observations.csv"),
                 attribute_info = c("data-raw/metadata/feather_redd_metadata.xlsx"),
                 datatable_description = c("Survey metadata from Feather River redd survey data"),
-                datatable_url = paste0("https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/",
+                datatable_url = paste0("https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data/",
                                        c("redd_observations.csv")))
 
 other_entity_metadata_1 <- list("file_name" = "General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries",
