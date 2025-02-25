@@ -31,7 +31,7 @@ This markdown is a continuation of mapping_qc.Rmd. Based on the issues found on 
 
 ```{r, include=FALSE}
 # redd survey points
-redd_data <- read.csv("data/archive/all_redd_data.csv")
+redd_data <- read.csv("data-raw/combined_raw_data.csv")
 
 # surveying sites from gis data map
 gdb_path <- "data-raw/shapefiles/b105_redd_survey_locations_maps_2021.gdb"
@@ -62,7 +62,7 @@ data_zero_removed <- redd_data |>
 
 
 # Chris shared the correct lat/long for some of these records, and decided to delete some of the entries
-fixed_zeros <- read.csv("data-raw/Faulty_lat_long_records_edits_Chris_111224.csv") |> # csv with Chris' notes
+fixed_zeros <- read.csv("data-raw/qc-processing-files/Faulty_lat_long_records_edits_Chris_111224.csv") |> # csv with Chris' notes
   select(-1) |> 
   mutate(Northing = str_trim(Northing)) |>
   filter(Northing != "Erase this data") |> #erasing the 6 data entries he indicates to delete
@@ -103,7 +103,7 @@ off_channel_removed <- redd_data_fixed_zeros |>
 glimpse()
 
 #reding in Chris' file with corrections
-fixed_off_channel <- read.csv("data-raw/Off_channel_records_edit_Chris_110524.csv") |> 
+fixed_off_channel <- read.csv("data-raw/qc-processing-files/Off_channel_records_edit_Chris_110524.csv") |> 
   glimpse()
 
 fixed_off_channel <- fixed_off_channel |> 
@@ -134,17 +134,17 @@ leaflet(redd_locations_fixed) |>
 
 Save clean data
 ```{r}
-write.csv(redd_locations_fixed, "data-raw/redd_observations_clean_locations.csv", row.names = FALSE) # adding this code to bring location names back
+write.csv(redd_locations_fixed, "data-raw/combined_raw_data_clean_locations.csv", row.names = FALSE) # adding this code to bring location names back
 
-redd_locations_clean <- redd_locations_fixed |> 
-  select(-c(location, survey_wk, file_number)) |>   #removing unnecessary fields 
-  glimpse()
-
-write.csv(redd_locations_clean, "data/redd_observations.csv", row.names = FALSE)
+# redd_locations_clean <- redd_locations_fixed |> 
+#   select(-c(location, survey_wk, file_number)) |>   #removing unnecessary fields 
+#   glimpse()
+# 
+# write.csv(redd_locations_clean, "data/redd_observations.csv", row.names = FALSE)
 ```
 
 ```{r}
-read.csv("data/redd_observations.csv") |> glimpse()
+# read.csv("data/redd_observations.csv") |> glimpse()
 ```
 
 
