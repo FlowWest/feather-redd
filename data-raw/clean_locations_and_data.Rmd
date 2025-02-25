@@ -1,5 +1,5 @@
 ---
-title: "feather river redd survey locations clean up"
+title: "feather river redd survey locations and data clean up"
 date: "2024-11-06"
 output: 
   html_document:
@@ -42,9 +42,7 @@ Summary of work that has been done so far:
     
   * *mapping-qc-exploration*: looks into latitude longitude and identifies issues. 
     
-  * *clean_locations*: fixed latitude/longitude provided by Chris Cook, these changes address the issues found on mapping_qc. 
-    * Data file input: "data/archive/all_redd_data.csv". 
-    * Data file output(s): "data-raw/redd_observations_clean_locations.csv" and "data/redd_observations.csv" (`location`, `survey_wk` and `file_number` removed)
+  * *clean_locations_and_data*: fixed latitude/longitude provided by Chris Cook, these changes address the issues found on mapping_qc. 
 
 ```{r, include=FALSE}
 # redd survey points
@@ -149,8 +147,6 @@ leaflet(redd_locations_fixed) |>
   )
 ```
 
-
-new code
 ### Looking into unique location names
 
   * There are 81 unique names
@@ -433,7 +429,6 @@ redd_observations <- redd_observations_wnames |>
   select(-c(survey_wk)) # confirm that we are keeping location
 ```
 
-Save clean data
 
 ```{r, include=FALSE}
 # save clean data
@@ -441,7 +436,7 @@ write.csv(redd_observations, "data/redd_observations.csv", row.names = FALSE)
 ```
 
 
-```{r}
+```{r, include=FALSE}
 read.csv("data/redd_observations.csv") |> glimpse()
 ```
 

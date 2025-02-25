@@ -18,10 +18,16 @@ library(tidyr)
 library(janitor)
 ```
 
-The purpose of this markdown is to analyze redd data and understand when redds were not observed. A new reference table will be created
+
+This markdown is only exploratory and no changes are made to the data here (since survey week information won't be added to the published data). The purpose is to explore survey_week and help understand where no redds were observed. A new reference table will be created on a separate markdown. 
+
+Goals:
+
+  - looking into survey week 
+  - grouping sites into gsa, lfc, hfc and spawning areas (to help understand documentation)
 
 ```{r}
-redd_observations <- read_csv("data/redd_observations_wnames.csv")
+redd_observations <- read_csv("data/redd_observations.csv")
 ```
 
 
