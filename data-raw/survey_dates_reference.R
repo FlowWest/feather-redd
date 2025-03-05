@@ -17,7 +17,7 @@ survey_dates <- survey_dates_raw |>
     survey_wk == "HF2" & year == "2014" ~ "11",
     survey_wk == "HFWk1" & year == "2015" ~ "14",
     survey_wk == "High Flow 1-1" & year == "2017" ~ "12", 
-    # survey_wk == "Low Flow 1-1" & year == "2017" ~ "13", # keeping code but date already coresponds to another sv_wk
+    # survey_wk == "Low Flow 1-1" & year == "2017" ~ "13", # keeping code but date already corresponds to another sv_wk
     TRUE ~ survey_wk  
   )) |> 
   mutate(survey_week = as.numeric(survey_wk),
@@ -59,3 +59,26 @@ surveyed_sites <- survey_combined |>  # 2023 tailerpark pending
   
 # Save the cleaned dataset
 write_csv(surveyed_sites, "data/surveyed_sites_table.csv")  
+
+
+# The goal below is to add redd data entries with a redd count of 0 for when surveys were preformed but no redds were observed
+# reading feather redd data (with survey week)
+
+redd_data <- read.csv("data-raw/qc-processing-files/survey_wk/redd_observations_survey_wk_clean.csv")
+
+glimpse(survey_sites_clean)
+
+
+# todo identify those locations/dates when survey_sites_clean surveyed == TRUE, but redd_data has no records
+surveyed_sites_summary <- survey_combined |> 
+  filter(surveyed == "TRUE") |> 
+  glimpse()
+
+yes_redd_data <- redd_data |> 
+  mutate(survey_week = as.numeric(survey_wk)) |> 
+  select(date, survey_week, location, latitude, longitude) |> 
+  glimpse()
+
+no_redd_data <- surveyed_sites_summary |> 
+  left_join(yes_redd_data, by = c("survey_week", "location")) |> 
+  filter(is.na(date)) |> View()
