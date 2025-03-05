@@ -27,7 +27,7 @@ Goals:
   - grouping sites into gsa, lfc, hfc and spawning areas (to help understand documentation)
 
 ```{r}
-redd_observations <- read_csv("data/redd_observations.csv")
+redd_observations <- read_csv("data-raw/qc-processing-files/redd_observations_survey_wk.csv")
 ```
 
 
@@ -217,7 +217,24 @@ sum(is.na(redd_2023$survey_wk)) #1420 NA values
 redd_2023_clean <- redd_2023 |> 
   mutate(survey_wk = as.character(sub("-.*", "", survey_wk)))
 
-unique(redd_2023_clean$survey_wk) # week 10 is skipped, this is consistent with documentation. Maybe change week 11 to 10?
+unique(redd_2023_clean$survey_wk) # week 10 is skipped, this is consistent with documentation.
+sum(is.na(redd_2023_clean$survey_wk))
+
+redd_2023_clean |> 
+  filter(is.na(survey_wk)) |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+redd_2023_clean <- redd_2023_clean |> 
+  mutate(survey_wk = case_when(date == "2023-10-13" ~ "4",
+                               date == "2023-10-18" ~ "5",
+                               date == "2023-10-19" ~ "5",
+                               date == "2023-10-25" ~ "6",
+                               date == "2023-11-13" ~ "9",
+                               TRUE ~ survey_wk)) 
+
+unique(redd_2023_clean$survey_wk) # week 10 is skipped, this is consistent with documentation.
 sum(is.na(redd_2023_clean$survey_wk))
 ```
 
@@ -263,10 +280,15 @@ sum(is.na(redd_2021_clean$survey_wk)) # check for NA values
 unique(redd_2020$survey_wk)
 sum(is.na(redd_2020$survey_wk))
 
+redd_2020 |>
+  filter(survey_wk == "5-Mar" | survey_wk == "4-May" |
+         survey_wk == "3-Aug") |> 
+  view()
+
 redd_2020_clean <- redd_2020 |> 
     mutate(
     survey_wk = case_when(
-      survey_wk == "5-Mar" ~ "3", # this date corresponds to week 3 - 2020-10-09 - Check all these changes
+      survey_wk == "5-Mar" ~ "3", # this date corresponds to week 3 - 2020-10-09 
       survey_wk == "4-May" ~ "5", # this date corresponds to week 5 - 2020-10-22
       survey_wk == "3-Aug" ~ "8", # this date corresponds to week 8 - 2020-11-12
       TRUE ~ str_extract(survey_wk, "^[0-9]+")  
@@ -275,10 +297,6 @@ redd_2020_clean <- redd_2020 |>
 
 unique(redd_2020_clean$survey_wk)
 sum(is.na(redd_2020_clean$survey_wk))
-
-# sv_wk_2020 <- redd_2020 |> 
-#   filter(survey_wk == "5-Mar" | survey_wk == "4-May" |
-#          survey_wk == "3-Aug") 
 ```
 
 ## 2019
@@ -287,6 +305,10 @@ sum(is.na(redd_2020_clean$survey_wk))
 # note that the range of these survey weeks is 3 - 12. We should ask what happened to week 1 and 2
 unique(redd_2019$survey_wk)
 sum(is.na(redd_2019$survey_wk))
+redd_2019 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
 
 redd_2019_clean <- redd_2019 |> 
     mutate(
@@ -313,18 +335,23 @@ sum(is.na(redd_2019_clean$survey_wk))
 ```{r}
 unique(redd_2018$survey_wk)
 sum(is.na(redd_2018$survey_wk))
+redd_2018 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
 
 redd_2018_clean <- redd_2018 |> 
     mutate(
     survey_wk = case_when(
       survey_wk == "2-Mar" ~ "3", # this date corresponds to week 3 - 2018-10-02
-      survey_wk == "1-May" ~ NA, # 1-May weeks have 2018-10-02 date. No data entries have survey_wk recorded. Setting these to NA for now
+      survey_wk == "1-May" ~ "4", # 1-May weeks have 2018-10-02 date. No data entries have survey_wk recorded. 
       TRUE ~ str_extract(survey_wk, "^[0-9]+")  
     )
   )
 
 unique(redd_2018_clean$survey_wk)
-sum(is.na(redd_2018_clean$survey_wk)) # 5 NA values from 1-May
+sum(is.na(redd_2018_clean$survey_wk)) 
 
 # For survey_wk fix table
 # sv_wk_2018 <- redd_2018 |> 
@@ -336,6 +363,10 @@ sum(is.na(redd_2018_clean$survey_wk)) # 5 NA values from 1-May
 ```{r}
 unique(redd_2017$survey_wk)
 sum(is.na(redd_2017$survey_wk))
+redd_2017 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
 
 redd_2017_clean <- redd_2017 |> 
     mutate(survey_wk = str_extract(survey_wk, "[0-9]+"))
@@ -349,6 +380,10 @@ sum(is.na(redd_2017_clean$survey_wk))
 ```{r}
 unique(redd_2016$survey_wk)
 sum(is.na(redd_2016$survey_wk))
+redd_2016 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
 
 redd_2016_clean <- redd_2016 |> 
     mutate(survey_wk = str_extract(survey_wk, "[0-9]+"))
@@ -362,6 +397,10 @@ sum(is.na(redd_2016_clean$survey_wk))
 ```{r}
 unique(redd_2015$survey_wk)
 sum(is.na(redd_2015$survey_wk))
+redd_2015 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
 
 redd_2015_clean <- redd_2015 |> 
     mutate(
@@ -372,7 +411,7 @@ redd_2015_clean <- redd_2015 |>
       survey_wk == "1-Mar" ~ "3", # 2015-09-28
       survey_wk == "2-May" ~ "5", #	2015-10-15
       survey_wk == "3-May" ~ "5", # date: 2015-10-16
-      survey_wk == "HFWK1" ~ "5", # date: 2015-10-16 #uncomment this because HFWK1 is not a typo
+      survey_wk == "HFWK1" ~ "14", # date: 2015-10-16, however on survey_dates_reference we assigned HFWK1 to week 14
       survey_wk == "2-Jun" ~ "6", # 2015-10-20
       survey_wk == "2-Sep" ~ "9", # 2015-11-11
       survey_wk == "2-Oct" ~ "10", # 2015-11-19
@@ -396,6 +435,10 @@ sum(is.na(redd_2015_clean$survey_wk))
 ```{r}
 unique(redd_2014$survey_wk)
 sum(is.na(redd_2014$survey_wk))
+redd_2014 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
 
 redd_2014_clean <- redd_2014 |> 
     mutate(
@@ -406,13 +449,13 @@ redd_2014_clean <- redd_2014 |>
       survey_wk == "1-May" ~ "5", # 2014-10-06
       survey_wk == "1-Jun" ~ "6", # 2014-10-14	
       survey_wk == "2-Jun" ~ "6", # 2014-10-17
-      survey_wk == "1-Aug" ~ "8", #2 014-11-12
-      survey_wk == "HF2" ~ NA, # date of 2014-11-07 all survey_wk of HF2. No data entries have actual survey_wk recorded. Setting these to NA for now
-      survey_wk == "HF" ~ NA, # date of 2014-10-09 all survey_wk of HF. No data entries have actual survey_wk recorded. Setting these to NA for now
-      TRUE ~ str_extract(survey_wk, "[0-9]+"))) #TODO HF and HF2 will stay as survey_week
+      survey_wk == "1-Aug" ~ "8", # 2014-11-12
+      survey_wk == "HF2" ~ "11", # date of 2014-11-07, however on survey_dates_reference we set this to sv_wk 11 of HF2. No data entries have actual survey_wk recorded.
+      survey_wk == "HF" ~ "10", # date of 2014-10-09, survey_dates_reference we set this to sv_wk 10 
+      TRUE ~ str_extract(survey_wk, "[0-9]+"))) 
 
 unique(redd_2014_clean$survey_wk)
-sum(is.na(redd_2014_clean$survey_wk)) # the 46 values that are HF2 and HF
+sum(is.na(redd_2014_clean$survey_wk)) 
 
 # For survey_wk fix table
 # sv_wk_2014 <- redd_2014 |> 
@@ -435,8 +478,15 @@ Combine all years
 clean_redd <- bind_rows(redd_2014_clean, redd_2015_clean, redd_2016_clean, redd_2017_clean, redd_2018_clean, redd_2019_clean, redd_2020_clean, redd_2021_clean, redd_2022_clean, redd_2023_clean)
 
 
-sum(is.na(clean_redd$survey_wk)) # most NA values are from 2023 when no survey_wk data was added 
+sum(is.na(clean_redd$survey_wk))
 
+clean_redd |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+
+write.csv(clean_redd, "data-raw/qc-processing-files/survey_wk/redd_observations_survey_wk_clean.csv", row.names = FALSE)
 ```
 
 
@@ -657,6 +707,6 @@ table_for_crosscheck <- expanded_data |>
 
 print(table_for_crosscheck)
 
-write.csv(table_for_crosscheck, "data-raw/table_for_crosscheck.csv")
+# write.csv(table_for_crosscheck, "data-raw/table_for_crosscheck.csv")
 ```
 
