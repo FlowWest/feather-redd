@@ -431,6 +431,9 @@ redd_observations <- redd_observations_wnames |>
 
 
 ```{r, include=FALSE}
+# save clean data - keeping survey week to use as reference (identify when 0 redds were observed)
+write.csv(redd_observations_wnames, "data/redd_observations_survey_wk.csv", row.names = FALSE)
+
 # save clean data
 write.csv(redd_observations, "data/redd_observations.csv", row.names = FALSE)
 ```
