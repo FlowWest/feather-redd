@@ -1,0 +1,712 @@
+---
+title: "location table - feather river redd data"
+date: "2024-12-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(leaflet)
+library(purrr)
+library(stringr)
+library(tidyr)
+library(janitor)
+```
+
+
+This markdown is only exploratory and no changes are made to the data here (since survey week information won't be added to the published data). The purpose is to explore survey_week and help understand where no redds were observed. A new reference table will be created on a separate markdown. 
+
+Goals:
+
+  - looking into survey week 
+  - grouping sites into gsa, lfc, hfc and spawning areas (to help understand documentation)
+
+```{r}
+redd_observations <- read_csv("data-raw/qc-processing-files/redd_observations_survey_wk.csv")
+```
+
+
+```{r}
+redd_observations |> 
+  mutate(week = week(date),
+         year = year(date)) |> 
+  ggplot(aes(x = week, y = number_redds)) +
+  geom_point() +
+  facet_wrap(~year)
+```
+
+
+### Data exploration by year - the goal is to compare to Chris documntation
+
+Summarizing by date and survey location 
+
+```{r}
+# summary <- redd_observations |> 
+#   group_by(location, date) |> 
+#   summarize(number_redds) |> 
+#   glimpse()
+# 
+# redd_summary_by_date <- redd_observations |> 
+#   group_by(location, date) |> 
+#   summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
+#   complete(location, date, fill = list(total_redds = 0)) # adding 0 to those days/locations that dont have redds 
+# 
+# redd_observations <- redd_observations |> 
+#   mutate(year = year(date), week = week(date))
+# 
+# redd_summary_by_year_week <- redd_observations |> 
+#   group_by(location, year, week) |> 
+#   summarize(total_redds = sum(number_redds, na.rm = TRUE), .groups = "drop") |> 
+#   complete(location, year, week, fill = list(total_redds = 0)) 
+# 
+# list(by_date = redd_summary_by_date,
+#      by_year_week = redd_summary_by_year_week)
+```
+
+
+
+```{r, include=FALSE}
+survey_data_week <- redd_observations  |>
+  mutate(year = year(date),
+         week = week(date)) |>
+  distinct(location, year, week)
+
+survey_data_week |>
+ggplot(aes(x = year, y = as.factor(week))) +
+  geom_tile(aes(fill = location), color = "white") +
+  labs(
+    title = "Surveyed Sites per Year and Week Number",
+    x = "Year",
+    y = "Week Number",
+    fill = "Location"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 8))
+```
+
+A new table will be created with: date, survey_group, survey_location, is_redd_observed. Survey_group will be created categorizing locations by: Hwy 162-outlet, HFC, upstream of Hwy 70 (GSA adjacent areas)
+
+```{r, include=FALSE}
+# defining categories - would need to complete this if we want to add survey_group
+# upstream_hwy_70 <- c("TableMountain", "LowerTableMountain", "HatcheryPipe", "UpperCottonwood", "UpperHatchery", "Hatchery", "Cottonwood", "TopofAuditorium", "MoesSideChannel", "UpperAuditorium", "HatcherySideChannel", "LowerAuditorium", "BelowLowerAuditorium", "Bedrock",  "MiddleAuditorium") |> tolower()
+# 
+# hwy_162_outlet <- c("TrailerPark", "UpperMathews", "Mathews", "Aleck", "UpperRobinson", "LowerRobinson", "SteepSideChannel", "Steep", "Weir", "EyeSideChannel", "Eye", "Gateway") |> tolower()
+# 
+# hfc <- redd_observations |>
+#   mutate(location = tolower(location)) |>
+#   filter(!(location %in% upstream_hwy_70) & !(location %in% hwy_162_outlet)) |>
+#   distinct(location) |>
+#   # filter(!location %in% c("g95main", "lowervanceeast", "greatwestern", "topofhatchery", "palm")) |>
+#   pull(location)
+```
+
+```{r}
+# adding a new column with survey group
+# redd_observations_groups <- redd_observations |>
+#   mutate(location = tolower(location),
+#          survey_group = case_when(
+#            location %in% upstream_hwy_70 ~ "upstream_hwy_70",
+#            location %in% hwy_162_outlet ~ "hwy_162_outlet",
+#            # location %in% c("g95main", "lowervanceeast", "greatwestern", "topofhatchery", "palm") ~ "excluded_sites",
+#            TRUE ~ "other" )) |>
+#   glimpse()
+```
+
+
+## Exploring data by year to compare to documentation
+
+### 2014
+
+```{r, echo=FALSE}
+# week_start_2014 <- ymd("2014-09-09") # survey started Sept 9
+# 
+# survey_data_2014 <- redd_observations |>
+#   filter(year(date) == 2014) |>
+#   # mutate(custom_week = as.integer(difftime(date, week_start_2014, units = "weeks")) + 1) |>
+#   # distinct(location, custom_week) |>
+#   glimpse()
+# 
+# ggplot(survey_data_2014, aes(x = location, y = as.factor(custom_week))) +
+#   geom_tile(color = "white") +
+#   labs(title = "Surveyed Sites in 2014 by Week Number",
+#        x = "Survey Location",
+#        y = "Week Number") +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+#         axis.text.y = element_text(size = 8))
+```
+
+TODO and note, some years have different number of weeks than what is mentioned on documentation (2023-10 weeks, 2019-12 weeks, 2018-9 weeks, 2015-13 weeks, 2014-9 weeks)
+
+```{r}
+#TODO note that it seems like some weeks were not surveyed at all. This means that even though we number the weeks starting with the first survey event, the survey week count is different. We might need to do the numbering manually?
+# since every survey started at a different date, it will we defined here
+# week_start_dates <- tibble(year = 2014:2023,
+#                            week_start = c("2014-09-09", "2015-09-16", "2016-09-20", "2017-10-03", "2018-09-28", "2019-09-16",
+#                                           "2020-09-22", "2021-09-16", "2022-09-14", "2023-09-18") |> 
+#                              ymd())
+# # function to plot each year like above
+# plot_year_data <- function(year, week_start) {
+#   survey_data <- redd_observations |> 
+#     filter(year(date) == year) |> 
+#     mutate(custom_week = as.integer(difftime(date, week_start, units = "weeks")) + 1) |> 
+#     distinct(location, custom_week)
+#   
+# ggplot(survey_data, aes(x = location, y = as.factor(custom_week))) +
+#   geom_tile(fill = "steelblue", color = "white") +
+#   labs(title = paste("Surveyed Sites in", year, "by Week Number"),
+#        x = "Survey Location",
+#        y = "Week Number") +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+#         axis.text.y = element_text(size = 8))
+# }
+# 
+# walk2(week_start_dates$year, week_start_dates$week_start, ~ print(plot_year_data(.x, .y)))
+
+```
+```{r, include=FALSE}
+# filtering by year to clean weeks
+redd_2023 <- redd_observations |> 
+  filter(year(date) == 2023) 
+
+redd_2022 <- redd_observations |> 
+  filter(year(date) == 2022) 
+
+redd_2021 <- redd_observations |> 
+  filter(year(date) == 2021) 
+
+redd_2020 <- redd_observations |> 
+  filter(year(date) == 2020)
+
+redd_2019 <- redd_observations |> 
+  filter(year(date) == 2019) 
+
+redd_2018 <- redd_observations |> 
+  filter(year(date) == 2018) 
+
+redd_2017 <- redd_observations |> 
+  filter(year(date) == 2017) 
+
+redd_2016 <- redd_observations |> 
+  filter(year(date) == 2016) 
+
+redd_2015 <- redd_observations |> 
+  filter(year(date) == 2015) 
+
+redd_2014 <- redd_observations |> 
+  filter(year(date) == 2014) 
+```
+
+
+Transform survey week
+
+## 2023
+
+```{r}
+unique(redd_2023$survey_wk)
+sum(is.na(redd_2023$survey_wk)) #1420 NA values
+
+redd_2023_clean <- redd_2023 |> 
+  mutate(survey_wk = as.character(sub("-.*", "", survey_wk)))
+
+unique(redd_2023_clean$survey_wk) # week 10 is skipped, this is consistent with documentation.
+sum(is.na(redd_2023_clean$survey_wk))
+
+redd_2023_clean |> 
+  filter(is.na(survey_wk)) |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+redd_2023_clean <- redd_2023_clean |> 
+  mutate(survey_wk = case_when(date == "2023-10-13" ~ "4",
+                               date == "2023-10-18" ~ "5",
+                               date == "2023-10-19" ~ "5",
+                               date == "2023-10-25" ~ "6",
+                               date == "2023-11-13" ~ "9",
+                               TRUE ~ survey_wk)) 
+
+unique(redd_2023_clean$survey_wk) # week 10 is skipped, this is consistent with documentation.
+sum(is.na(redd_2023_clean$survey_wk))
+```
+
+
+## 2022 
+
+```{r}
+unique(redd_2022$survey_wk)
+
+sum(is.na(redd_2022$survey_wk))
+
+redd_2022 |> filter(survey_wk == "1-Apr") |> view()
+
+redd_2022_clean <- redd_2022 |> 
+   mutate(
+    survey_wk = case_when(
+      survey_wk == "1-Apr" ~ "4",  # These date corresponds to records that have week == 4
+      TRUE ~ str_extract(survey_wk, "^[0-9]+")))
+
+unique(redd_2022_clean$survey_wk)
+
+sum(is.na(redd_2022_clean$survey_wk)) # check for NA values
+
+# sv_wk_2022 <- redd_2022 |> filter(survey_wk == "1-Apr")
+```
+
+## 2021
+
+```{r}
+unique(redd_2021$survey_wk)
+sum(is.na(redd_2021$survey_wk))
+
+redd_2021_clean <- redd_2021 |> 
+   mutate(survey_wk = as.character(sub("-.*", "", survey_wk)))
+
+unique(redd_2021_clean$survey_wk)
+sum(is.na(redd_2021_clean$survey_wk)) # check for NA values
+```
+
+## 2020
+
+```{r}
+unique(redd_2020$survey_wk)
+sum(is.na(redd_2020$survey_wk))
+
+redd_2020 |>
+  filter(survey_wk == "5-Mar" | survey_wk == "4-May" |
+         survey_wk == "3-Aug") |> 
+  view()
+
+redd_2020_clean <- redd_2020 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "5-Mar" ~ "3", # this date corresponds to week 3 - 2020-10-09 
+      survey_wk == "4-May" ~ "5", # this date corresponds to week 5 - 2020-10-22
+      survey_wk == "3-Aug" ~ "8", # this date corresponds to week 8 - 2020-11-12
+      TRUE ~ str_extract(survey_wk, "^[0-9]+")  
+    )
+  )
+
+unique(redd_2020_clean$survey_wk)
+sum(is.na(redd_2020_clean$survey_wk))
+```
+
+## 2019
+
+```{r}
+# note that the range of these survey weeks is 3 - 12. We should ask what happened to week 1 and 2
+unique(redd_2019$survey_wk)
+sum(is.na(redd_2019$survey_wk))
+redd_2019 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+redd_2019_clean <- redd_2019 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "2-Jun" ~ "6", # this date corresponds to week 6	- 2019-10-08
+      survey_wk == "5-Jun" ~ "6", # this date corresponds to week 6 - 2019-10-11
+      survey_wk == "3-Jul" ~ "7", # this date corresponds to week 7 - 2019-10-16
+      survey_wk == "1-Nov" ~ "11", # this date corresponds to week 11 - 2019-11-12
+      TRUE ~ str_extract(survey_wk, "^[0-9]+")  
+    )
+  )
+
+unique(redd_2019_clean$survey_wk)
+sum(is.na(redd_2019_clean$survey_wk))
+
+# sv_wk_2019 <- redd_2019 |> 
+#   filter(survey_wk == "2-Jun" | survey_wk == "5-Jun" |
+#          survey_wk == "3-Jul"|
+#          survey_wk == "1-Nov") 
+```
+
+## 2018
+
+```{r}
+unique(redd_2018$survey_wk)
+sum(is.na(redd_2018$survey_wk))
+redd_2018 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+
+redd_2018_clean <- redd_2018 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "2-Mar" ~ "3", # this date corresponds to week 3 - 2018-10-02
+      survey_wk == "1-May" ~ "4", # 1-May weeks have 2018-10-02 date. No data entries have survey_wk recorded. 
+      TRUE ~ str_extract(survey_wk, "^[0-9]+")  
+    )
+  )
+
+unique(redd_2018_clean$survey_wk)
+sum(is.na(redd_2018_clean$survey_wk)) 
+
+# For survey_wk fix table
+# sv_wk_2018 <- redd_2018 |> 
+#   filter(survey_wk == "2-Mar" | survey_wk == "1-May") 
+```
+
+## 2017
+
+```{r}
+unique(redd_2017$survey_wk)
+sum(is.na(redd_2017$survey_wk))
+redd_2017 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+redd_2017_clean <- redd_2017 |> 
+    mutate(survey_wk = str_extract(survey_wk, "[0-9]+"))
+
+unique(redd_2017_clean$survey_wk)
+sum(is.na(redd_2017_clean$survey_wk))
+```
+
+## 2016
+
+```{r}
+unique(redd_2016$survey_wk)
+sum(is.na(redd_2016$survey_wk))
+redd_2016 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+redd_2016_clean <- redd_2016 |> 
+    mutate(survey_wk = str_extract(survey_wk, "[0-9]+"))
+
+unique(redd_2016_clean$survey_wk)
+sum(is.na(redd_2016_clean$survey_wk))
+```
+
+## 2015
+
+```{r}
+unique(redd_2015$survey_wk)
+sum(is.na(redd_2015$survey_wk))
+redd_2015 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+redd_2015_clean <- redd_2015 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "2-Jan" ~ "1", # 2015-09-17
+      survey_wk == "1-Feb" ~ "2", # 2015-09-21
+      survey_wk == "3-Feb" ~ "2", # 2015-09-24 
+      survey_wk == "1-Mar" ~ "3", # 2015-09-28
+      survey_wk == "2-May" ~ "5", #	2015-10-15
+      survey_wk == "3-May" ~ "5", # date: 2015-10-16
+      survey_wk == "HFWK1" ~ "14", # date: 2015-10-16, however on survey_dates_reference we assigned HFWK1 to week 14
+      survey_wk == "2-Jun" ~ "6", # 2015-10-20
+      survey_wk == "2-Sep" ~ "9", # 2015-11-11
+      survey_wk == "2-Oct" ~ "10", # 2015-11-19
+      TRUE ~ str_extract(survey_wk, "[0-9]+")))
+
+unique(redd_2015_clean$survey_wk)
+sum(is.na(redd_2015_clean$survey_wk))
+
+# For survey_wk fix table
+# sv_wk_2015 <- redd_2015 |> 
+  # filter(survey_wk == "2-Jan" | survey_wk == "1-Feb" |
+  #          survey_wk == "3-Feb" | survey_wk == "1-Mar" |
+  #          survey_wk == "2-Mar" | survey_wk == "1-May" |
+  #          survey_wk == "2-May" | survey_wk == "3-May" |
+  #          survey_wk == "HFWK1" | survey_wk == "2-Jun" |
+  #          survey_wk == "2-Sep" | survey_wk == "2-Oct" ) 
+```
+
+## 2014
+
+```{r}
+unique(redd_2014$survey_wk)
+sum(is.na(redd_2014$survey_wk))
+redd_2014 |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+redd_2014_clean <- redd_2014 |> 
+    mutate(
+    survey_wk = case_when(
+      survey_wk == "1-Jan" ~ "1", # 2014-09-09
+      survey_wk == "2-Mar" ~ "3", # 2014-09-25
+      survey_wk == "2-Apr" ~ "4", # 2014-10-01  
+      survey_wk == "1-May" ~ "5", # 2014-10-06
+      survey_wk == "1-Jun" ~ "6", # 2014-10-14	
+      survey_wk == "2-Jun" ~ "6", # 2014-10-17
+      survey_wk == "1-Aug" ~ "8", # 2014-11-12
+      survey_wk == "HF2" ~ "11", # date of 2014-11-07, however on survey_dates_reference we set this to sv_wk 11 of HF2. No data entries have actual survey_wk recorded.
+      survey_wk == "HF" ~ "10", # date of 2014-10-09, survey_dates_reference we set this to sv_wk 10 
+      TRUE ~ str_extract(survey_wk, "[0-9]+"))) 
+
+unique(redd_2014_clean$survey_wk)
+sum(is.na(redd_2014_clean$survey_wk)) 
+
+# For survey_wk fix table
+# sv_wk_2014 <- redd_2014 |> 
+#   filter(survey_wk == "1-Jan" | survey_wk == "2-Mar" |
+#            survey_wk == "2-Apr" | survey_wk == "1-May" |
+#            survey_wk == "1-Jun" | survey_wk == "2-Jun" |
+#            survey_wk == "1-Aug" | survey_wk == "HF2") 
+```
+
+```{r}
+# combine all survey weeks that need fix
+# pending_fix_sw <- bind_rows(sv_wk_2014, sv_wk_2015, sv_wk_2018, sv_wk_2019, sv_wk_2020, sv_wk_2022)
+# 
+# write.csv(pending_fix_sw, "data-raw/pending_sv_wk.csv")
+```
+
+Combine all years
+
+```{r}
+clean_redd <- bind_rows(redd_2014_clean, redd_2015_clean, redd_2016_clean, redd_2017_clean, redd_2018_clean, redd_2019_clean, redd_2020_clean, redd_2021_clean, redd_2022_clean, redd_2023_clean)
+
+
+sum(is.na(clean_redd$survey_wk))
+
+clean_redd |> 
+  select(date, survey_wk, location) |> 
+  distinct() |> 
+  view()
+
+
+write.csv(clean_redd, "data-raw/qc-processing-files/survey_wk/redd_observations_survey_wk_clean.csv", row.names = FALSE)
+```
+
+
+```{r}
+plot_data <- clean_redd |> 
+  mutate(year = year(date),  
+         survey_wk = as.numeric(survey_wk)) |> 
+  filter(!is.na(survey_wk)) |> 
+  distinct(year, location, survey_wk) 
+
+data_by_year <- split(plot_data, plot_data$year)
+
+plots <- lapply(names(data_by_year), function(year) {
+  ggplot(data_by_year[[year]], aes(x = survey_wk, y = location)) +
+    geom_tile(fill = "steelblue", color = "white") +
+    scale_x_continuous(
+      breaks = seq(min(data_by_year[[year]]$survey_wk, na.rm = TRUE), 
+                   max(data_by_year[[year]]$survey_wk, na.rm = TRUE), 
+                   by = 1)) +
+    labs(title = paste("Survey Locations and Weeks in", year),
+         x = "Survey Week",
+         y = "Location") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          axis.text.y = element_text(size = 8))})
+
+plots
+```
+
+```{r}
+# create tables with same info than above
+survey_table <- clean_redd |> 
+  mutate(year = year(date)) |> 
+  count(year, survey_wk, location) |> 
+  pivot_wider(names_from = location,
+              values_from = n,
+              values_fill = 0)
+
+print(survey_table)
+
+#save table
+# write.csv(survey_table, "data-raw/redd_survey_locations_check.csv")
+```
+
+```{r}
+table_test <- clean_redd |> 
+  mutate(year = lubridate::year(date)) |> 
+  distinct(year, location) |>              
+  mutate(surveyed = "Yes")                  
+
+# View the table
+print(table_test)
+
+gsa_sites <- c("TableMountain", "LowerTableMountain", "HatcheryPipe", "UpperCottonwood", "UpperHatchery", "Hatchery", "topofhatchery", "Cottonwood", "TopofAuditorium", "MoesSideChannel", "UpperAuditorium", "HatcherySideChannel", "LowerAuditorium", "BelowLowerAuditorium", "Bedrock",  "MiddleAuditorium") |> tolower()
+
+lfc <- c("TrailerPark", "UpperMathews", "Mathews", "Aleck", "UpperRobinson", "LowerRobinson", "SteepSideChannel", "Steep", "Weir", "EyeSideChannel", "Eye", "Gateway", "greatwestern") |> tolower()
+
+hfc <- clean_redd |>
+  mutate(location = tolower(location)) |>
+  filter(!(location %in% gsa_sites) & !(location %in% lfc)) |>
+  distinct(location) |>
+  # filter(!location %in% c("g95main", "lowervanceeast", "greatwestern", "palm")) |>
+  pull(location)
+
+# Chris shared a list of spawning areas on 01/16/25
+spawning_sites <- c("Gateway", "EyeRiffle", "Steep", "Weir", "LowerRobinson", "UpperRobinson", "Aleck", "TrailerPark", "Mathews", "Steep", "SideChannel", "EyeSideChannel",
+                    "VanceEast", "BigHoleEast", "G95EastSideChannelTop", "LowerHour", "Keister", "BigBar", "LowerMcFarland", "Developing", "VanceWest", "LowerVanceEast", "BigHoleWest", "G95Main", "G95EastSideChannelBottom", "UpperHour", "Goose", "UpperMcFarland",
+                    "TableMountain", "LowerTableMountain", "HatcheryPipe", "Hatchery Side Channel", "Below Auditorium") |>  
+  tolower() |>
+  glimpse()
+```
+
+
+```{r}
+#location check
+
+# HFC
+leaflet(clean_redd |> filter(location %in% hfc)) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    lng = ~longitude,  # Longitude for x-axis
+    lat = ~latitude,   # Latitude for y-axis
+    popup = ~paste("Location:", location, "<br>Year:", lubridate::year(date)), 
+    color = "blue",    
+    radius = 5) |> 
+  addLegend(
+    position = "bottomright",
+    colors = "blue",
+    labels = "Survey Locations",
+    title = "Legend"
+  )
+
+#LFC
+leaflet(clean_redd |> filter(location %in% lfc)) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    lng = ~longitude,  
+    lat = ~latitude,   
+    popup = ~paste("Location:", location, "<br>Year:", lubridate::year(date)), 
+    color = "blue",   
+    radius = 5) |> 
+  addLegend(
+    position = "bottomright",
+    colors = "blue",
+    labels = "Survey Locations",
+    title = "Legend"
+  )
+
+#GSA
+leaflet(clean_redd |> filter(location %in% gsa_sites)) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    lng = ~longitude,  
+    lat = ~latitude,   
+    popup = ~paste("Location:", location, "<br>Date:", date, "<br>Latitude:", latitude, "<br>Longitude:", longitude), 
+    color = "blue",    
+    radius = 5) |> 
+  addLegend(
+    position = "bottomright",
+    colors = "blue",
+    labels = "Survey Locations",
+    title = "Legend"
+  )
+```
+
+
+```{r}
+# this table has survey_wk
+table_test_2 <- clean_redd |> 
+  mutate(year = lubridate::year(date),
+         location = tolower(location),
+         gsa_sites = location %in% gsa_sites,
+         redds_observed = "Yes") |> 
+    distinct(year, location, survey_wk, gsa_sites, redds_observed) |> 
+  arrange(year, location, survey_wk) 
+# View the table
+print(table_test_2)
+
+# this table does not have survey_wk - has survey group
+# used this code filtering to each of the years and generate a table. Then compared data of each year with documentation
+# that excel was processed off R, but added to repo (data-raw/yearly_check.xlsx)
+table_test_3 <- clean_redd |>
+  mutate(year = lubridate::year(date),
+         location = tolower(location),
+         # gsa_sites = location %in% gsa_sites,
+         survey_group = case_when(
+           location %in% gsa_sites ~ "gsa",
+           location %in% lfc ~ "lfc",
+           location %in% hfc ~ "hfc",
+           TRUE ~ "unknown")) |>
+  distinct(year, location, survey_group) |>
+  mutate(redd_observed = "Yes",
+         spawning_area = location %in% spawning_sites) |> 
+  glimpse()
+ 
+# # View the table
+print(table_test_3)
+
+#save table
+# write.csv(table_test_3, "data-raw/redd_survey_locations_check_2.csv")
+```
+
+```{r}
+# cross check
+gsa <- table_test_3 |> 
+  filter(survey_group == "gsa") 
+
+unique(gsa$location)
+
+lfc <- table_test_3 |> 
+  filter(survey_group == "lfc") 
+
+unique(lfc$location)
+
+hfc <- table_test_3 |> 
+  filter(survey_group == "hfc") 
+
+unique(hfc$location)
+```
+
+
+```{r}
+# creating a table to crosscheck mannually with documentation
+years <- 2014:2023
+
+all_locations <- tibble(
+  location = c(gsa_sites, lfc, hfc),
+  survey_group = c(
+    rep("gsa", length(gsa_sites)),
+    rep("lfc", length(lfc)),
+    rep("hfc", length(hfc))
+  )
+)
+
+expanded_data <- expand.grid(
+  year = years,
+  location = unique(all_locations$location)
+) |> 
+  as_tibble()
+
+# Add spawning area information
+spawning_areas_lfc <- c("Gateway", "EyeRiffle", "Steep", "Weir", "LowerRobinson", "UpperRobinson", "Aleck", "TrailerPark", "Mathews", "Steep", "SideChannel", "EyeSideChannel") |> tolower()
+spawning_areas_hfc <- c("VanceEast", "BigHoleEast", "G95EastSideChannelTop", "LowerHour", "Keister", "BigBar", "LowerMcFarland", "Developing", "VanceWest", "LowerVanceEast", "BigHoleWest", "G95Main", "G95EastSideChannelBottom", "UpperHour", "Goose", "UpperMcFarland") |> tolower()
+
+spawning_areas_gsa <- c("TableMountain", "LowerTableMountain", "HatcheryPipe", "HatcherySideChannel", "BelowAuditorium") |> tolower()
+
+table_for_crosscheck <- expanded_data |> 
+  left_join(all_locations, by = "location") |> 
+  mutate(
+    spawning_area = case_when(
+      survey_group == "gsa" & location %in% spawning_areas_gsa ~ TRUE,
+      survey_group == "lfc" & location %in% spawning_areas_lfc ~ TRUE,
+      survey_group == "hfc" & location %in% spawning_areas_hfc ~ TRUE,
+      TRUE ~ FALSE
+    )
+  ) |> 
+  arrange(year, location)
+
+print(table_for_crosscheck)
+
+# write.csv(table_for_crosscheck, "data-raw/table_for_crosscheck.csv")
+```
+

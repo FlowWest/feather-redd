@@ -30,7 +30,7 @@
       <electronicMailAddress>casey.campos@water.ca.gov</electronicMailAddress>
       <role>principal investigator</role>
     </associatedParty>
-    <pubDate>2024-11-21</pubDate>
+    <pubDate>2025-03-03</pubDate>
     <abstract>
       <para>
     Since 2014, the California Department of Water Resources (DWR) has
@@ -250,8 +250,8 @@
       <entityDescription>Survey metadata from Feather River redd survey data</entityDescription>
       <physical>
         <objectName>redd_observations.csv</objectName>
-        <size unit="bytes">3373162</size>
-        <authentication method="MD5">d5f5414373385cbf74bcfbdfb9624f6c</authentication>
+        <size unit="bytes">3881213</size>
+        <authentication method="MD5">179a5aff6da0747bf3c1205ba8c5c532</authentication>
         <dataFormat>
           <textFormat>
             <numHeaderLines>1</numHeaderLines>
@@ -264,7 +264,7 @@
         </dataFormat>
         <distribution>
           <online>
-            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/redd_observations.csv</url>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data/redd_observations.csv</url>
           </online>
         </distribution>
       </physical>
@@ -286,6 +286,20 @@
           </measurementScale>
         </attribute>
         <attribute>
+          <attributeName>location</attributeName>
+          <attributeLabel>redd_observations</attributeLabel>
+          <attributeDefinition>Name of survey location site</attributeDefinition>
+          <measurementScale>
+            <ordinal>
+              <nonNumericDomain>
+                <textDomain>
+                  <definition>Name of survey location site</definition>
+                </textDomain>
+              </nonNumericDomain>
+            </ordinal>
+          </measurementScale>
+        </attribute>
+        <attribute>
           <attributeName>number_redds</attributeName>
           <attributeLabel>redd_observations</attributeLabel>
           <attributeDefinition>Number of redds observed. Only includes full redds with a pot and a tail.</attributeDefinition>
@@ -297,8 +311,8 @@
               <numericDomain>
                 <numberType>integer</numberType>
                 <bounds>
-                  <minimum exclusive="false">0</minimum>
-                  <maximum exclusive="false">15</maximum>
+                  <minimum exclusive="false">1</minimum>
+                  <maximum exclusive="false">3</maximum>
                 </bounds>
               </numericDomain>
             </ratio>
@@ -317,7 +331,7 @@
                 <numberType>integer</numberType>
                 <bounds>
                   <minimum exclusive="false">0</minimum>
-                  <maximum exclusive="false">50</maximum>
+                  <maximum exclusive="false">12</maximum>
                 </bounds>
               </numericDomain>
             </ratio>
@@ -355,7 +369,7 @@
                 <numberType>integer</numberType>
                 <bounds>
                   <minimum exclusive="false">0</minimum>
-                  <maximum exclusive="false">50</maximum>
+                  <maximum exclusive="false">1.7</maximum>
                 </bounds>
               </numericDomain>
             </ratio>
@@ -525,8 +539,8 @@
               <numericDomain>
                 <numberType>real</numberType>
                 <bounds>
-                  <minimum exclusive="false">-127.4887</minimum>
-                  <maximum exclusive="false">0</maximum>
+                  <minimum exclusive="false">-127.6413</minimum>
+                  <maximum exclusive="false">-121.5505</maximum>
                 </bounds>
               </numericDomain>
             </interval>
@@ -544,8 +558,8 @@
               <numericDomain>
                 <numberType>real</numberType>
                 <bounds>
-                  <minimum exclusive="false">0</minimum>
-                  <maximum exclusive="false">39.6958</maximum>
+                  <minimum exclusive="false">39.3729</minimum>
+                  <maximum exclusive="false">39.518</maximum>
                 </bounds>
               </numericDomain>
             </interval>
@@ -607,12 +621,12 @@
       <numberOfRecords>36864</numberOfRecords>
     </dataTable>
     <otherEntity>
-      <entityName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024</entityName>
+      <entityName>General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries</entityName>
       <entityDescription>Survey Methods</entityDescription>
       <physical>
-        <objectName>General_Chinook_Salmon_Redd_Survey_Methods_July_2024.pdf</objectName>
-        <size unit="bytes">738408</size>
-        <authentication method="MD5">add05bb975b56058755b30a31cb10d8a</authentication>
+        <objectName>General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf</objectName>
+        <size unit="bytes">1969605</size>
+        <authentication method="MD5">9898fa55cd284ab5c45cfc4b3933fcfb</authentication>
         <dataFormat>
           <externallyDefinedFormat>
             <formatName>pdf</formatName>
@@ -620,7 +634,7 @@
         </dataFormat>
         <distribution>
           <online>
-            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_July_2024.pdf</url>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf</url>
           </online>
         </distribution>
       </physical>
