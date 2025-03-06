@@ -265,7 +265,7 @@
         </dataFormat>
         <distribution>
           <online>
-            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data/redd_observation_w_zeros.csv</url>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/redd_observation_w_zeros.csv</url>
           </online>
         </distribution>
       </physical>
@@ -640,7 +640,7 @@
         </dataFormat>
         <distribution>
           <online>
-            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data/surveyed_sites_table.csv</url>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/surveyed_sites_table.csv</url>
           </online>
         </distribution>
       </physical>
@@ -741,7 +741,7 @@
         </dataFormat>
         <distribution>
           <online>
-            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf</url>
+            <url function="download">https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf</url>
           </online>
         </distribution>
       </physical>

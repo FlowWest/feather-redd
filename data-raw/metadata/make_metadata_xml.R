@@ -8,14 +8,14 @@ datatable_metadata <-
   dplyr::tibble(filepath = c("data/redd_observation_w_zeros.csv", "data/surveyed_sites_table.csv" ),
                 attribute_info = c("data-raw/metadata/feather_redd_metadata.xlsx", "data-raw/metadata/feather_redd_surveyed_sites_metadata.xlsx"),
                 datatable_description = c("Redd observations from Feather River redd surveys", "Surveyed locations" ),
-                datatable_url = paste0("https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data/",
+                datatable_url = paste0("https://raw.githubusercontent.com/FlowWest/feather-redd/main/data/",
                                        c("redd_observation_w_zeros.csv", "surveyed_sites_table.csv")))
 
 other_entity_metadata_1 <- list("file_name" = "General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries",
                                 "file_description" = "Survey Methods",
                                 "file_type" = "pdf",
                                 "physical" = create_physical("data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf",
-                                                             data_url = "https://raw.githubusercontent.com/FlowWest/feather-redd/publish-edi/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf"))
+                                                             data_url = "https://raw.githubusercontent.com/FlowWest/feather-redd/main/data-raw/metadata/General_Chinook_Salmon_Redd_Survey_Methods_with_Yearly_Summaries.pdf"))
 
 other_entity_metadata_1$physical$dataFormat <- list("externallyDefinedFormat" = list("formatName" = "pdf"))
 
