@@ -16,7 +16,7 @@ Depth, velocity, and substrate data is recorded on every fifth or tenth redd bas
 
 While this data collection effort covers the majority of spawning habitat, it is not a census of all redds due to resource limitations and difficulty distinguishing redds late in the season due to superimposition.
 
-Data represent areas where redds are present. Areas without redds are not captured in the data though, for the Low Flow Channel, it can be assumed that areas without a redd measurement were surveyed and did not have any redds.
+Historically, data were collected only where redds were present. Documentation about when locations were surveyed was used to add information about observations where there were no redds. The published dataset represents redd observations and locations where there were no redds.
 
 Measurements are not available for every redd due to high numbers of redds late in the season and resource limitations.
 
