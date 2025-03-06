@@ -3,6 +3,7 @@ library(tidyr)
 library(stringr)
 library(readxl)
 library(readr)
+library(lubridate)
 
 # the goal of creating this table is to have a reference of when surveys were conducted.
 # also we are adding data entries for those dates when surveys were conducted but no data was collected due to redds not being observed
@@ -52,7 +53,7 @@ survey_sites_clean <- survey_sites |>
 survey_combined <- survey_sites_clean |> 
   left_join(survey_dates, by = c("year", "survey_week"))
 
-surveyed_sites <- survey_combined |>  # 2023 tailerpark pending
+surveyed_sites <- survey_combined |>  
   mutate(start_date  = as.Date(start_date),
          end_date = as.Date(end_date)) |> 
   select(year, location, surveyed, start_date, end_date) |> # keeping just fields of interest
@@ -105,8 +106,10 @@ zeros_added <- no_redd_data |>
   select(-c(start_date, end_date, surveyed, year)) |> 
   glimpse()
 
-redd_data_updated <- redd_data |>
-  bind_rows(zeros_added)
+redd_data_updated <- redd_data |> 
+  bind_rows(zeros_added) |> 
+  select(-survey_wk) |> # remove survey_week
+  glimpse()
 
 # save redd data with zeros added
 write.csv(redd_data_updated, "data/redd_observation_w_zeros.csv")
