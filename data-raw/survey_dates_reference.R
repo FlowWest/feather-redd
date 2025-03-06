@@ -112,4 +112,4 @@ redd_data_updated <- redd_data |>
   glimpse()
 
 # save redd data with zeros added
-write.csv(redd_data_updated, "data/redd_observation_w_zeros.csv")
+write_csv(redd_data_updated, "data/redd_observation_w_zeros.csv")
