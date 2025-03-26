@@ -90,7 +90,7 @@ glimpse(survey_sites_clean)
 
 ## CODE FOR UPDATE ----
 # Save the dataset
-# write_csv(redd_data, "data-raw/edi-update-files/redd_data_for_binding_update.cvs")
+# write.xlsx(redd_data, "data-raw/edi-update-files/redd_data_for_binding_update.xlsx")
 
 # todo identify those locations/dates when survey_sites_clean surveyed == TRUE, but redd_data has no records
 surveyed_sites_summary <- survey_combined |> 
