@@ -26,12 +26,15 @@ library(readxl)
 library(leaflet)
 ```
 
+This script reads raw data, does initial qc, and combines all redd survey data into one raw data file.
+
 Goal of this document is to review the Feather River redd data and understand the following:
 
 - what data are collected?
 - what is the quality of the data?
 - what are the data limitations?
 - how are these data useful to Science Plan hypotheses?
+
 
 ## Relevant Science Plan hypotheses
 
