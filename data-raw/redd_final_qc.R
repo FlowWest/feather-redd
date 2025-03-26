@@ -14,7 +14,7 @@ library(lubridate)
 # Feather redd team provided a table with date references for each year's survey week. We have debrief that into "survey_week_date_reference_2014_2023.csv"
 # for the survey weeks that do not correspond to a number, I am assigning a numeric value, for the sake of code simplicity
 
-survey_dates_raw <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_date_reference_2014_2023.csv")  
+survey_dates_raw <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_date_reference.csv")  
 
 # filtering out non-numeric survey weeks
 survey_dates <- survey_dates_raw |> 
@@ -33,9 +33,14 @@ survey_dates <- survey_dates_raw |>
   filter(!is.na(survey_week)) |>  # Removing Low Flow 1 -1
   glimpse()
 
+## CODE FOR UPDATE ----
+# Save the dataset
+# write_csv(survey_dates, "data-raw/edi-update-files/survey_week_date_reference.csv")
+
+
 # feather redd data team also provided documentation of a yearly description for which survey week was each site surveyed "General Chinook Salmon Redd Survey Methods with Yearly Summaries"
 # survey_week_site_reference_2014_2023.csv was manually created as a translation of that document
-survey_sites <- read.csv("data-raw/qc-processing-files/survey_wk/survey_week_site_reference_2014_2023_0220update.csv") 
+survey_sites <- read.csv("data-raw/qc-processing-files/survey_wk/surveyed_sites_per_sv_week_summary.csv") 
 survey_sites <- survey_sites |> 
   select(2, 3, 6, 8) |> 
   glimpse()
@@ -51,6 +56,11 @@ survey_sites_clean <- survey_sites |>
            case_when(
              year == "2023" & survey_week == 10 ~ 11, 
              TRUE ~ survey_week))
+
+## CODE FOR UPDATE ----
+# Save the dataset
+# write_csv(survey_sites_clean, "data-raw/edi-update-files/surveyed_sites_per_sv_week_summary.csv")
+
 
 # join with survey_dates to get start and end dates
 survey_combined <- survey_sites_clean |> 
@@ -78,6 +88,9 @@ redd_data <- read.csv("data-raw/qc-processing-files/survey_wk/redd_observations_
 
 glimpse(survey_sites_clean)
 
+## CODE FOR UPDATE ----
+# Save the dataset
+# write_csv(redd_data, "data-raw/edi-update-files/redd_data_for_binding_update.cvs")
 
 # todo identify those locations/dates when survey_sites_clean surveyed == TRUE, but redd_data has no records
 surveyed_sites_summary <- survey_combined |> 
