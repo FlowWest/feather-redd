@@ -370,45 +370,254 @@ repository</a> and clone it to your local machine.</li>
 <div id="adding-data" class="section level2">
 <h2>Adding Data</h2>
 <ol start="2" style="list-style-type: decimal">
-<li><p>Before adding the data to the repository, make sure the data
-contains the following fields:</p>
+<li>Before adding the data to the repository, make sure the data
+contains the following fields:</li>
+</ol>
+<table>
+<colgroup>
+<col width="21%" />
+<col width="13%" />
+<col width="19%" />
+<col width="45%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field Name</th>
+<th>Data Type</th>
+<th>Unit</th>
+<th>Allowed Values/Format</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>date</code></td>
+<td>Date</td>
+<td>N/A</td>
+<td><code>MM/DD/YYYY</code></td>
+</tr>
+<tr class="even">
+<td><code>survey_wk</code></td>
+<td>Integer</td>
+<td>N/A</td>
+<td>Whole numbers</td>
+</tr>
+<tr class="odd">
+<td><code>location</code></td>
+<td>String</td>
+<td>N/A</td>
+<td>Site/location name</td>
+</tr>
+<tr class="even">
+<td><code>number_redds</code></td>
+<td>Integer</td>
+<td>Fish</td>
+<td>0 or positive integers</td>
+</tr>
+<tr class="odd">
+<td><code>number_salmon</code></td>
+<td>Integer</td>
+<td>Fish</td>
+<td>0 or positive integers</td>
+</tr>
+<tr class="even">
+<td><code>depth_m</code></td>
+<td>Numeric</td>
+<td>Meters</td>
+<td>Decimal values (e.g., 0.45)</td>
+</tr>
+<tr class="odd">
+<td><code>pot_depth_m</code></td>
+<td>Numeric</td>
+<td>Meters</td>
+<td>Decimal values (e.g., 0.60)</td>
+</tr>
+<tr class="even">
+<td><code>velocity_m_s</code></td>
+<td>Numeric</td>
+<td>Meters/second</td>
+<td>Decimal values (e.g., 0.35)</td>
+</tr>
+<tr class="odd">
+<td><code>percent_fines</code></td>
+<td>Numeric</td>
+<td>Percent (%)</td>
+<td>0–100</td>
+</tr>
+<tr class="even">
+<td><code>percent_small</code></td>
+<td>Numeric</td>
+<td>Percent (%)</td>
+<td>0–100</td>
+</tr>
+<tr class="odd">
+<td><code>percent_med</code></td>
+<td>Numeric</td>
+<td>Percent (%)</td>
+<td>0–100</td>
+</tr>
+<tr class="even">
+<td><code>percent_large</code></td>
+<td>Numeric</td>
+<td>Percent (%)</td>
+<td>0–100</td>
+</tr>
+<tr class="odd">
+<td><code>percent_boulder</code></td>
+<td>Numeric</td>
+<td>Percent (%)</td>
+<td>0–100</td>
+</tr>
+<tr class="even">
+<td><code>redd_width_m</code></td>
+<td>Numeric</td>
+<td>Meters</td>
+<td>Decimal values (e.g., 1.2)</td>
+</tr>
+<tr class="odd">
+<td><code>redd_length_m</code></td>
+<td>Numeric</td>
+<td>Meters</td>
+<td>Decimal values (e.g., 2.5)</td>
+</tr>
+<tr class="even">
+<td><code>longitude</code></td>
+<td>Numeric</td>
+<td>Decimal degrees</td>
+<td>e.g., -122.345</td>
+</tr>
+<tr class="odd">
+<td><code>latitude</code></td>
+<td>Numeric</td>
+<td>Decimal degrees</td>
+<td>e.g., 45.678</td>
+</tr>
+<tr class="even">
+<td><code>elevation_ft</code></td>
+<td>Numeric</td>
+<td>Feet</td>
+<td>Positive decimal values</td>
+</tr>
+<tr class="odd">
+<td><code>accuracy_ft</code></td>
+<td>Numeric</td>
+<td>Feet</td>
+<td>Positive decimal values</td>
+</tr>
+<tr class="even">
+<td><code>boat_point</code></td>
+<td>Boolean</td>
+<td>N/A</td>
+<td><code>TRUE</code>, <code>FALSE</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Important Suggested Note</strong> for cleaner update.</p>
+<p>During the data cleaning process for previous years, some written
+documentation was broken down to identify surveys conducted where no
+redds were observed. In order to automate that, suggestion is to keep
+additional record of data entries as follows:</p>
 <ul>
-<li>date<br />
-</li>
-<li>type<br />
-</li>
-<li>number_redds<br />
-</li>
-<li>number_salmon<br />
-</li>
-<li>latitude_m_n<br />
-</li>
-<li>longitude_m_e<br />
-</li>
-<li>depth_m<br />
-</li>
-<li>pot_depth_m<br />
-</li>
-<li>velocity_m_s<br />
-</li>
-<li>percent_fines<br />
-</li>
-<li>percent_small<br />
-</li>
-<li>percent_med<br />
-</li>
-<li>percent_large<br />
-</li>
-<li>percent_boulder<br />
-</li>
-<li>redd_width_m<br />
-</li>
-<li>redd_length_m</li>
-</ul></li>
+<li><code>survey_week_date_reference</code>: table containing all site
+names, and yearly information of survey weeks when survey was conducted.
+See reference below:</li>
+</ul>
+<table>
+<colgroup>
+<col width="21%" />
+<col width="13%" />
+<col width="19%" />
+<col width="45%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field Name</th>
+<th>Data Type</th>
+<th>Unit</th>
+<th>Allowed Values/Format</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>year</code></td>
+<td>Integer</td>
+<td>N/A</td>
+<td><code>YYYY</code></td>
+</tr>
+<tr class="even">
+<td><code>location</code></td>
+<td>String</td>
+<td>N/A</td>
+<td>Site/location name</td>
+</tr>
+<tr class="odd">
+<td><code>surveyed</code></td>
+<td>Boolean</td>
+<td>N/A</td>
+<td><code>TRUE</code>, <code>FALSE</code></td>
+</tr>
+<tr class="even">
+<td><code>survey_week</code></td>
+<td>Integer</td>
+<td>N/A</td>
+<td>Whole numbers (e.g. 1 &amp; 2 &amp; 3)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>surveyed_sites_per_sv_week_summary</code> table containing
+yearly information on the date range of each of the survey weeks:</li>
+</ul>
+<table>
+<colgroup>
+<col width="21%" />
+<col width="13%" />
+<col width="19%" />
+<col width="45%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field Name</th>
+<th>Data Type</th>
+<th>Unit</th>
+<th>Allowed Values/Format</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>year</code></td>
+<td>Integer</td>
+<td>N/A</td>
+<td><code>YYYY</code></td>
+</tr>
+<tr class="even">
+<td><code>survey_week</code></td>
+<td>Integer</td>
+<td>N/A</td>
+<td>Whole numbers</td>
+</tr>
+<tr class="odd">
+<td><code>start_date</code></td>
+<td>Date</td>
+<td>N/A</td>
+<td><code>MM/DD/YYYY</code></td>
+</tr>
+<tr class="even">
+<td><code>end_date</code></td>
+<td>Date</td>
+<td>N/A</td>
+<td><code>MM/DD/YYYY</code></td>
+</tr>
+</tbody>
+</table>
+<p>Save those tables in <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/edi-update-files">data-raw/edi-update-files</a>
+folder following this naming convention:
+<code>yyyy_survey_week_date_reference.csv</code>, replacing “yyyy” with
+the actual year of the data.</p>
+<ol start="3" style="list-style-type: decimal">
 <li><p>Add the Excel file with new data into the
 <code>dwr_chinook_redd_survey_data</code> <a href="https://github.com/FlowWest/feather-redd/tree/main/data-raw/dwr_chinook_redd_survey_data">folder</a>
 of your local computer copy, following this naming convention:
-<code>yyyy_Chinook_Redd_Survey_Data.xlsx</code>, replacing “yyyy” with
+<code>yyyy_Chinook_Redd_Survey_Data.csv</code>, replacing “yyyy” with
 the actual year of the data.</p>
 <p><strong>Additional Note</strong>: Ensure that the data values are
 consistent with the expected formats and units. If unsure about the data
@@ -418,22 +627,27 @@ proceeding.</p></li>
 </div>
 <div id="processing-data" class="section level2">
 <h2>Processing Data</h2>
-<p>Data processing is handled by one script located in the <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw">data-raw</a>
-folder: <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd">redd_qc.Rmd</a></p>
+<p>Data processing will then be handled by one script located in the <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/edi-update-files">data-raw/edi-update-files</a>
+folder:</p>
+<ul>
+<li><a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/edi-update-script.R">edi-update-script.R</a></li>
+</ul>
 <ol start="4" style="list-style-type: decimal">
-<li><p>On the <code>redd_qc.Rmd</code> script, add the following code
-under line 116 to read new data:
-<code>redd_yyyy &lt;- readxl::read_xlsx(here::here(&quot;data-raw&quot;, &quot;dwr_chinook_redd_survey_data&quot;, &quot;yyyy_Chinook_Redd_Survey_Data.xlsx&quot;)) |&gt;</code>
-<code>clean_names() |&gt;</code> <code>glimpse()</code></p></li>
+<li><p>On the <code>edi-update-script.R</code> script replace the
+<code>&quot;yyyy&quot;</code> for the year of data to be added throughtout the
+script, and uncomment those lines (lines 10-12, 19-21, line 37, 44-46,
+and line 87. For example lines 10 - 12 look like this:
+<code>survey_dates_reference_updated &lt;- read_csv(&quot;data-raw/edi-update-files/yyyy_survey_week_date_reference.cvs&quot;) |&gt;</code>
+<code>bind_rows(survey_dates_reference) |&gt;</code>
+<code>glimpse()</code></p></li>
 <li><p>After confirming that the data is showing properly, run the
-<code>redd_qc.Rmd</code> script located <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd">here</a>.
-If the format is not the same as <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/2014-2023%20Chinook%20Redd%20Survey%20Data/2022_Chinook_Redd_Survey_Data.xlsx">2022
+entire <code>edi-update-script.R</code> script. If the format is not the
+same as <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/dwr_chinook_redd_survey_data/2022_Chinook_Redd_Survey_Data.xlsx">2022
 data</a> the script won’t work and data cleaning will have to be adapted
-to format. See example of <a href="https://github.com/FlowWest/feather-redd/blob/main/data-raw/2014-2023%20Chinook%20Redd%20Survey%20Data/2022_Chinook_Redd_Survey_Data.xlsx">data
-from 2023</a>. We will adapt this data cleaning process once the data
-entry protocol is unified/consistent.</p></li>
-<li><p>The script will generate a CSV called
-<code>redd_observations.csv</code> in the <a href="https://github.com/FlowWest/feather-redd/tree/main/data">data
+to format. We will adapt this data cleaning process once the data entry
+protocol is unified/consistent.</p></li>
+<li><p>The script will generate a CSV called <code>redd_data.cvs</code>
+in the <a href="https://github.com/FlowWest/feather-redd/tree/main/data">data
 folder</a>.</p></li>
 <li><p>After generating the CSV files, update the metadata (located <a href="https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata">here</a>):</p>
 <ul>
@@ -451,7 +665,7 @@ reflect the latest updates.</li>
 <div id="summary-of-csvs-generated-for-edi-upload" class="section level3">
 <h3>Summary of CSVs Generated for EDI Upload</h3>
 <ul>
-<li><code>redd_observations.csv</code></li>
+<li><code>redd_data.csv</code></li>
 </ul>
 </div>
 </div>

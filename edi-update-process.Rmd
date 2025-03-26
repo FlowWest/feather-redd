@@ -16,48 +16,78 @@ All data processing and EDI uploads are managed in the same repository.
 
 2. Before adding the data to the repository, make sure the data contains the following fields:
 
-    * date  
-    * type  
-    * number_redds  
-    * number_salmon  
-    * latitude_m_n  
-    * longitude_m_e  
-    * depth_m  
-    * pot_depth_m  
-    * velocity_m_s  
-    * percent_fines  
-    * percent_small  
-    * percent_med  
-    * percent_large  
-    * percent_boulder  
-    * redd_width_m  
-    * redd_length_m
+| Field Name         | Data Type   | Unit             | Allowed Values/Format                     |
+|--------------------|-------------|------------------|-------------------------------------------|
+| `date`             | Date        | N/A              | `MM/DD/YYYY`                              |
+| `survey_wk`        | Integer     | N/A              | Whole numbers                             |
+| `location`         | String      | N/A              | Site/location name                        |
+| `number_redds`     | Integer     | Fish             | 0 or positive integers                    |
+| `number_salmon`    | Integer     | Fish             | 0 or positive integers                    |
+| `depth_m`          | Numeric     | Meters           | Decimal values (e.g., 0.45)               |
+| `pot_depth_m`      | Numeric     | Meters           | Decimal values (e.g., 0.60)               |
+| `velocity_m_s`     | Numeric     | Meters/second    | Decimal values (e.g., 0.35)               |
+| `percent_fines`    | Numeric     | Percent (%)      | 0–100                                     |
+| `percent_small`    | Numeric     | Percent (%)      | 0–100                                     |
+| `percent_med`      | Numeric     | Percent (%)      | 0–100                                     |
+| `percent_large`    | Numeric     | Percent (%)      | 0–100                                     |
+| `percent_boulder`  | Numeric     | Percent (%)      | 0–100                                     |
+| `redd_width_m`     | Numeric     | Meters           | Decimal values (e.g., 1.2)                |
+| `redd_length_m`    | Numeric     | Meters           | Decimal values (e.g., 2.5)                |
+| `longitude`        | Numeric     | Decimal degrees  | e.g., -122.345                            |
+| `latitude`         | Numeric     | Decimal degrees  | e.g., 45.678                              |
+| `elevation_ft`     | Numeric     | Feet             | Positive decimal values                   |
+| `accuracy_ft`      | Numeric     | Feet             | Positive decimal values                   |
+| `boat_point`       | Boolean     | N/A              | `TRUE`, `FALSE`  
+    
+**Important Suggested Note** for cleaner update. 
+
+During the data cleaning process for previous years, some written documentation was broken down to identify surveys conducted where no redds were observed. In order to automate that, suggestion is to keep additional record of data entries as follows:
+
+  * `survey_week_date_reference`: table containing all site names, and yearly information of survey weeks when survey was conducted. See reference below:
+  
+| Field Name         | Data Type   | Unit             | Allowed Values/Format                     |
+|--------------------|-------------|------------------|-------------------------------------------|
+| `year`             | Integer     | N/A              | `YYYY`                                    |
+| `location`         | String      | N/A              | Site/location name                        |
+| `surveyed     `    | Boolean     | N/A              | `TRUE`, `FALSE`                           |
+| `survey_week`      | Integer     | N/A              | Whole numbers (e.g. 1 & 2 & 3)            |
+
+* `surveyed_sites_per_sv_week_summary` table containing yearly information on the date range of each of the survey weeks:
+
+| Field Name         | Data Type   | Unit             | Allowed Values/Format                     |
+|--------------------|-------------|------------------|-------------------------------------------|
+| `year`             | Integer     | N/A              | `YYYY`                                    |
+| `survey_week`      | Integer     | N/A              | Whole numbers                             |
+| `start_date`       | Date        | N/A              | `MM/DD/YYYY`                              |
+| `end_date`         | Date        | N/A              | `MM/DD/YYYY`                              |
+
+Save those tables in [data-raw/edi-update-files](https://github.com/FlowWest/feather-redd/blob/main/data-raw/edi-update-files) folder following this naming convention: `yyyy_survey_week_date_reference.csv`, replacing "yyyy" with the actual year of the data.
 
 
-3. Add the Excel file with new data into the `dwr_chinook_redd_survey_data` [folder](https://github.com/FlowWest/feather-redd/tree/main/data-raw/dwr_chinook_redd_survey_data) of your local computer copy, following this naming convention: `yyyy_Chinook_Redd_Survey_Data.xlsx`, replacing "yyyy" with the actual year of the data.
+3. Add the Excel file with new data into the `dwr_chinook_redd_survey_data` [folder](https://github.com/FlowWest/feather-redd/tree/main/data-raw/dwr_chinook_redd_survey_data) of your local computer copy, following this naming convention: `yyyy_Chinook_Redd_Survey_Data.csv`, replacing "yyyy" with the actual year of the data.
 
     **Additional Note**: Ensure that the data values are consistent with the expected formats and units. If unsure about the data source or format, consult with the data collection team before proceeding.
 
 ## Processing Data
 
-Data processing is handled by one script located in the [data-raw](https://github.com/FlowWest/feather-redd/blob/main/data-raw) folder:  [redd_qc.Rmd](https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd)
+Data processing will then be handled by one script located in the [data-raw/edi-update-files](https://github.com/FlowWest/feather-redd/blob/main/data-raw/edi-update-files) folder: 
 
+  * [edi-update-script.R](https://github.com/FlowWest/feather-redd/blob/main/data-raw/edi-update-script.R)
 
-
-4. On the `redd_qc.Rmd` script, add the following code under line 116 to read new data:
+4. On the `edi-update-script.R` script replace the `"yyyy"` for the year of data to be added throughtout the script, and uncomment those lines (lines 10-12, 19-21, line 37, 44-46, and line 87. For example lines 10 - 12 look like this:
     ```
-    redd_yyyy <- readxl::read_xlsx(here::here("data-raw", "dwr_chinook_redd_survey_data", "yyyy_Chinook_Redd_Survey_Data.xlsx")) |>
+    survey_dates_reference_updated <- read_csv("data-raw/edi-update-files/yyyy_survey_week_date_reference.cvs") |>
     ```
     ```
-    clean_names() |>
+    bind_rows(survey_dates_reference) |>
     ```
     ```
       glimpse()
     ```
 
-5. After confirming that the data is showing properly, run the `redd_qc.Rmd` script located [here](https://github.com/FlowWest/feather-redd/blob/main/data-raw/redd_qc.Rmd). If the format is not the same as [2022 data](https://github.com/FlowWest/feather-redd/blob/main/data-raw/2014-2023 Chinook Redd Survey Data/2022_Chinook_Redd_Survey_Data.xlsx) the script won't work and data cleaning will have to be adapted to format. See example of [data from 2023](https://github.com/FlowWest/feather-redd/blob/main/data-raw/2014-2023 Chinook Redd Survey Data/2022_Chinook_Redd_Survey_Data.xlsx). We will adapt this data cleaning process once the data entry protocol is unified/consistent.
+5. After confirming that the data is showing properly, run the entire `edi-update-script.R` script. If the format is not the same as [2022 data](https://github.com/FlowWest/feather-redd/blob/main/data-raw/dwr_chinook_redd_survey_data/2022_Chinook_Redd_Survey_Data.xlsx) the script won't work and data cleaning will have to be adapted to format. We will adapt this data cleaning process once the data entry protocol is unified/consistent.
 
-6. The script will generate a CSV called `redd_observations.csv` in the [data folder](https://github.com/FlowWest/feather-redd/tree/main/data).
+6. The script will generate a CSV called `redd_data.cvs` in the [data folder](https://github.com/FlowWest/feather-redd/tree/main/data).
 
 7. After generating the CSV files, update the metadata (located [here](https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata)):
 
@@ -67,7 +97,7 @@ Data processing is handled by one script located in the [data-raw](https://githu
 
 ### Summary of CSVs Generated for EDI Upload
 
-- `redd_observations.csv`
+- `redd_data.csv`
 
 ## EDI Update/Upload
 

@@ -84,5 +84,5 @@ redd_data_updated <- redd_data |>
   glimpse()
 
 # save redd data with zeros added
-# write_csv(redd_data_updated, "data/updated_redd_observation_w_zeros.csv")
+# write_csv(redd_data, "data/updated_redd_observation_w_zeros.csv") # by running this scrip, data will be overwitten 
 
