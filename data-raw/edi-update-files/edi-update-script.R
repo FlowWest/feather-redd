@@ -37,11 +37,11 @@ surveyed_sites <- survey_combined |>
 # write_csv(surveyed_sites, "data/updated_surveyed_sites_table.csv")  
 
 # reading redd data file 
-redd_data <- read_csv("data-raw/edi-update-files/redd_data_for_binding_update.cvs") |>
+redd_data <- readxl::read_excel(here::here("data-raw", "edi-update-files", "redd_data_for_binding_update.xlsx")) |>
   glimpse()
 
 # reading your new redd data
-# redd_data_updated <- read_csv("data-raw/dwr_chinook_redd_survey_data/yyyy_Chinook_Redd_Survey_Data.cvs") |>
+# redd_data_updated <- readxl::read_excel(here::here("data-raw, "dwr_chinook_redd_survey_data", "yyyy_Chinook_Redd_Survey_Data.xlsx")) |>
 #   bind_rows(redd_data) |> 
 #   glimpse()
 

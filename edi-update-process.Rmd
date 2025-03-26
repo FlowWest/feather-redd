@@ -87,7 +87,7 @@ Data processing will then be handled by one script located in the [data-raw/edi-
 
 5. After confirming that the data is showing properly, run the entire `edi-update-script.R` script. If the format is not the same as [2022 data](https://github.com/FlowWest/feather-redd/blob/main/data-raw/dwr_chinook_redd_survey_data/2022_Chinook_Redd_Survey_Data.xlsx) the script won't work and data cleaning will have to be adapted to format. We will adapt this data cleaning process once the data entry protocol is unified/consistent.
 
-6. The script will generate a CSV called `redd_data.cvs` in the [data folder](https://github.com/FlowWest/feather-redd/tree/main/data).
+6. The script will generate a CSV called `redd_data.xlsx` in the [data folder](https://github.com/FlowWest/feather-redd/tree/main/data).
 
 7. After generating the CSV files, update the metadata (located [here](https://github.com/FlowWest/feather-redd/tree/main/data-raw/metadata)):
 
@@ -97,7 +97,7 @@ Data processing will then be handled by one script located in the [data-raw/edi-
 
 ### Summary of CSVs Generated for EDI Upload
 
-- `redd_data.csv`
+- `redd_data.xlsx`
 
 ## EDI Update/Upload
 
