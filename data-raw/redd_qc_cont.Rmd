@@ -1,5 +1,5 @@
 ---
-title: "feather river redd survey locations and data clean up"
+title: "feather river redd data qc -  continuation"
 date: "2024-11-06"
 output: 
   html_document:
@@ -32,17 +32,19 @@ The goal of this markdown is to clean up the location names from Feather River r
 
 Summary of work that has been done so far:
 
-  * *redd_qc_2014-2023* - mainly exploratory: 
-    * raw data is pulled in, negative velocity values are set to NA
+  * *redd_initial_qc* - data pull and initial qc: 
+    * raw data is pulled in and combined
+    * variable names are cleaned
+    * negative velocity values are set to NA
     * pot_depth_m >= 40 is set to NA
     * "type" is removed
     * 2023 number_redds set all to 1 
     * note that 7 data entries in the raw data that had "0" in number_redds, those were set to 1
     * Data file output: "data-raw/combined_raw_data.csv"
     
-  * *mapping-qc-exploration*: looks into latitude longitude and identifies issues. 
+  * *mapping-qc-exploration*: exploration script - looks into latitude longitude and identifies issues. 
     
-  * *clean_locations_and_data*: fixed latitude/longitude provided by Chris Cook, these changes address the issues found on mapping_qc. 
+  * *redd_qc_cont*: fixed latitude/longitude provided by Chris Cook, these changes address the issues found on mapping-qc-exploration.Rmd.
 
 ```{r, include=FALSE}
 # redd survey points
