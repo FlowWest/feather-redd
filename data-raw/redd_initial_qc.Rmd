@@ -1,0 +1,669 @@
+---
+title: "feather river redd data pull, initial qc, and exploration"
+date: "2024-09-26"
+output: 
+  html_document:
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+library(tidyverse)
+library(lubridate)
+library(googleCloudStorageR)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(leaflet)
+library(RColorBrewer)
+library(viridis)
+library(readxl)
+library(janitor)
+library(sf)
+library(openxlsx)
+library(readxl)
+library(leaflet)
+```
+
+This script reads raw data, does initial qc, and combines all redd survey data into one raw data file.
+
+Goal of this document is to review the Feather River redd data and understand the following:
+
+- what data are collected?
+- what is the quality of the data?
+- what are the data limitations?
+- how are these data useful to Science Plan hypotheses?
+
+
+## Relevant Science Plan hypotheses
+
+1. Spawning habitat acreage
+
+- **From Science Plan:** "The metric for this hypothesis will be the acreage of spawning habitat with suitable water depths and velocities, and sizes of spawning gravel. Spawning habitat criteria, including depth, velocity, and target spawning substrate size will be defined in the specific VA action science and monitoring plan and associated design documents. The suitable gravel size for spawning habitat will be a range and distribution of spawning substrate sizes specific to the spawning population and hydrogeomorphic conditions in each tributary."
+
+- **Ideas:** This hypothesis was set up to use depth and velocity criteria to map spawning habitat acreage and compare to existing habitat. We could map spawning habitat based on redd locations over time. We would need latitude and longitude of all redds observed.
+
+2. Salmon redd density (this is the most relevant hypothesis)
+
+- **From Science Plan:** "The metric for this hypothesis will be the number of Chinook salmon redds per unit area in habitat enhancement project areas, while also accounting for the potential for redd superimposition.  The baseline for this hypothesis will be the redd density and superimposition rate at habitat enhancement locations compared to adjacent areas within the same reach, measured concurrently along with water quality criteria. In systems where redd mapping has been conducted consistently at both project locations and adjacent, non-enhanced locations, historical data can also be leveraged to examine trends and changes in redd density after the enhancement action."
+
+- **Ideas:** This is the number of redds per unit area. We would need a count of redds and some sort of delineation of the area where redds are occurring (this could be latitude/longitude of redd or river mile/reach surveyed, assuming whole area is surveyed)
+
+3. Natural origin adult Chinook salmon population estimates by tributary, and trend in abundance (harvest plus escapement)  
+
+- **From Science Plan:** "The metric for this hypothesis will be annual natural-origin adult Chinook salmon cohort replacement rates and trends over multiple years (e.g., > 3 years) over the period of VA implementation.   The baseline for this hypothesis will be the annual natural-origin adult Chinook salmon cohort replacement rate trends during the period associated with the Anadromous Fish Restoration Program Doubling Goal (years 1967-1991). A secondary baseline, to reflect recent conditions and population numbers, will be annual adult Chinook salmon cohort replacement rates and trends for natural-origin fall run Chinook salmon since 2010."
+
+- **Ideas:** We would need high quality redd data in order to estimate adult population
+
+*Contact*
+
+These data were originally acquired from Chris Cook
+
+*Timeframe*
+
+- 2014-2023 
+
+
+### Data quality
+
+
+```{r, include=FALSE, warning=FALSE}
+redd_2014_raw <- readxl::read_excel(here::here("data-raw", "dwr_chinook_redd_survey_data", "2014_Chinook_Redd_Survey_Data.xlsx")) |> 
+  clean_names() |> 
+  slice(-1912) |>  #removing the totals column
+  glimpse()
+
+
+redd_2014 <- redd_2014_raw |> 
+  mutate(date = if_else(date == "10/1/2014", as.Date(date, format = "%m/%d/%Y"), convertToDate(date))) |> 
+  rename(number_redds = number_of_redds) |> 
+  glimpse()
+
+
+redd_2015 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2015_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2353)) |> 
+  clean_names() |> 
+  rename(number_redds = number_of_redds) |> 
+  glimpse()
+
+redd_2016 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2016_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:1571)) |> 
+  clean_names() |> 
+  rename(number_redds = number_of_redds) |> 
+  glimpse()
+
+redd_2017 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2017_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2718)) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2018 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2018_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:4170)) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2019 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2019_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5049)) |> 
+  clean_names() |> 
+  glimpse()
+
+redd_2020 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2020_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:5432)) |> 
+  clean_names() |> 
+  rename(longitude_m_e = longitude_n_e) |> 
+  glimpse()
+
+redd_2021 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2021_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:2595)) |> 
+  clean_names() |> 
+  mutate(type = ifelse(type == "P", "p", type)) |> 
+  glimpse()
+
+redd_2022 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2022_Chinook_Redd_Survey_Data.xlsx"), range = cell_rows(1:3762)) |> 
+  clean_names() |> 
+  glimpse()
+```
+
+
+```{r, include=FALSE, warning=FALSE}
+# 2023 data is formatted a bit different. Cleaning format here
+# TODO confirm the mapping of substrate
+# including elevation, accuracy and boat_point that are not included in other years
+
+process_2023_data <- function(data) {
+  data |> 
+      clean_names()|> 
+  mutate(date =  mdy_hm(date_time),
+         survey_wk = str_extract(x2, "\\d+-\\d+"),
+         location = riffle_name,
+         file_number = NA,
+         type = NA,
+         number_redds = 1, # assume count is 1 for each
+         number_salmon = number_of_fish_on_redd,
+         latitude_m_n = latitude_wgs_84,
+         longitude_m_e = longitude_wgs_84,
+         depth_m  = water_depth_m,
+         pot_depth_m = NA,
+         velocity_m_s = as.numeric(velocity_m_sec),
+         percent_fines = as.numeric(percent_sand_0_0625_2mm) + as.numeric(percent_silt_0_062mm), 
+         percent_small = as.numeric(percent_gravel_2_64mm),
+         percent_med = as.numeric(percent_pebble_64_128),
+         percent_large = as.numeric(percent_cobble_128_256mm),
+         percent_boulder = as.numeric(percent_boulder_256mm),
+         boat_point = case_when(boat_point == "Yes"~ T, 
+                                T ~ F)) |> 
+  select(date, survey_wk, location, file_number, type, number_redds, number_salmon, latitude_m_n, longitude_m_e, depth_m, pot_depth_m, velocity_m_s, percent_fines, percent_small, percent_med, percent_large, percent_boulder, redd_width_m, redd_length_m, elevation_ft, accuracy_ft, boat_point) |> 
+  glimpse()
+}
+
+redd_2023_week1 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx")) |>
+  process_2023_data()
+  
+redd_2023_week2 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 2)|>
+  process_2023_data()
+
+redd_2023_week3 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 3)|>
+  process_2023_data()
+
+redd_2023_week4 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 4)|>
+  process_2023_data()
+
+redd_2023_week5 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 5)|>
+  process_2023_data()
+
+redd_2023_week6 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 6)|>
+ process_2023_data()
+
+redd_2023_week7 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 7)|>
+  rename(x2 = `Workflow Level`) |> 
+  process_2023_data()
+
+redd_2023_week8 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 8)|>
+  process_2023_data()
+
+
+redd_2023_week9 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 9)|>
+  process_2023_data()
+
+redd_2023_week11 <- readxl::read_xlsx(here::here("data-raw","dwr_chinook_redd_survey_data","2023_Chinook_Redd_Survey_Data.xlsx"), sheet = 10)|>
+  process_2023_data()
+```
+
+
+```{r, include=FALSE}
+redd_2023 <- bind_rows(redd_2023_week1, redd_2023_week2, redd_2023_week3, redd_2023_week4, redd_2023_week5, redd_2023_week6, redd_2023_week7, redd_2023_week8, redd_2023_week9, redd_2023_week11) |> 
+  glimpse()
+```
+
+### Data questions
+
+- Latitude/Longitude unit system is inconsistent. Only 2023 has UTM coordinate system, other years following are shown as "latitude mn / longitude me" (probably zone 10). [This is some information we have found about that coordinate system](https://gis.stackexchange.com/questions/111847/what-kind-of-coordinate-system-has-values-like-48569-800me-706602-032mn). Why were the coordinate systems different?
+- 2023 data has 6 fields for types of soil (boulder, cobble, pebble, gravel, sand and silt), other years have 5 (fines, small, med, large). They were matched by size but % silt was left out for now. Should we include that column in combined data?  
+- 2014-10-20 has 6 records with high number_salmon numbers (over 15, check if these are not errors)
+- Velocity on 2020-11–18 is negative, is it safe to assume this is a mistake, we turn these into NA
+- There are some pretty high pot_depth_m over 40, is it safe to assume this is a mistake, we turn these into NA
+- There are five record values for number of salmon that are over 20 (2014-10-20), can we confirm these are accurate? 
+
+
+
+```{r, include = F}
+# All coordinates, except 2023, are on  mn me format, transforming to UTM here
+combined_14_22 <- bind_rows(redd_2014, redd_2015, redd_2016, redd_2017, redd_2018, redd_2019, redd_2020, redd_2021, redd_2022) |> 
+  glimpse()
+
+#check # of NA values
+# sum(redd_sf$latitude_m_n == 0)
+
+combined_14_22 <- combined_14_22 |> 
+  mutate(
+    longitude_m_e = ifelse(is.na(longitude_m_e), 0, longitude_m_e),
+    latitude_m_n = ifelse(is.na(latitude_m_n), 0, latitude_m_n)
+  ) 
+#check # of 0  values
+sum(combined_14_22$latitude_m_n == 0)
+sum(combined_14_22$longitude_m_e == 0)
+
+combined_14_22_utm <- combined_14_22 |> 
+    st_as_sf(coords = c("longitude_m_e", "latitude_m_n"), crs = 32610) |> 
+  st_transform(crs = 4326)
+
+# Extract coordinates and add them as separate columns
+coords <- st_coordinates(combined_14_22_utm)
+combined_14_22_utm$longitude <- coords[, "X"]
+combined_14_22_utm$latitude <- coords[, "Y"]
+combined_14_22_utm <- st_drop_geometry(combined_14_22_utm)
+
+# check those that dont make sense for UTM
+sum(combined_14_22_utm$latitude < 38)
+sum(combined_14_22_utm$longitude > -119)
+
+#setting those to 0 - TODO check if this is a fair assumption 
+data_14_22 <- combined_14_22_utm |> 
+  mutate(latitude = ifelse(latitude < 38, 0, latitude),
+         longitude = ifelse(longitude > -119, 0, longitude))
+
+#up until this point coordinates data from 2014 to 2022 is the cleanest 
+```
+
+```{r, include=FALSE}
+#looking into coordinates of 2023 
+summary(redd_2023$latitude_m_n) # these seems reasonable for UTM
+summary(redd_2023$longitude_m_e)
+
+redd_2023 <- redd_2023 |> # using consitent name
+  rename(latitude = latitude_m_n,
+         longitude = longitude_m_e) 
+```
+
+
+Combining all years into one object
+
+```{r}
+combined_redd <- bind_rows(data_14_22, redd_2023) |> 
+  mutate(location = tolower(location),
+         type = tolower(type),
+         date = as.Date(date)) |> 
+  glimpse()
+```
+
+### Data exploration {.tabset}
+
+Exploring fields that have data consistently
+
+#### date
+
+  - Surveys are conducted September to December
+ 
+```{r, warning = F, message=F}
+#date range
+range(combined_redd$date, na.rm = TRUE)
+```
+
+Looking at temporal coverage 
+
+```{r, warning=FALSE}
+ggplot(combined_redd, aes(month(date), number_salmon)) +
+  geom_point() +
+  facet_wrap(~year(date)) +
+  labs(title = "Count of salmon per month",
+       x = "Month",
+       y = "Number of Salmon") +
+  theme_minimal()
+```
+
+Since there are outliers, will remove and plot again
+
+```{r}
+combined_redd |> 
+  filter(number_salmon <10) |> 
+  ggplot(aes(month(date), number_salmon)) +
+  geom_point() +
+  facet_wrap(~year(date)) +
+  labs(title = "Count of salmon per month",
+       x = "Month",
+       y = "Number of Salmon") +
+  theme_minimal()
+```
+
+
+
+#### location
+
+  * Location clean up is needed. There are some names that appear less than 5 times. We could check if they correspond to another location name, and it is spelled differently
+
+```{r, warning = F, message=F}
+#locations
+table(combined_redd$location) #there are 88 unique location names
+
+unique(combined_redd$location)
+```
+
+**Locations surveyed less than 5 times**
+
+For locations that are being surveyed less than five times, we might want to verify if they belong to other location area names. Otherwise, these sites might not have enough data to reliably analyze over time.
+
+```{r, warning = F, message=F}
+#plotting those locations that appear less than 5 times
+combined_redd |> 
+  group_by(location) |> 
+  filter(n() < 5) |> 
+  ungroup() |> 
+  count(location) |> 
+  ggplot(aes(x = reorder(location, n), y = n)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  geom_text(aes(label = n), hjust = -0.3, size = 3.5) +
+  labs(title = "Count of Locations with Less Than 5 Observations",
+       x = "Location",
+       y = "Number of Data Records") +
+  theme_minimal()
+
+```
+
+**Frequent locations and years surveyed**
+
+```{r, warning = F, message=F}
+location_frequent <- combined_redd |> 
+  mutate(year = year(date)) |> 
+  select(location, year) |> 
+  group_by(location, year) |> 
+  distinct() |> 
+  ungroup() |> 
+  group_by(location) |> 
+  tally() |> 
+  filter(n > 5)
+
+combined_redd |> 
+  mutate(year = as.factor(year(date))) |> 
+  select(location, year) |> 
+  group_by(location, year) |> 
+  distinct() |> 
+  filter(location %in% location_frequent$location) |> 
+  ggplot(aes(x = year, y = location, color = year)) +
+  geom_point(size = 2, alpha = 0.7) +
+  labs(title = "Distinct Locations by Year",
+       x = "Year",
+       y = "Year",
+       color = "Location") +  
+  scale_color_viridis_d() +  
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        axis.text = element_text(size = 8),
+        legend.position = "none")
+  
+```
+
+
+#### type
+
+**Observations by type and date**
+
+```{r, warning = F, message=F}
+#type
+unique(combined_redd$type)
+
+ggplot(combined_redd, aes(x = date, y = type, color = type)) +
+  geom_point(size = 2, alpha = 0.7) +
+  labs(title = "Types Over Time",
+       x = "Date",
+       y = "Type",
+       color = "Type") +
+   scale_color_viridis_d(na.value = "grey50") +  
+  theme_minimal() +
+# Use Viridis color scale
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        axis.text = element_text(size = 10))
+```
+
+
+**Count of observations by type**
+
+- note that all 2023 data does not have a `type` field
+- based on conversations with the Feather River team we should remove the "a" observations and this field
+
+```{r, warning = F, message=F}
+combined_redd |> 
+  group_by(type) |> 
+  summarise(n = n()) |> 
+  ggplot(aes(x = type, y = n, fill = type)) +
+  geom_bar(stat = "identity", color = "black") +
+  geom_text(aes(label = n), vjust = -0.5, size = 3.5) +
+  scale_fill_viridis_d() +  
+  labs(title = "Count of Observations by Type",
+       x = "Type",
+       y = "Count") +
+  theme_minimal() 
+```
+
+#### redd_count
+
+**Redd counts by year**
+
+```{r, warning = F, message=F}
+range(combined_redd$number_redds, na.rm = TRUE)
+summary(combined_redd$number_redds)
+```
+
+```{r, warning = F, message=F}
+ggplot(combined_redd, aes(x = date, y = number_redds)) +
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Redd Counts Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
+Same plot than above but with date values aggregated - using geom_col()
+
+```{r, warning = F, message=F}
+ggplot(combined_redd, aes(x = date, y = number_redds)) +
+  geom_col() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Redd Counts Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+```
+
+#### salmon_count
+
+**Salmon counts by year**
+
+  - Noticed some outliers. Plotting below again removing values over 20
+  
+```{r, warning = F, message=F}
+range(combined_redd$number_salmon, na.rm = TRUE)
+summary(combined_redd$number_salmon)
+
+combined_redd |> 
+  ggplot(aes(date, number_salmon)) + 
+  geom_point() +
+  labs(title = "Salmon Counts Over Time") +  # TODO check if values over 20 are not outliers
+  theme_minimal()
+```
+
+```{r}
+combined_redd |> 
+  filter(number_salmon < 20) |> 
+  ggplot(aes(date, number_salmon)) + 
+  geom_point() +
+  labs(title = "Salmon Counts Over Time (values over 20 removed)") +  # TODO check if values over 20 are not outliers
+  theme_minimal() 
+```
+
+```{r, warning = F, message=F}
+# plotting values lower that 30  
+
+combined_redd |> 
+  filter(is.na(date)==FALSE,
+         number_salmon < 20) |>  
+  ggplot(aes(x = date, y = number_salmon)) + 
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Salmon Counts Over Time by Year (values over 20 removed)") +  
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5) 
+  )
+```
+
+
+
+#### depth
+
+```{r, warning = F, message=F}
+range(combined_redd$depth_m, na.rm = TRUE)
+summary(combined_redd$depth_m)
+```
+
+```{r, warning = F, message=F}
+ggplot(combined_redd, aes(x = date, y = depth_m)) +
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Depth Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+
+ggplot(combined_redd, aes(x = factor(month(date, label = TRUE), levels = month.abb), y = depth_m)) +
+  geom_boxplot() +
+  facet_wrap(~year(date)) +
+  labs(x = "Month", y = "Depth (m)") +
+  theme_minimal()
+
+summary(combined_redd$depth_m)
+
+```
+
+#### velocity
+
+```{r, warning = F, message=F}
+range(combined_redd$velocity_m_s, na.rm = TRUE)
+summary(combined_redd$velocity_m_s)
+```
+```{r, include=FALSE}
+#checking where the negative values are coming from
+combined_redd |> 
+  filter(velocity_m_s <= 0) |> #it is only one day 
+  glimpse()
+
+#note apply this to the actual data
+```
+
+Turning that negative velocity to NA and plotting
+
+```{r, warning = F, message=F}
+combined_redd <- combined_redd |> 
+  mutate(velocity_m_s = ifelse(velocity_m_s < 0, NA, velocity_m_s))
+
+ggplot(combined_redd, aes(x = date, y = velocity_m_s)) +
+  geom_point() +
+  facet_wrap(~year(date), scales = "free") +
+  scale_x_date(labels = date_format("%b"), date_breaks = "1 month") +
+  labs(title = "Velocity Over Time") +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "lightgrey", color = "grey50"),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+ggplot(combined_redd, aes(velocity_m_s, depth_m)) +
+  geom_point() +
+  labs(title = "Depth vs Velocity") +
+  theme_minimal()
+```
+
+#### pot_depth_m
+
+```{r, echo=FALSE}
+range(combined_redd$pot_depth_m)
+summary(combined_redd$pot_depth_m)
+```
+
+```{r, warning=FALSE}
+ggplot(combined_redd, aes(x = date, y = pot_depth_m)) + # two outliers
+  geom_point()
+```
+
+Same plot as above but outliers removed
+
+```{r}
+combined_redd |> 
+  filter(pot_depth_m < 40) |> 
+  ggplot(aes(x = date, y = pot_depth_m)) + 
+  geom_point()
+```
+
+Turning values over 40 to NA
+
+```{r}
+combined_redd <- combined_redd |> 
+  mutate(pot_depth_m = ifelse(pot_depth_m >= 40, NA, pot_depth_m)) 
+```
+
+```{r, warning=FALSE}
+
+ggplot(combined_redd, aes(x = factor(month(date, label = TRUE), levels = month.abb), y = pot_depth_m)) +
+  geom_boxplot() +
+  facet_wrap(~year(date)) +
+  labs(title = "Pot Depth per month (values over 40 removed)") +
+  labs(x = "Month", y = "Pot Depth (m)") +
+  theme_minimal()
+
+```
+
+#### latitude/ longitude plot
+
+Cleaning lat/long to plot on a map
+
+```{r, include=FALSE}
+summary(combined_redd$latitude)
+summary(combined_redd$longitude)
+
+# modifying so that if either one of these is 0, then both should be 0
+map_redd <- combined_redd |> 
+  mutate(latitude = ifelse(longitude == 0, 0, latitude),
+         longitude = ifelse(latitude == 0, 0, longitude)) |> 
+  filter(latitude != 0,
+         longitude != 0) # filtering out those that are 0 for plotting purposes
+
+# plotting on map
+
+palette <- viridis(n = nlevels(factor(map_redd$location)))
+```
+
+```{r, echo=FALSE}
+leaflet(map_redd) |> 
+  addTiles() |> 
+  addCircleMarkers(
+    ~longitude, ~latitude,
+    popup = ~paste0("Number of Redds: ", number_redds, "<br>Location: ", location),
+    radius = 2,  # Adjust radius as needed
+    color = ~palette[as.numeric(factor(location))],
+    # label = ~as.character(location),
+    # labelOptions = labelOptions(noHide = TRUE, textOnly = TRUE)
+  )
+```
+
+summary of depth
+
+```{r}
+summary(combined_redd$depth_m)
+```
+
+summary of pot_depth after modifications
+```{r}
+summary(combined_redd$pot_depth_m)
+```
+
+summary of velocity_m_s after modifications
+```{r}
+summary(combined_redd$velocity_m_s)
+```
+
+```{r, include = F}
+# edits to data
+combined_redd_clean <- combined_redd |> 
+  filter(type == "p" | is.na(type)) |> 
+  mutate(date = as.Date(date),
+         number_redds = ifelse(number_redds == 0, 1, number_redds)) |> 
+  select(-type) # removing based on Feather River team instructions
+```
+
+```{r}
+#save data with locations info
+write_csv(combined_redd_clean, "data-raw/combined_raw_data.csv")
+```
