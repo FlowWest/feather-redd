@@ -85,7 +85,7 @@ Data processing will then be handled by one script located in the [data-raw/edi-
       glimpse()
     ```
 
-5. After confirming that the data is showing properly, run the entire `edi-update-script.R` script. If the format is not the same as [the table from step 2](https://github.com/FlowWest/feather-redd/blob/main/data-raw/edi-update-files/redd_data_for_binding_update.xlsx) the script won't work and data cleaning will have to be adapted to format. We will adapt this data cleaning process once the data entry protocol is unified/consistent.
+5. After confirming that the data is showing properly, run the entire `edi-update-script.R` script. If the format is not the same as [the table from step 2](https://github.com/FlowWest/feather-redd?tab=readme-ov-file#adding-data) the script won't work and data cleaning will have to be adapted to format. We will adapt this data cleaning process once the data entry protocol is unified/consistent.
 
 6. The script will generate a CSV called `redd_data.csv` in the [data folder](https://github.com/FlowWest/feather-redd/tree/main/data).
 
